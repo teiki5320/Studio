@@ -83,6 +83,7 @@ export const api = {
   verifierIndexation: () => request('/api/indexation/verifier', { method: 'POST' }),
   renvoyerPlan: (id) => request('/api/indexation/plan', { method: 'POST', body: JSON.stringify({ id }) }),
   consigneIndexation: (id) => request(`/api/indexation/consigne?id=${encodeURIComponent(id)}`),
+  envoyerAClaude: (id) => request('/api/indexation/envoyer', { method: 'POST', body: JSON.stringify({ id }) }),
   noterCorrige: (id) => request('/api/indexation/corrige', { method: 'POST', body: JSON.stringify({ id }) }),
   deconnecterIndexation: () => request('/api/indexation/deconnecter', { method: 'POST' }),
   audience: (jours) => request(`/api/audience?jours=${jours}`),

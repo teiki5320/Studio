@@ -355,7 +355,27 @@ function famille(p) {
   };
 }
 
-function problemesDuSite(propriete, site, ignores) {
+// Un problème marqué corrigé et toujours là : on regarde ce que la
+// revérification en dit.
+//  - attente : pas encore revérifié depuis la correction ;
+//  - pasRepasse : revérifié, mais Google n'est pas revenu sur les pages depuis ;
+//  - echec : Google est revenu et le problème est toujours là.
+function resultatCorrection(site, g, suivi) {
+  const depuis = new Date(suivi.le);
+  if (!g.urls.length) {
+    // Problème du plan du site : jugé au passage d'au moins 3 jours après.
+    const juge = site.dernierPassage && new Date(site.dernierPassage) - depuis > 3 * 86400000;
+    return { statut: juge ? 'echec' : 'attente' };
+  }
+  const revues = g.urls.map((u) => site.pages[u.url]).filter((p) => p?.verifie && new Date(p.verifie) > depuis);
+  if (!revues.length) return { statut: 'attente' };
+  const recrawlees = revues.filter((p) => p.dernierCrawl && new Date(p.dernierCrawl) > depuis);
+  return recrawlees.length
+    ? { statut: 'echec', pages: recrawlees.length }
+    : { statut: 'pasRepasse', pages: revues.length };
+}
+
+function problemesDuSite(propriete, site, ignores, file = {}) {
   const groupes = new Map();
   for (const [url, p] of Object.entries(site.pages || {})) {
     const f = famille(p);
@@ -400,7 +420,11 @@ function problemesDuSite(propriete, site, ignores) {
     });
   }
   return liste
-    .map((g) => ({ ...g, id: `${propriete}|${g.cle}`, corrige: ignores[`${propriete}|${g.cle}`] || null }))
+    .map((g) => {
+      const suivi = ignores[`${propriete}|${g.cle}`];
+      const id = `${propriete}|${g.cle}`;
+      return { ...g, id, corrige: suivi ? { ...suivi, ...resultatCorrection(site, g, suivi) } : null, envoi: file[id] || null };
+    })
     .sort((a, b) => b.gravite - a.gravite || b.urls.length - a.urls.length);
 }
 
@@ -419,7 +443,7 @@ export function etatIndexation() {
       sitemaps: s.sitemaps || [],
       erreur: s.erreur || null,
       dernierPassage: s.dernierPassage || null,
-      problemes: problemesDuSite(propriete, s, suivis),
+      problemes: problemesDuSite(propriete, s, suivis, etat.fileClaude || {}),
       depot: Boolean(depotDe(s.domaine)),
     };
   });
@@ -438,10 +462,42 @@ export async function renvoyerPlans(propriete) {
   const site = etat.sites[propriete];
   if (!site) throw new Error('Site inconnu.');
   const plans = (site.plans || []).length ? site.plans : await plansDuSite(site.domaine);
+  const recus = [];
   for (const plan of plans) {
     await google(`${WM}/sites/${enc(propriete)}/sitemaps/${enc(plan)}`, { method: 'PUT' });
+    // On relit aussitôt ce que Google en dit : la preuve qu'il l'a bien reçu.
+    const g = await google(`${WM}/sites/${enc(propriete)}/sitemaps/${enc(plan)}`);
+    recus.push({
+      chemin: g.path || plan,
+      erreurs: Number(g.errors || 0),
+      alertes: Number(g.warnings || 0),
+      envoye: g.lastSubmitted || null,
+      lu: g.lastDownloaded || null,
+      enAttente: Boolean(g.isPending),
+      pages: (g.contents || []).reduce((t, c) => t + Number(c.submitted || 0), 0),
+    });
   }
-  return plans;
+  const autres = (site.sitemaps || []).filter((s) => !recus.some((r) => r.chemin === s.chemin));
+  site.sitemaps = [...autres, ...recus];
+  ecrireJson(ETAT, etat);
+  return recus;
+}
+
+const jour = (iso) => (iso ? new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'numeric' }) : '');
+
+// Ce que Google a répondu, en une phrase par plan.
+export function resumePlans(recus) {
+  return recus
+    .map((r) => {
+      const nom = r.chemin.replace(/^https?:\/\/(www\.)?/, '');
+      if (!r.envoye) return `⚠️ ${nom} : Google n’a pas enregistré l’envoi.`;
+      if (r.erreurs) return `⚠️ ${nom} : reçu, mais Google y voit ${r.erreurs} erreur(s).`;
+      const pages = r.pages ? ` (${r.pages} pages)` : '';
+      return r.lu && !r.enAttente && new Date(r.lu) >= new Date(r.envoye)
+        ? `✓ ${nom} : reçu et lu par Google le ${jour(r.lu)}${pages}, sans erreur.`
+        : `✓ ${nom} : reçu par Google le ${jour(r.envoye)}${pages} ; il le lira dans les prochaines heures${r.lu ? ` (dernière lecture le ${jour(r.lu)})` : ''}.`;
+    })
+    .join('\n');
 }
 
 // La consigne donnée à Claude pour un problème.
@@ -461,6 +517,46 @@ Règles :
 4. Vérifie que le site se construit (la commande de build du dépôt, si elle existe).
 5. Commit en français sur main (message clair, finissant par « Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com> »), puis git push.
 6. Termine par un compte rendu de 3 lignes maximum, en français simple, sans jargon : ce que tu as changé.`;
+}
+
+// ---------- File d'attente pour Claude ----------
+// « Envoyer à Claude » range le problème ici ; la routine Claude « Indexation :
+// corrections » (6 h, 9 h, 12 h, 19 h) prend la file, corrige chaque site et
+// renvoie son compte rendu (retourClaude).
+export function envoyerAClaude(id) {
+  trouverProbleme(id);
+  const etat = lireEtat();
+  etat.fileClaude = etat.fileClaude || {};
+  etat.fileClaude[id] = { le: new Date().toISOString(), statut: 'envoye' };
+  ecrireJson(ETAT, etat);
+}
+
+export function fileClaude() {
+  const etat = lireEtat();
+  return Object.entries(etat.fileClaude || {})
+    .filter(([, f]) => f.statut === 'envoye')
+    .map(([id]) => {
+      try {
+        const { site, probleme } = trouverProbleme(id);
+        return { id, domaine: site.domaine, dossier: depotDe(site.domaine), consigne: consigneClaude(probleme, site.domaine) };
+      } catch {
+        return { id, disparu: true };
+      }
+    });
+}
+
+export function retourClaude(id, compteRendu, reussi) {
+  const etat = lireEtat();
+  const f = (etat.fileClaude || {})[id];
+  if (!f) throw new Error('Ce problème n’est pas dans la file.');
+  if (reussi) {
+    delete etat.fileClaude[id];
+    ecrireJson(ETAT, etat);
+    noterCorrection(id, `Corrigé par Claude : ${String(compteRendu || '').trim()}`);
+  } else {
+    etat.fileClaude[id] = { ...f, statut: 'bloque', message: String(compteRendu || '').slice(0, 1500), retour: new Date().toISOString() };
+    ecrireJson(ETAT, etat);
+  }
 }
 
 export function trouverProbleme(id) {

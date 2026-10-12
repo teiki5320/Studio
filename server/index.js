@@ -105,6 +105,10 @@ import {
   passage as passageIndexation,
   passageDuJour,
   renvoyerPlans,
+  resumePlans,
+  envoyerAClaude,
+  fileClaude,
+  retourClaude,
   consigneClaude,
   trouverProbleme,
   noterCorrection,
@@ -1405,9 +1409,9 @@ app.post('/api/indexation/plan', (req, res) => {
   try {
     const { site, probleme } = trouverProbleme(String((req.body || {}).id || ''));
     const job = startJob(`Indexation — ${site.domaine} : plan renvoyé à Google`, async () => {
-      const plans = await renvoyerPlans(site.propriete);
-      noterCorrection(probleme.id, `Plan du site renvoyé à Google : ${plans.join(', ')}`);
-      return { plans };
+      const recus = await renvoyerPlans(site.propriete);
+      noterCorrection(probleme.id, resumePlans(recus));
+      return { recus };
     });
     res.json({ jobId: job.id });
   } catch (e) {
@@ -1419,6 +1423,25 @@ app.get('/api/indexation/consigne', (req, res) => {
   try {
     const { site, probleme } = trouverProbleme(String(req.query.id || ''));
     res.json({ consigne: consigneClaude(probleme, site.domaine), dossier: depotDe(site.domaine) });
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+// File d'attente pour la routine Claude « Indexation : corrections ».
+app.post('/api/indexation/envoyer', (req, res) => {
+  try {
+    envoyerAClaude(String((req.body || {}).id || ''));
+    res.json(etatIndexation());
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+app.get('/api/indexation/file', (req, res) => res.json(fileClaude()));
+app.post('/api/indexation/retour', (req, res) => {
+  try {
+    const { id, compteRendu, reussi } = req.body || {};
+    retourClaude(String(id || ''), compteRendu, reussi !== false);
+    res.json({ ok: true });
   } catch (e) {
     res.status(400).json({ error: e.message });
   }

@@ -1,6 +1,8 @@
 // Indexation des sites sur Google : chaque site, combien de pages Google a
 // gardées, et la liste des problèmes en français avec leur solution. Le
 // Studio vérifie tout seul chaque matin ; on peut aussi relancer à la main.
+// « Envoyer à Claude » met un problème dans la file de la routine Claude
+// « Indexation : corrections » (6 h, 9 h, 12 h, 19 h).
 import React, { useEffect, useState } from 'react';
 import { api, followJob } from './api.js';
 
@@ -8,10 +10,23 @@ const GRAVITE = { 3: '🔴', 2: '🟠', 1: '🟡' };
 const date = (iso) => (iso ? new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long' }) : '');
 const heure = (iso) => (iso ? new Date(iso).toLocaleString('fr-FR', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }) : 'jamais');
 
+// Où en est un problème marqué corrigé, d'après la revérification.
+function Suivi({ c }) {
+  if (!c) return null;
+  const pages = c.pages ? ` (${c.pages} page${c.pages > 1 ? 's' : ''})` : '';
+  if (c.statut === 'echec') {
+    return <span className="clay-state ko">⚠️ Toujours pas réglé après revérification{pages}</span>;
+  }
+  if (c.statut === 'pasRepasse') {
+    return <span className="clay-state att">⏳ Revérifié : Google n’est pas encore repassé sur ces pages{pages}</span>;
+  }
+  return <span className="clay-state ok">✓ Corrigé le {date(c.le)} — revérification dans les prochains jours</span>;
+}
+
 function Probleme({ p, onFait, setError }) {
   const [ouvert, setOuvert] = useState(false);
   const [envoi, setEnvoi] = useState(false);
-  const [copie, setCopie] = useState(false);
+  const [envoiEnCours, setEnvoiEnCours] = useState(false);
   const plan = () => {
     setEnvoi(true);
     api
@@ -21,12 +36,15 @@ function Probleme({ p, onFait, setError }) {
       .catch((e) => setError(e.message))
       .finally(() => setEnvoi(false));
   };
-  const consigne = () =>
+  const envoyer = () => {
+    setEnvoiEnCours(true);
     api
-      .consigneIndexation(p.id)
-      .then(({ consigne }) => navigator.clipboard?.writeText(consigne))
-      .then(() => setCopie(true))
-      .catch((e) => setError(e.message));
+      .envoyerAClaude(p.id)
+      .then(onFait)
+      .catch((e) => setError(e.message))
+      .finally(() => setEnvoiEnCours(false));
+  };
+  const envoye = p.envoi?.statut === 'envoye';
   return (
     <div style={{ borderTop: '1px solid var(--ligne)', padding: '12px 0' }}>
       <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap' }}>
@@ -34,8 +52,11 @@ function Probleme({ p, onFait, setError }) {
           {GRAVITE[p.gravite] || '🟡'} {p.titre}
           {p.urls.length ? ` · ${p.urls.length} page${p.urls.length > 1 ? 's' : ''}` : ''}
         </b>
-        {p.corrige ? <span className="clay-state ok">✓ Corrigé le {date(p.corrige.le)} — Google revérifie</span> : null}
+        <Suivi c={p.corrige} />
       </div>
+      {p.corrige?.compteRendu && p.action === 'plan' ? (
+        <div className="small" style={{ marginTop: 4, whiteSpace: 'pre-line' }}>{p.corrige.compteRendu}</div>
+      ) : null}
       <div className="small" style={{ marginTop: 4 }}>{p.explication}</div>
       <div className="small clay-muted" style={{ marginTop: 2 }}>
         <b>Solution :</b> {p.solution}
@@ -47,8 +68,8 @@ function Probleme({ p, onFait, setError }) {
           </button>
         ) : (
           <>
-            <button className="clay-btn small" onClick={consigne}>
-              {copie ? '✓ Consigne copiée' : '📋 Copier la consigne pour Claude'}
+            <button className="clay-btn small" disabled={envoye || envoiEnCours} onClick={envoyer}>
+              {envoye ? `📤 Envoyé le ${date(p.envoi.le)}` : '📤 Envoyer à Claude'}
             </button>
             <button className="clay-btn ghost small" onClick={() => api.noterCorrige(p.id).then(onFait).catch((e) => setError(e.message))}>
               ✓ C’est corrigé
@@ -61,8 +82,14 @@ function Probleme({ p, onFait, setError }) {
           </button>
         ) : null}
       </div>
-      {copie && p.action !== 'plan' ? (
-        <p className="clay-muted small">Colle-la dans une session Claude ouverte sur le dossier du site, puis touche « C’est corrigé ».</p>
+      {envoye ? <p className="clay-muted small">Claude s’en occupe au prochain passage : 6 h, 9 h, 12 h ou 19 h.</p> : null}
+      {p.envoi?.statut === 'bloque' ? (
+        <p className="error small" style={{ whiteSpace: 'pre-line' }}>
+          ⚠️ Claude n’a pas pu corriger : {p.envoi.message}
+        </p>
+      ) : null}
+      {p.corrige?.compteRendu && p.action !== 'plan' && /^Corrigé par Claude/.test(p.corrige.compteRendu) ? (
+        <div className="small" style={{ marginTop: 4, whiteSpace: 'pre-line' }}>{p.corrige.compteRendu}</div>
       ) : null}
       {ouvert && (
         <div style={{ marginTop: 8 }}>
@@ -148,7 +175,7 @@ export function IndexationPage() {
         </div>
       )}
       {data.sites.map((s) => {
-        const ouverts = s.problemes.filter((p) => !p.corrige);
+        const ouverts = s.problemes.filter((p) => !p.corrige || p.corrige.statut === 'echec');
         return (
           <div key={s.propriete} className="clay-block">
             <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
