@@ -179,7 +179,7 @@ export function AccueilPage() {
   const raccourcis = [
     ['#/pub', '📣', c.videosHier, 'prêtes'],
     ['#/indexation', '🔎', c.indexation, c.indexationEnvoyes ? `à régler · ${c.indexationEnvoyes} chez Claude` : 'à régler'],
-    ['#/audience', '📈', ext?.vues?.total, 'vues 7 j'],
+    ['#/audience', '📈', ext?.vues?.total, 'visiteurs 7 j'],
     ['#/planning', '🗓️', c.programmees, 'programmées'],
     ['#/encours', '🏭', c.enCours, 'en cours'],
     ['#/reglages/routines', '⏰', c.routinesDuJour, c.routinesBloquees ? `aujourd'hui · ${c.routinesBloquees} bloquée${c.routinesBloquees > 1 ? 's' : ''}` : "aujourd'hui"],
@@ -215,7 +215,7 @@ export function AccueilPage() {
             <span className="var">pages sur {nb(c.pagesTotal)}</span>
           </a>
           <a className="gc cb" href="#/audience">
-            <span className="lab">Vues 7 j</span>
+            <span className="lab">Visiteurs 7 j</span>
             <b>{ext?.vues ? <Compte n={ext.vues.total} delai={150} /> : '—'}</b>
             <Courbe jours={ext?.vues?.jours} />
           </a>

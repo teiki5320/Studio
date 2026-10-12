@@ -71,5 +71,13 @@ export async function synchroniserApplis() {
 
 export function synchroDue() {
   const { le } = lireJson(ETAT, {});
-  return !le || Date.now() - new Date(le).getTime() > TOUTES_LES;
+  const age = le ? Date.now() - new Date(le).getTime() : Infinity;
+  // Une vérification du code était en cours au dernier passage : on repasse
+  // vite (20 min) plutôt que d'afficher « en cours » pendant 6 heures.
+  const dossier = path.join(ROOT, 'data', 'apps');
+  const enCours = fs.existsSync(dossier) && fs.readdirSync(dossier).some((id) => {
+    const ci = lireJson(path.join(dossier, id, 'status.json'), {}).ci;
+    return ci && ci.status && ci.status !== 'completed';
+  });
+  return age > TOUTES_LES || (enCours && age > 20 * 60 * 1000);
 }

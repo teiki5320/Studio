@@ -70,8 +70,21 @@ export function urlConnexionIndexation(redirectUri) {
   return `https://accounts.google.com/o/oauth2/v2/auth?${p}`;
 }
 
+// Un raté réseau passager (« fetch failed ») ne doit pas laisser une erreur
+// affichée jusqu'au passage suivant : on réessaie deux fois avant d'abandonner.
+async function chercher(url, options) {
+  for (let essai = 1; ; essai++) {
+    try {
+      return await fetch(url, options);
+    } catch (e) {
+      if (essai >= 3) throw e;
+      await new Promise((r) => setTimeout(r, 2000 * essai));
+    }
+  }
+}
+
 async function jeton(params) {
-  const res = await fetch('https://oauth2.googleapis.com/token', {
+  const res = await chercher('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams(params),
@@ -117,7 +130,7 @@ async function accessToken() {
 }
 
 async function google(url, { method = 'GET', body } = {}) {
-  const res = await fetch(url, {
+  const res = await chercher(url, {
     method,
     headers: { Authorization: `Bearer ${await accessToken()}`, ...(body ? { 'Content-Type': 'application/json' } : {}) },
     body: body ? JSON.stringify(body) : undefined,
@@ -141,7 +154,7 @@ const enc = encodeURIComponent;
 const domaineDe = (propriete) => propriete.replace(/^sc-domain:/, '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
 
 async function urlsDuPlan(plan, profondeur = 0) {
-  const res = await fetch(plan, { redirect: 'follow' });
+  const res = await chercher(plan, { redirect: 'follow' });
   if (!res.ok) {
     return [];
   }
@@ -158,7 +171,7 @@ async function urlsDuPlan(plan, profondeur = 0) {
 }
 
 async function plansDuSite(domaine) {
-  const res = await fetch(`https://${domaine}/robots.txt`, { redirect: 'follow' }).catch(() => null);
+  const res = await chercher(`https://${domaine}/robots.txt`, { redirect: 'follow' }).catch(() => null);
   const txt = res && res.ok ? await res.text() : '';
   const plans = [...txt.matchAll(/^\s*sitemap:\s*(\S+)/gim)].map((m) => m[1]);
   return plans.length ? plans : [`https://${domaine}/sitemap.xml`];

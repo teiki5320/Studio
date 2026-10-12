@@ -132,6 +132,10 @@ async function siteZone(z, debut) {
   };
 }
 
+// Pas des sites publics : le Studio lui-même et les anciennes adresses qui
+// ne font plus que rediriger.
+const PRIVES = /^(studio|gestion)\.|^avelor\.toakeur\.com$/;
+
 // Tous les sites, sur la période (en jours). Gardé 10 minutes en mémoire.
 const cache = new Map();
 export async function audience(jours = 30) {
@@ -160,12 +164,17 @@ export async function audience(jours = 30) {
   // Web Analytics : les sites mesurés, retrouvés par leur nom.
   let hotes = [];
   try {
-    const d = acc ? await graphql(HOTES, { acc, debut }) : null;
-    hotes = (d?.viewer.accounts[0]?.hotes || []).map((g) => g.dimensions.requestHost).filter((h) => h && !/localhost|pages\.dev$|^\d/.test(h));
+    // Les sites mesurés sur 3 mois : un site calme cette semaine reste en
+    // « Web Analytics » au lieu de basculer sur les chiffres bruts du domaine
+    // (robots compris), qui ne se comparent pas.
+    const debut90 = new Date(Date.now() - 89 * 86400000).toISOString().slice(0, 10);
+    const d = acc ? await graphql(HOTES, { acc, debut: debut90 }) : null;
+    hotes = (d?.viewer.accounts[0]?.hotes || []).map((g) => g.dimensions.requestHost).filter((h) => h && !/localhost|pages\.dev$|^\d/.test(h) && !PRIVES.test(h));
   } catch (e) {
     erreurs.push(e.message);
   }
-  for (const h of hotes) {
+  // Toutes les demandes en même temps : un par un, la page attendait 15 s.
+  await Promise.all(hotes.map(async (h) => {
     try {
       const site = await siteRum(acc, h, debut);
       sites.push(site);
@@ -173,18 +182,15 @@ export async function audience(jours = 30) {
     } catch (e) {
       erreurs.push(`${h} : ${e.message}`);
     }
-  }
-  for (const z of zones || []) {
-    if (couverts.has(z.name)) {
-      continue;
-    }
+  }));
+  await Promise.all((zones || []).filter((z) => !couverts.has(z.name)).map(async (z) => {
     try {
       const site = await siteZone(z, debut);
       if (site.jours.length) sites.push(site);
     } catch (e) {
       erreurs.push(`${z.name} : ${e.message}`);
     }
-  }
+  }));
   sites.sort((a, b) => total(b) - total(a));
   const data = { configure: true, jours: n, debut, sites, erreurs };
   cache.set(n, { at: Date.now(), data });

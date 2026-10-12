@@ -21,9 +21,26 @@ const SITES = {
   solelis: 'https://solelis.com',
 };
 
-let cacheSites = { at: 0, data: {} };
-async function etatSites() {
-  if (Date.now() - cacheSites.at < 10 * 60 * 1000) return cacheSites.data;
+// Gardé 10 minutes. Au-delà, on montre tout de suite le dernier état connu et
+// on le rafraîchit en arrière-plan : la connexion peut mettre 10 s par site.
+let cacheSites = { at: 0, data: null };
+let enVol = null;
+function etatSites() {
+  const frais = Date.now() - cacheSites.at < 10 * 60 * 1000;
+  if (!frais && !enVol) enVol = sonderSites().finally(() => { enVol = null; });
+  return cacheSites.data || enVol;
+}
+
+// Préchauffe : sites et audience sont relus toutes les 9 minutes, pour que
+// l'Accueil n'attende jamais le réseau.
+function prechauffer() {
+  etatSites();
+  if (etatCloudflare().configure) for (const n of [7, 30]) audience(n).catch(() => {});
+}
+setTimeout(prechauffer, 5000).unref?.();
+setInterval(prechauffer, 9 * 60 * 1000).unref?.();
+
+async function sonderSites() {
   const data = {};
   await Promise.all(
     Object.entries(SITES).map(async ([id, url]) => {
@@ -53,7 +70,7 @@ async function vues7j() {
   try {
     const a = await audience(7);
     const parJour = new Map();
-    for (const s of a.sites) for (const j of s.jours) parJour.set(j.date, (parJour.get(j.date) || 0) + (j.visiteurs || 0));
+    for (const s of a.sites.filter((x) => x.source === 'Web Analytics')) for (const j of s.jours) parJour.set(j.date, (parJour.get(j.date) || 0) + (j.visiteurs || 0));
     const jours = [...parJour.entries()].sort(([x], [y]) => x.localeCompare(y)).map(([date, n]) => ({ date, n }));
     return { total: jours.reduce((t, j) => t + j.n, 0), jours };
   } catch {
