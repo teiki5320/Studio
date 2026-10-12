@@ -22,7 +22,7 @@ import { PlanningPage } from './PlanningPage.jsx';
 import { PlansPage } from './PlansPage.jsx';
 import { AdPage } from './AdPage.jsx';
 import { AccueilPage } from './AccueilPage.jsx';
-import { MesApplisPage, LexiquePage } from './MesApplisPage.jsx';
+import { MesApplisPage, LexiquePage, useApplis } from './MesApplisPage.jsx';
 import { RoutinesTab, DepotsTab } from './RoutinesTab.jsx';
 import './clay.css';
 import './ressort.css';
@@ -157,13 +157,23 @@ function PubPage({ projects, onOpenRepo }) {
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [formError, setFormError] = useState('');
+  // Les mêmes applis que « Mes applis », dans le même ordre.
+  const { data: applis } = useApplis();
 
   useEffect(() => {
+    if (!applis) return;
+    const ordre = applis.apps.map((a) => String(a.repo || '').toLowerCase());
     api
       .githubRepos()
-      .then((d) => setRepos((d.repos || []).filter((r) => !NOT_ADVERTISED.has(r.name.toLowerCase()))))
+      .then((d) =>
+        setRepos(
+          (d.repos || [])
+            .filter((r) => !NOT_ADVERTISED.has(r.name.toLowerCase()) && ordre.includes(r.fullName.toLowerCase()))
+            .sort((a, b) => ordre.indexOf(a.fullName.toLowerCase()) - ordre.indexOf(b.fullName.toLowerCase())),
+        ),
+      )
       .catch((e) => setError(e.message));
-  }, []);
+  }, [applis]);
 
   const campaigns = projects.filter((p) => p.kind === 'pub');
   const byRepo = (fullName) =>
