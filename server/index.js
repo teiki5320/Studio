@@ -114,6 +114,9 @@ import {
   noterCorrection,
   depotDe,
 } from './indexation.js';
+import { applis, construireApplis, synchroniserApplis, synchroDue } from './applis.js';
+import { accueil } from './accueil.js';
+import { routines } from './routines.js';
 import { audience, etatCloudflare, enregistrerCle as enregistrerCleCloudflare, oublierCle as oublierCleCloudflare } from './audience.js';
 import { comptes, changerEtat as changerEtatCompte } from './comptes.js';
 import { etatYoutube, enregistrerCles, urlConnexion, terminerConnexion, deconnecter as deconnecterYoutube, publierShort } from './youtube.js';
@@ -1459,6 +1462,43 @@ setInterval(() => {
     if (passageDuJour() && getJob(passageId)?.status !== 'running') lancerPassage();
   } catch {}
 }, 30 * 60 * 1000);
+
+// ---------- Mes applis (repris du Dashboard) ----------
+let synchroApplis = null;
+const lancerSynchroApplis = () => {
+  if (getJob(synchroApplis)?.status === 'running') return synchroApplis;
+  synchroApplis = startJob('Mes applis — synchro des fiches', async () => {
+    await synchroniserApplis();
+    return { ok: true };
+  }).id;
+  return synchroApplis;
+};
+app.get('/api/applis', async (req, res) => {
+  try {
+    if (!applis()) await construireApplis();
+    res.json({ ...applis(), synchroId: getJob(synchroApplis)?.status === 'running' ? synchroApplis : null });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+app.get('/api/accueil', async (req, res) => {
+  try {
+    res.json(await accueil());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+app.get('/api/routines', (req, res) => {
+  try {
+    res.json(routines());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+app.post('/api/applis/synchro', (req, res) => res.json({ jobId: lancerSynchroApplis() }));
+// Toutes les 6 heures, quand le Studio est allumé (et une fois au démarrage).
+setTimeout(() => synchroDue() && lancerSynchroApplis(), 60 * 1000);
+setInterval(() => synchroDue() && lancerSynchroApplis(), 30 * 60 * 1000);
 
 // ---------- Comptes & adresses ----------
 app.get('/api/comptes', (req, res) => res.json(comptes()));

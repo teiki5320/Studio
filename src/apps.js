@@ -12,7 +12,7 @@ export const APP_LOOKS = {
   optiled: { name: 'OptiLED', icon: '💡' },
   keurdeco: { name: 'Keur Déco', icon: '🛋️' },
   keurbook: { name: 'Keurbook', icon: '📚' },
-  avelor: { name: 'Solelis', icon: '🧭' },
+  solelis: { name: 'Solelis', icon: '🧭' },
   survival: { name: 'Survival', icon: '🏕️' },
 };
 

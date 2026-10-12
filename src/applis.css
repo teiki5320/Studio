@@ -1,0 +1,481 @@
+/* ============================================================
+   Mes applis et Lexique — repris du Dashboard (style.css, module
+   « Mes apps »), confiné à .applis et .dash-overlay. Les jetons
+   propres au module (teintes pastel, rayons…) sont posés ici.
+   ============================================================ */
+:root {
+  --side-text: #e8e8e6; --muted: var(--c-muted);
+  --peach: #2a2a2d; --sun: #2a2a2d; --sky: #2a2a2d; --mint: #2a2a2d; --lilac: #2a2a2d;
+  --peach-ink: #f0a68f; --sun-ink: #e0b96a; --sky-ink: #93b4e0; --mint-ink: #8fd6a8; --lilac-ink: #b9a6e8;
+  --ko-ink: #0f0f10; --none: #8a8a88;
+  --inset: inset 2px 2px 6px rgba(0, 0, 0, .6), inset -1px -1px 2px rgba(255, 255, 255, .05);
+  --glass: rgba(15, 15, 16, .74); --scrim: rgba(0, 0, 0, .6); --donut-rest: #3a3a3d;
+  --pouss-bas: 0 2px 0 rgba(0, 0, 0, .45);
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --bounce: cubic-bezier(.34, 1.56, .64, 1);
+  --r-sm: 12px; --r-md: 16px; --r-lg: 22px; --r-xl: 30px;
+}
+html[data-theme='clair'] {
+  --side-text: #3f5a4c;
+  --peach: #f6d5c9; --sun: #f9e9b8; --sky: #cfdcef; --mint: #d8e9dc; --lilac: #e4d9f3;
+  --peach-ink: #b5563a; --sun-ink: #8a6410; --sky-ink: #395884; --mint-ink: #2f6b4a; --lilac-ink: #59418f;
+  --ko-ink: #fff; --none: #7d7670;
+  --inset: inset 2px 2px 6px rgba(120, 90, 60, .12), inset -1px -1px 3px rgba(255, 255, 255, .6);
+  --glass: rgba(239, 227, 214, .74); --scrim: rgba(40, 30, 20, .45); --donut-rest: var(--sun);
+  --pouss-bas: 0 2px 0 rgba(120, 90, 60, .22);
+}
+
+/* ============================================================================
+   MODULE « MES APPS » — thème « Clay » (clair / sombre)
+   Barre latérale menthe, tuiles pastel en relief, verre dépoli, rebond au toucher.
+   Tout est confiné à .applis (+ .dash-overlay pour la fiche service).
+   Polices système uniquement (ui-rounded → SF Pro Rounded sur Apple).
+   ========================================================================== */
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slidein { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: none; } }
+html[data-anim="off"] *, html[data-anim="off"] *::before, html[data-anim="off"] *::after { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; }
+}
+
+/* ── Jetons ───────────────────────────────────────────────────────────────── */
+.applis, .dash-overlay {
+  --d-bg: var(--fond); --d-side: var(--side); --d-side-text: var(--side-text);
+  --d-card: var(--carte); --d-card2: var(--carte-2);
+  --d-text: var(--texte); --d-muted: var(--muted); --d-line: var(--ligne);
+  --d-peach: var(--peach); --d-sun: var(--sun); --d-sky: var(--sky); --d-mint: var(--mint); --d-lilac: var(--lilac);
+  --d-accent: var(--accent); --d-accent-text: var(--accent-ink);
+  --d-ok: var(--ok); --d-ok-tint: var(--ok-tint); --d-ko: var(--ko); --d-ko-tint: var(--ko-tint);
+  --d-run: var(--run); --d-run-tint: var(--run-tint); --d-none: var(--none); --d-none-tint: var(--none-tint);
+  --d-clay: var(--clay); --d-clay-sm: var(--clay-sm); --d-inset: var(--inset); --d-glass: var(--glass);
+  --d-font: var(--font); --d-bounce: var(--bounce);
+}
+
+/* ── Ossature : .applis = [barre latérale | contenu] (flex) ─────────────── */
+.applis * { box-sizing: border-box; }
+.applis a { color: inherit; text-decoration: none; }
+.applis a:hover { opacity: .85; }
+.applis button { font-family: inherit; color: inherit; -webkit-appearance: none; appearance: none; }
+.applis h1, .applis h2, .applis h3, .applis h4 { text-transform: none; letter-spacing: normal; }
+.applis label { display: flex; font-size: inherit; font-weight: inherit; color: inherit; letter-spacing: normal; text-transform: none; margin: 0; }
+.applis ul, .applis ol { margin: 0; padding-left: 22px; }
+.applis ::selection { background: var(--d-accent); color: var(--d-accent-text); }
+
+/* Teintes réutilisables */
+.applis .tint-peach, .dash-overlay .tint-peach { background: var(--d-peach); }
+.applis .tint-sun, .dash-overlay .tint-sun { background: var(--d-sun); }
+.applis .tint-sky, .dash-overlay .tint-sky { background: var(--d-sky); }
+.applis .tint-mint, .dash-overlay .tint-mint { background: var(--d-mint); }
+.applis .tint-lilac, .dash-overlay .tint-lilac { background: var(--d-lilac); }
+.applis .tint-ok { background: var(--d-ok-tint); }
+.applis .tint-ko { background: var(--d-ko-tint); }
+.applis .tint-none { background: var(--d-none-tint); }
+.applis .sw, .dash-overlay .sw { width: 10px; height: 10px; border-radius: 4px; display: inline-block; flex: none; }
+.applis .sw-peach { background: #e8907a; } .applis .sw-sun { background: var(--donut-rest); } .applis .sw-sky { background: #6f8fc4; }
+.applis .sw-mint { background: #5e9f7a; } .applis .sw-lilac { background: #9a86c9; } .applis .sw-accent { background: var(--d-accent); }
+.applis .c-ok { color: var(--d-ok) !important; } .applis .c-ko { color: var(--d-ko) !important; }
+
+/* Bouton rond en relief (retour, thème, cloche) */
+.applis .d-btn, .dash-overlay .d-btn {
+  width: 44px; height: 44px; border: 0; border-radius: 16px; cursor: pointer;
+  background: var(--d-card); color: var(--d-text); font-size: 17px; line-height: 1;
+  box-shadow: var(--d-clay-sm); position: relative; flex: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  transition: transform .18s var(--d-bounce);
+}
+.applis .d-btn:hover, .dash-overlay .d-btn:hover { transform: translateY(-1px); }
+.applis .d-btn:active, .dash-overlay .d-btn:active { transform: scale(.9); }
+.applis .d-btn.sm, .dash-overlay .d-btn.sm { width: 38px; height: 38px; border-radius: 13px; font-size: 16px; }
+.applis .badge-n {
+  position: absolute; top: -5px; right: -5px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px;
+  background: var(--d-ko); color: var(--ko-ink); font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center;
+}
+
+/* ── Barre latérale ───────────────────────────────────────────────────────── */
+
+/* Pastille d'état CI */
+.applis .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; flex: none; background: var(--d-none); }
+.applis .dot.ci-ok, .applis .ci-ok .dot { background: var(--d-ok); }
+.applis .dot.ci-ko, .applis .ci-ko .dot { background: var(--d-ko); }
+.applis .dot.ci-run, .applis .ci-run .dot { background: var(--d-run); }
+.applis .ci {
+  display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; flex: none;
+  font-size: 12.5px; font-weight: 800; white-space: nowrap; background: var(--d-none-tint); color: var(--d-none);
+}
+.applis .ci-ok { background: var(--d-ok-tint); color: var(--d-ok); }
+.applis .ci-ko { background: var(--d-ko-tint); color: var(--d-ko); }
+.applis .ci-run { background: var(--d-run-tint); color: var(--d-run); }
+.applis .ci-big { padding: 12px 16px; border-radius: 20px; gap: 12px; font-size: 15px; box-shadow: var(--d-clay-sm); }
+.applis .ci-big .dot { width: 12px; height: 12px; }
+.applis .ci-lbl { display: flex; flex-direction: column; line-height: 1.25; }
+.applis .ci-lbl small { font-size: 12px; font-weight: 700; color: var(--d-muted); }
+
+/* ── Contenu ──────────────────────────────────────────────────────────────── */
+.applis .tb-title { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.applis .tb-title h2 { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -.01em; color: var(--d-text); }
+.applis .tb-sub { font-size: 13px; font-weight: 700; color: var(--d-muted); }
+.applis .tb-search {
+  display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 44px; width: 260px; border-radius: 18px;
+  background: var(--d-card); box-shadow: var(--d-clay-sm); color: var(--d-muted); font-size: 14px; font-weight: 600; flex: none;
+}
+.applis .tb-search input {
+  flex: 1; min-width: 0; height: 100%; margin: 0; padding: 0; border: 0; outline: 0; background: transparent; box-shadow: none;
+  font: inherit; color: var(--d-text); border-radius: 0;
+}
+.applis .tb-search input::placeholder { color: var(--d-muted); }
+.applis .tb-search input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.applis .dash-body { padding-top: 22px; display: flex; flex-direction: column; gap: 18px; }
+
+/* Tuile en relief */
+.applis .tile {
+  background: var(--d-card); border-radius: 26px; box-shadow: var(--d-clay); padding: 20px 22px; min-width: 0;
+  transition: background .3s, box-shadow .3s;
+}
+.applis .rise { animation: rise .5s cubic-bezier(.2, .8, .2, 1) both; }
+.applis .tile-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.applis .tile-h b { font-size: 16px; font-weight: 800; }
+.applis .tile-h span { font-size: 12px; font-weight: 700; color: var(--d-muted); text-align: right; }
+.applis .empty-note { font-size: 13.5px; font-weight: 600; color: var(--d-muted); }
+
+/* Grilles */
+.applis .hero-row { display: grid; grid-template-columns: 1.4fr 1fr; gap: 18px; }
+.applis .kpi-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.applis .two-col { display: grid; grid-template-columns: 1.3fr 1fr; gap: 18px; align-items: start; }
+.applis .three-col { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 18px; align-items: start; }
+.applis .pub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+
+/* Bandeau d'accueil */
+.applis .hero { display: grid; grid-template-columns: 150px 1fr; gap: 22px; align-items: center; padding: 24px 26px; }
+.applis .hero-img { width: 150px; height: 150px; border-radius: 24px; object-fit: cover; background: #fff; box-shadow: var(--d-clay-sm); }
+.applis .hero-txt { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.applis .hero-txt h3 { margin: 0; font-size: 24px; font-weight: 800; }
+.applis .hero-txt p { margin: 0; font-size: 15px; font-weight: 600; color: var(--d-muted); line-height: 1.45; }
+.applis .cta, .dash-overlay .cta {
+  align-self: flex-start; margin-top: 6px; border: 0; border-radius: 16px; padding: 12px 20px; cursor: pointer;
+  background: var(--d-accent); color: var(--d-accent-text); font: inherit; font-size: 14px; font-weight: 800; display: inline-block;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, .12); transition: transform .18s var(--d-bounce), box-shadow .18s;
+}
+.applis .cta:active, .dash-overlay .cta:active { transform: translateY(3px) scale(.97); box-shadow: 0 2px 0 rgba(0, 0, 0, .12); }
+
+/* Donut */
+.applis .donut-row { display: flex; align-items: center; gap: 18px; }
+.applis .donut {
+  width: 104px; height: 104px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--d-clay-sm); background: conic-gradient(var(--d-accent) 0 calc(var(--p) * 1%), var(--donut-rest) calc(var(--p) * 1%) 100%);
+}
+.applis .donut > div { width: 70px; height: 70px; border-radius: 50%; background: var(--d-card); display: flex; align-items: center; justify-content: center; box-shadow: var(--d-inset); }
+.applis .donut b { font-size: 19px; font-weight: 800; }
+.applis .donut-legend { display: flex; flex-direction: column; gap: 8px; font-size: 13.5px; font-weight: 700; min-width: 0; }
+.applis .donut-legend span { display: flex; align-items: center; gap: 8px; }
+.applis .donut-legend small { font-size: 12px; font-weight: 600; color: var(--d-muted); }
+
+/* KPI */
+.applis .kpi { display: flex; flex-direction: column; gap: 10px; padding: 20px; }
+.applis .kpi-ico { width: 44px; height: 44px; border-radius: 14px; background: var(--d-card); box-shadow: var(--d-clay-sm); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.applis .kpi-lab { font-size: 13.5px; font-weight: 700; color: var(--d-muted); }
+.applis .kpi b { font-size: 30px; font-weight: 800; line-height: 1; }
+.applis .kpi b.kpi-txt { font-size: 20px; line-height: 1.2; overflow-wrap: anywhere; }
+.applis .kpi small { font-size: 12.5px; font-weight: 700; }
+
+/* Lignes d'apps */
+.applis .rows { display: flex; flex-direction: column; gap: 10px; }
+/* Sous-titres de groupe dans une liste de lignes (Applis / Sites internet) */
+.applis .rows .rows-grp {
+  font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--d-muted); margin: 6px 2px 0;
+}
+.applis .rows .rows-grp:first-child { margin-top: 0; }
+.applis .row {
+  display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 10px 12px; border-radius: 20px;
+  background: var(--d-card2); box-shadow: var(--d-clay-sm); cursor: pointer; animation: rise .5s cubic-bezier(.2, .8, .2, 1) both;
+  transition: transform .2s var(--d-bounce), background .3s;
+}
+.applis .row:hover { transform: translateY(-2px); opacity: 1; }
+.applis .row:active { transform: scale(.98); }
+.applis .row-ico, .dash-overlay .row-ico {
+  width: 46px; height: 46px; border-radius: 15px; flex: none; display: flex; align-items: center; justify-content: center;
+  font-size: 21px; box-shadow: var(--d-clay-sm); background: var(--d-card);
+}
+.dash-overlay .row-ico.big { width: 64px; height: 64px; border-radius: 20px; font-size: 30px; }
+.applis .row-txt { display: flex; flex-direction: column; min-width: 0; }
+.applis .row-txt b { font-size: 15px; font-weight: 800; }
+.applis .row-txt small { font-size: 12.5px; font-weight: 600; color: var(--d-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Cases « prochaines actions » */
+.applis .todos { display: flex; flex-direction: column; gap: 10px; }
+.applis .todo {
+  display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border-radius: 16px; background: var(--d-card2); box-shadow: var(--d-clay-sm);
+  cursor: pointer; transition: transform .18s var(--d-bounce);
+}
+.applis .todo:active { transform: scale(.98); }
+.applis input[type="checkbox"][data-todo] {
+  -webkit-appearance: none; appearance: none; display: block; width: 22px; height: 22px; margin: 1px 0 0; flex: none; border: 0; border-radius: 8px;
+  background: var(--d-card); box-shadow: var(--d-clay-sm); cursor: pointer; position: relative; transition: background .2s, transform .18s var(--d-bounce);
+}
+.applis input[type="checkbox"][data-todo]:checked { background: var(--d-accent); transform: scale(1.05); }
+.applis input[type="checkbox"][data-todo]:checked::after {
+  content: ""; position: absolute; left: 7px; top: 3px; width: 6px; height: 11px; border: solid var(--d-accent-text); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg);
+}
+.applis .todo-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; font-size: 13.5px; font-weight: 700; line-height: 1.4; }
+.applis .todo-txt small { font-size: 12px; font-weight: 700; color: var(--d-muted); }
+.applis .todo.done .todo-txt > span { text-decoration: line-through; color: var(--d-muted); }
+
+/* En-tête d'application */
+.applis .app-head { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; gap: 22px; align-items: center; padding: 24px 26px; }
+.applis .app-big { width: 92px; height: 92px; border-radius: 28px; display: flex; align-items: center; justify-content: center; font-size: 44px; background: var(--d-card); box-shadow: var(--d-clay); }
+.applis .app-txt { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.applis .app-txt h3 { margin: 0; font-size: 28px; font-weight: 800; line-height: 1.1; }
+.applis .app-txt p { margin: 0; font-size: 14.5px; font-weight: 600; color: var(--d-muted); }
+.applis .app-side { display: flex; flex-direction: column; gap: 10px; min-width: 190px; }
+.applis .mini { border-radius: 20px; padding: 12px 16px; background: var(--d-card); box-shadow: var(--d-clay-sm); display: flex; flex-direction: column; line-height: 1.3; }
+.applis .mini a { display: flex; flex-direction: column; }
+.applis .mini b { font-size: 14.5px; font-weight: 800; }
+.applis .mini small { font-size: 12px; font-weight: 700; color: var(--d-muted); overflow-wrap: anywhere; }
+
+/* Puces */
+.applis .chips, .dash-overlay .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.applis .chip, .dash-overlay .chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border: 0; border-radius: 14px; cursor: default;
+  font-size: 12.5px; font-weight: 800; background: var(--d-card); color: var(--d-text); box-shadow: var(--d-clay-sm);
+  white-space: normal; text-align: left; flex-wrap: wrap; max-width: 100%; transition: transform .18s var(--d-bounce);
+}
+.applis button.chip, .applis a.chip, .dash-overlay a.chip { cursor: pointer; font-family: inherit; }
+.applis button.chip:hover, .applis a.chip:hover, .dash-overlay a.chip:hover { transform: translateY(-2px); opacity: 1; }
+.applis button.chip:active, .applis a.chip:active { transform: scale(.93); }
+
+/* Contrôle segmenté */
+/* Fraîcheur de la fiche affichée (sous les volets Technique/Marketing/Publication) */
+.applis .fiche-date { margin-top: 8px; font-size: 12px; color: var(--d-muted); }
+.applis .fiche-date.stale { color: var(--run); font-weight: 700; }
+
+.applis .seg {
+  position: relative; display: grid; grid-template-columns: repeat(var(--n), 1fr); width: min(460px, 100%); padding: 5px; border-radius: 20px;
+  background: var(--d-card2); box-shadow: var(--d-inset);
+}
+.applis .seg-thumb {
+  position: absolute; top: 5px; bottom: 5px; left: 5px; width: calc((100% - 10px) / var(--n)); border-radius: 15px;
+  background: var(--d-card); box-shadow: var(--d-clay-sm); transform: translateX(calc(var(--i) * 100%)); transition: transform .35s cubic-bezier(.34, 1.3, .64, 1);
+}
+.applis .seg button, .applis .seg a {
+  position: relative; border: 0; background: transparent; padding: 11px 0; border-radius: 15px; cursor: pointer;
+  font-size: 14px; font-weight: 800; color: var(--d-muted); transition: color .25s, transform .18s var(--d-bounce);
+}
+.applis .seg button.active, .applis .seg a.active { color: var(--d-text); }
+.applis .seg button:active { transform: scale(.95); }
+
+/* Faits clés */
+.applis .facts { display: flex; flex-direction: column; gap: 8px; }
+.applis .fact { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px; padding: 10px 14px; border-radius: 16px; background: var(--d-card2); font-size: 13.5px; line-height: 1.45; overflow-wrap: anywhere; }
+.applis .fact span:first-child { font-weight: 800; color: var(--d-muted); }
+.applis .fact span:last-child { font-weight: 600; }
+.applis .fact a { text-decoration: underline; text-underline-offset: 2px; }
+.applis .resume { margin: 0; font-size: 14px; font-weight: 600; line-height: 1.5; }
+
+/* Services par famille */
+.applis .fam { margin-top: 14px; }
+.applis .fam:first-of-type { margin-top: 0; }
+.applis .fam-h { display: flex; align-items: center; gap: 8px; font-size: 11.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--d-muted); margin-bottom: 8px; }
+
+/* Publication */
+.applis .store-h { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.applis .store-h b { font-size: 16px; font-weight: 800; display: block; }
+.applis .store-h small { font-size: 13px; font-weight: 700; color: var(--d-muted); }
+.applis .note { margin-top: 12px; padding: 12px 14px; border-radius: 16px; background: var(--d-card2); font-size: 13.5px; line-height: 1.5; }
+.applis .note b { display: block; font-weight: 800; margin-bottom: 2px; }
+.applis .note p { margin: 0; font-weight: 600; color: var(--d-muted); }
+
+/* Marketing : cap & jalons */
+.applis .cap-label { font-size: 11.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--d-muted); margin-bottom: 6px; }
+.applis .cap-model { font-size: 17px; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
+.applis .jalons { display: flex; flex-direction: column; gap: 10px; }
+.applis .jalon { font-size: 13px; line-height: 1.45; display: flex; flex-direction: column; }
+.applis .jalon b { font-weight: 800; }
+.applis .jalon span { font-weight: 600; color: var(--d-muted); }
+
+/* Fiche dépliable (Markdown) */
+.applis .fiche { padding: 0; overflow: hidden; }
+.applis .fiche-toggle {
+  width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 18px 22px; border: 0; background: transparent; cursor: pointer; text-align: left;
+}
+.applis .fiche-t { display: flex; flex-direction: column; gap: 2px; }
+.applis .fiche-t b { font-size: 15px; font-weight: 800; }
+.applis .fiche-t small { font-size: 13px; font-weight: 600; color: var(--d-muted); }
+.applis .chev { padding: 9px 14px; border-radius: 14px; background: var(--d-card); box-shadow: var(--d-clay-sm); font-size: 13px; font-weight: 800; flex: none; transition: transform .18s var(--d-bounce); }
+.applis .fiche-toggle:active .chev { transform: scale(.94); }
+.applis .fiche:not(.open) > .toc, .applis .fiche:not(.open) > .md { display: none; }
+.applis .fiche.open .chev::after { content: " ▴"; }
+.applis .fiche:not(.open) .chev::after { content: " ▾"; }
+.applis .toc { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 6px 22px 14px; }
+.applis .toc a { font-size: 12px; font-weight: 700; color: var(--d-muted); }
+.applis .toc a:hover { color: var(--d-text); opacity: 1; }
+.applis .toc a.lvl-3 { padding-left: 12px; opacity: .8; }
+.applis .md { margin: 0 6px 6px; padding: 8px 20px 20px; border-radius: 22px; background: var(--d-card); font-size: 14.5px; line-height: 1.65; overflow-wrap: anywhere; }
+.applis .md h1, .applis .md h2, .applis .md h3, .applis .md h4 { font-weight: 800; color: var(--d-text); margin: 26px 0 10px; scroll-margin-top: 140px; }
+.applis .md h1 { font-size: 22px; } .applis .md h2 { font-size: 18px; border-bottom: 1px solid var(--d-line); padding-bottom: 6px; } .applis .md h3 { font-size: 16px; }
+.applis .md p { margin: 10px 0; text-wrap: pretty; }
+.applis .md li { margin: 4px 0; }
+.applis .md code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; background: var(--d-card2); padding: 1px 6px; border-radius: 6px; overflow-wrap: normal; }
+.applis .md pre { background: var(--d-card2); border-radius: 16px; padding: 14px 16px; overflow: auto; }
+.applis .md pre code { background: none; padding: 0; }
+.applis .md blockquote { margin: 14px 0; padding: 10px 16px; border-radius: 16px; background: var(--d-card2); color: var(--d-muted); }
+.applis .md table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13.5px; }
+.applis .md th, .applis .md td { border-bottom: 1px solid var(--d-line); padding: 8px 10px; text-align: left; vertical-align: top; }
+.applis .md th { font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--d-muted); }
+.applis .md a { text-decoration: underline; text-underline-offset: 2px; }
+.applis .md .anchor { opacity: 0; margin-left: 6px; font-size: .8em; text-decoration: none; }
+/* Un titre rattaché à un service ouvre sa fiche : on le dit par le curseur. */
+.applis .md .h-svc { cursor: pointer; }
+.applis .md .h-svc:hover { color: var(--d-accent); }
+.applis .md .h-svc::after {
+  content: " ⓘ"; font-size: .72em; font-weight: 800; opacity: .45; vertical-align: middle;
+}
+.applis .md h1:hover .anchor, .applis .md h2:hover .anchor, .applis .md h3:hover .anchor, .applis .md h4:hover .anchor { opacity: .6; }
+
+/* ── Catalogue ────────────────────────────────────────────────────────────── */
+.applis .cat-nav { display: flex; flex-wrap: wrap; gap: 8px; }
+.applis .legend-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--d-muted); }
+.applis .badge, .dash-overlay .badge { font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 8px; background: var(--d-none-tint); color: var(--d-none); }
+.applis .badge-requis, .dash-overlay .badge-requis { background: var(--d-ko-tint); color: var(--d-ko); }
+.applis .badge-gratuit, .dash-overlay .badge-gratuit { background: var(--d-ok-tint); color: var(--d-ok); }
+.applis .cat-section { scroll-margin-top: 140px; }
+.applis .cat-section h2 { display: flex; align-items: center; gap: 10px; margin: 8px 0 12px; font-size: 15px; font-weight: 800; }
+.applis .svc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(260px, 100%), 1fr)); gap: 14px; }
+.applis .svc-card {
+  display: flex; gap: 14px; align-items: flex-start; text-align: left; padding: 16px; border: 0; border-radius: 22px; cursor: pointer;
+  transition: transform .2s var(--d-bounce), background .3s;
+}
+.applis .svc-card:hover { transform: translateY(-3px); }
+.applis .svc-card:active { transform: scale(.98); }
+.applis .svc-txt { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.applis .svc-txt b { font-size: 14.5px; font-weight: 800; }
+.applis .svc-txt small { font-size: 12.5px; font-weight: 600; color: var(--d-muted); line-height: 1.45; }
+.applis .svc-meta { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.applis .svc-meta em { font-style: normal; font-size: 13px; letter-spacing: 2px; }
+
+/* ── Fiche service (panneau latéral) ──────────────────────────────────────── */
+.dash-overlay {
+  position: fixed; inset: 0; z-index: 10000; background: var(--scrim); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  display: flex; justify-content: flex-end; animation: fadein .2s ease both;
+  font-family: var(--d-font); color: var(--d-text);
+}
+/* Sur grand écran, le module « Mes apps » retrouve une échelle proche du reste
+   du site (le .75 ci-dessus est pensé pour téléphone/tablette : 1.2 effectif).
+   À .9 le module travaille à 1.44 effectif ; l'en-tête collant se recale en
+   conséquence : 92px × .75 ÷ .9 ≈ 77px. */
+.dash-sheet {
+  width: min(520px, 100%); height: 100%; overflow: auto; padding: 22px 26px 40px;
+  background: var(--d-bg); border-radius: 34px 0 0 34px; box-shadow: -10px 0 40px rgba(0, 0, 0, .2);
+  animation: slidein .35s cubic-bezier(.2, .8, .2, 1) both;
+}
+.dash-sheet * { box-sizing: border-box; }
+.dash-sheet .close-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+.dash-sheet .grow { flex: 1; }
+.dash-sheet .sheet-nav { display: flex; align-items: center; gap: 8px; }
+.dash-sheet .pos { font-size: 12px; font-weight: 800; color: var(--d-muted); }
+.dash-sheet .sheet-head { display: flex; align-items: center; gap: 16px; padding: 18px 20px; border-radius: 24px; background: var(--d-card); box-shadow: var(--d-clay); }
+.dash-sheet h2 { margin: 0; font-size: 20px; font-weight: 800; text-transform: none; letter-spacing: normal; color: var(--d-text); }
+.dash-sheet .svc-cat { display: flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 12.5px; font-weight: 700; color: var(--d-muted); }
+.dash-sheet h3 { margin: 22px 0 6px; font-size: 11.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--d-muted); }
+.dash-sheet p, .dash-sheet li, .dash-sheet dd { margin: 0; font-size: 14px; line-height: 1.6; font-weight: 600; }
+.dash-sheet ul { margin: 0; padding-left: 20px; }
+.dash-sheet li { margin: 4px 0; }
+.dash-sheet dl { margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.dash-sheet dt { font-weight: 800; font-size: 14px; padding: 10px 14px 0; border-radius: 16px 16px 0 0; background: var(--d-card); }
+.dash-sheet dd { padding: 2px 14px 10px; border-radius: 0 0 16px 16px; background: var(--d-card); color: var(--d-muted); }
+.dash-sheet .sheet-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+.dash-sheet a { color: inherit; text-decoration: none; }
+
+/* ── Fiche service : ce que CETTE app en fait, avant le Lexique ───────────── */
+.dash-sheet .sheet-app { margin-top: 18px; padding: 16px 18px; border-radius: 24px; background: var(--d-card); box-shadow: var(--d-clay-sm); }
+.dash-sheet .sheet-app-h { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
+.dash-sheet .sheet-app-h b { font-size: 16px; font-weight: 800; }
+.dash-sheet .sheet-app-h small { font-size: 12px; font-weight: 700; color: var(--d-muted); }
+.dash-sheet .sheet-app.manque { background: var(--d-card2); }
+.dash-sheet .sheet-app.manque b { display: block; font-size: 14.5px; }
+.dash-sheet .sheet-app.manque p { margin-top: 6px; color: var(--d-muted); }
+.dash-sheet .sheet-liens { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.dash-sheet .sheet-liens .chip { font-size: 12px; background: var(--d-card2); }
+.dash-sheet .sheet-vers-fiche { display: inline-block; margin-top: 12px; font-size: 13px; font-weight: 800; color: var(--d-accent); cursor: pointer; }
+
+/* Le Markdown de la section, hors de .applis : l'overlay vit sur <body>. */
+.dash-sheet .md { overflow-wrap: anywhere; }
+.dash-sheet .md h1, .dash-sheet .md h2, .dash-sheet .md h3, .dash-sheet .md h4 {
+  margin: 16px 0 6px; font-size: 14.5px; font-weight: 800;
+  text-transform: none; letter-spacing: normal; color: var(--d-text);
+}
+.dash-sheet .md p { margin: 8px 0; }
+.dash-sheet .md ul, .dash-sheet .md ol { margin: 8px 0; padding-left: 20px; }
+.dash-sheet .md code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; background: var(--d-card2); padding: 1px 6px; border-radius: 6px; }
+.dash-sheet .md pre { background: var(--d-card2); border-radius: 14px; padding: 12px 14px; overflow: auto; }
+.dash-sheet .md pre code { background: none; padding: 0; }
+.dash-sheet .md blockquote { margin: 12px 0; padding: 8px 14px; border-radius: 14px; background: var(--d-card2); color: var(--d-muted); }
+.dash-sheet .md table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.dash-sheet .md th, .dash-sheet .md td { border-bottom: 1px solid var(--d-line); padding: 6px 8px; text-align: left; vertical-align: top; }
+.dash-sheet .md th { font-size: 11px; letter-spacing: .05em; text-transform: uppercase; color: var(--d-muted); }
+.dash-sheet .md a { text-decoration: underline; text-underline-offset: 2px; }
+.dash-sheet .md .anchor { display: none; }
+
+/* L'article du Lexique, replié tant que l'app a sa propre section. */
+.dash-sheet .sheet-gen { margin-top: 18px; border-radius: 24px; background: var(--d-card2); overflow: hidden; }
+.dash-sheet .sheet-gen-t {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 14px 18px; border: 0; background: transparent; color: inherit;
+  font-family: inherit; text-align: left; cursor: pointer;
+}
+.dash-sheet .sheet-gen-t .fiche-t { display: flex; flex-direction: column; gap: 2px; }
+.dash-sheet .sheet-gen-t .fiche-t b { font-size: 15px; font-weight: 800; }
+.dash-sheet .sheet-gen-t .fiche-t small { font-size: 12.5px; font-weight: 700; color: var(--d-muted); }
+.dash-sheet .sheet-gen-t .chev { font-size: 12px; font-weight: 800; color: var(--d-muted); white-space: nowrap; }
+.dash-sheet .sheet-gen:not(.open) .gen-body { display: none; }
+.dash-sheet .sheet-gen .gen-body { padding: 0 18px 18px; }
+.dash-sheet .sheet-gen .gen-body h3:first-child { margin-top: 0; }
+.dash-sheet .sheet-gen .chev::after { content: " \25BE"; }
+.dash-sheet .sheet-gen.open .chev::after { content: " \25B4"; }
+
+/* ── Réactif (tablette portrait / téléphone) ──────────────────────────────── */
+@media (max-width: 1180px) {
+  .applis .kpi-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .applis .three-col { grid-template-columns: 1fr 1fr; }
+  .applis .three-col > .tile:last-child { grid-column: 1 / -1; }
+  .applis .hero-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 960px) {
+      .applis .tb-search { width: 100%; order: 3; }
+  .applis .two-col, .applis .pub-grid, .applis .three-col { grid-template-columns: 1fr; }
+  .applis .app-head { grid-template-columns: 72px minmax(0, 1fr); }
+  .applis .app-big { width: 72px; height: 72px; font-size: 34px; border-radius: 22px; }
+  .applis .app-side { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+  .applis .app-side > * { flex: 1 1 180px; }
+  .applis .hero { grid-template-columns: 110px 1fr; }
+  .applis .hero-img { width: 110px; height: 110px; }
+}
+@media (max-width: 600px) {
+  .applis .kpi-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .applis .hero { grid-template-columns: 1fr; }
+  .applis .hero-img { display: none; }
+  .applis .row { grid-template-columns: 40px minmax(0, 1fr); }
+  .applis .row .ci { grid-column: 2; justify-self: start; }
+  .applis .fact { grid-template-columns: 1fr; gap: 2px; }
+  .dash-sheet { border-radius: 0; }
+}
+/* Le vrai logo de l'app, à la place de l'emoji */
+.logo-vrai { overflow: visible; padding: 0; }
+.logo-vrai img { width: 76%; height: 76%; object-fit: contain; border-radius: 22%; display: block; }
+.applis .app-big.logo-vrai img { width: 88%; height: 88%; border-radius: 24%; }
+.logo-vrai, .applis .row-ico.logo-vrai, .applis .app-big.logo-vrai {
+    display: flex; align-items: center; justify-content: center;
+}
+.applis .dash-body { padding-top: 0; }
+
+/* La grille de Mes applis : les tuiles de Publicité, avec l'état technique. */
+.applis .applis-tuile { position: relative; text-decoration: none; color: inherit; gap: 6px; }
+.applis .applis-logo { display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.applis .applis-logo-in { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.applis .applis-logo-in img { width: 80%; height: 80%; object-fit: contain; border-radius: 22%; }
+.applis .applis-coin {
+  position: absolute; top: 12px; right: 12px; width: 12px; height: 12px; border-radius: 50%;
+  background: var(--run); box-shadow: 0 0 0 3px var(--carte);
+}
+.applis .tb-search { display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 44px; max-width: 420px; border-radius: 18px; background: var(--d-card); box-shadow: var(--d-clay-sm); color: var(--d-muted); }
+.applis .tb-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; font: inherit; color: var(--d-text); }

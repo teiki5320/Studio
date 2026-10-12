@@ -21,12 +21,15 @@ import { AudiencePage } from './AudiencePage.jsx';
 import { PlanningPage } from './PlanningPage.jsx';
 import { PlansPage } from './PlansPage.jsx';
 import { AdPage } from './AdPage.jsx';
+import { AccueilPage } from './AccueilPage.jsx';
+import { MesApplisPage, LexiquePage } from './MesApplisPage.jsx';
+import { RoutinesTab, DepotsTab } from './RoutinesTab.jsx';
 import './clay.css';
 
 // ---------- Adresse (#/…) ----------
 function readRoute() {
   const parts = window.location.hash.replace(/^#\/?/, '').split('/').filter(Boolean);
-  return { page: parts[0] || 'pub', arg: parts.slice(1).join('/') };
+  return { page: parts[0] || 'accueil', arg: parts.slice(1).join('/') };
 }
 
 export function go(path) {
@@ -77,6 +80,8 @@ const sectionOfProject = (p) => (p && p.mode === 'chaine' && p.kind !== 'pub' ? 
 const KEURCOOK_REPO = 'teiki5320/keurcook';
 
 const NAV = [
+  { id: 'accueil', icon: '⌂', label: 'Accueil', path: 'accueil' },
+  { id: 'applis', icon: '📱', label: 'Mes applis', path: 'applis' },
   { id: 'pub', icon: '📣', label: 'Publicité', path: 'pub' },
   { id: 'chaine', icon: '🎥', label: 'Chaîne', path: 'chaine' },
   { id: 'indexation', icon: '🔎', label: 'Indexation', path: 'indexation' },
@@ -84,6 +89,7 @@ const NAV = [
   { id: 'planning', icon: '🗓️', label: 'Planning', path: 'planning' },
   { id: 'sep' },
   { id: 'encours', icon: '🏭', label: 'En cours', path: 'encours' },
+  { id: 'lexique', icon: '▤', label: 'Lexique', path: 'lexique' },
   { id: 'reglages', icon: '⚙️', label: 'Réglages', path: 'reglages' },
 ];
 
@@ -371,14 +377,24 @@ function YoutubeCard() {
   );
 }
 
-function ReglagesPage() {
+const ONGLETS_REGLAGES = [
+  ['marque', '🎨 Ma marque'],
+  ['voix', '🎙️ Voix'],
+  ['depots', '📦 Dépôts'],
+  ['routines', '⏰ Routines'],
+  ['comptes', '🗂️ Comptes & adresses'],
+  ['reste', '📌 Reste à faire'],
+];
+
+function ReglagesPage({ arg }) {
   const [studio, setStudio] = useState(null);
   const [voices, setVoices] = useState(VOICES);
   const [onglet, setOnglet] = useState(() => {
     try {
-      return localStorage.getItem('reglages-onglet') || 'studio';
+      const o = arg || localStorage.getItem('reglages-onglet');
+      return ONGLETS_REGLAGES.some(([id]) => id === o) ? o : 'marque';
     } catch {
-      return 'studio';
+      return 'marque';
     }
   });
   const choisirOnglet = (id) => {
@@ -396,11 +412,7 @@ function ReglagesPage() {
   return (
     <div className="clay-content">
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {[
-          ['studio', '⚙️ Studio'],
-          ['comptes', '🗂️ Comptes & adresses'],
-          ['reste', '📌 Reste à faire'],
-        ].map(([id, nom]) => (
+        {ONGLETS_REGLAGES.map(([id, nom]) => (
           <button key={id} className={`clay-btn small${onglet === id ? '' : ' ghost'}`} onClick={() => choisirOnglet(id)}>
             {nom}
           </button>
@@ -408,12 +420,17 @@ function ReglagesPage() {
       </div>
       {onglet === 'comptes' || onglet === 'reste' ? (
         <ComptesTab key={onglet} resteSeulement={onglet === 'reste'} />
+      ) : onglet === 'routines' ? (
+        <RoutinesTab />
+      ) : onglet === 'depots' ? (
+        <DepotsTab />
+      ) : onglet === 'voix' ? (
+        <FrenchVoicesCard voices={voices} onChange={refreshVoices} />
       ) : (
         <>
+          <BrandCard studio={studio} onChange={refreshStudio} />
           <YoutubeCard />
           <ComptesReseauxCard />
-          <BrandCard studio={studio} onChange={refreshStudio} />
-          <FrenchVoicesCard voices={voices} onChange={refreshVoices} />
         </>
       )}
     </div>
@@ -430,6 +447,9 @@ function EnCoursPage() {
 }
 
 const TITLES = {
+  accueil: 'Accueil',
+  applis: 'Mes applis',
+  lexique: 'Lexique',
   pub: 'Publicité',
   keurcook: '🍲 Keur Cook',
   recettes: '🍲 Recettes Keur Cook',
@@ -578,11 +598,22 @@ export function Shell() {
       </>
     );
   } else {
-    const back = route.page === 'recettes' || route.page === 'keurcook' ? () => go(route.page === 'recettes' ? 'keurcook' : 'pub') : null;
+    const back =
+      route.page === 'recettes' || route.page === 'keurcook'
+        ? () => go(route.page === 'recettes' ? 'keurcook' : 'pub')
+        : route.page === 'applis' && route.arg
+          ? () => go('applis')
+          : null;
     body = (
       <>
         <TopBar title={TITLES[route.page] || 'Publicité'} onBack={back} theme={theme} onTheme={toggleTheme} />
-        {route.page === 'keurcook' ? (
+        {route.page === 'accueil' ? (
+          <AccueilPage />
+        ) : route.page === 'applis' ? (
+          <MesApplisPage arg={route.arg} />
+        ) : route.page === 'lexique' ? (
+          <LexiquePage arg={route.arg} />
+        ) : route.page === 'keurcook' ? (
           <KeurCookPage projects={projects} onOpenRepo={openRepo} />
         ) : route.page === 'recettes' ? (
           <RecettesEntry projects={projects} loaded={loaded} onCreate={runCreation} />
@@ -597,7 +628,7 @@ export function Shell() {
         ) : route.page === 'encours' ? (
           <EnCoursPage />
         ) : route.page === 'reglages' ? (
-          <ReglagesPage />
+          <ReglagesPage key={route.arg} arg={route.arg} />
         ) : (
           <PubPage projects={projects} onOpenRepo={openRepo} />
         )}

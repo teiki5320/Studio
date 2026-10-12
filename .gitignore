@@ -5,3 +5,4 @@ studio/
 .env
 .DS_Store
 *.log
+data/applis.json
