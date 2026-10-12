@@ -42,7 +42,7 @@ export function outroAfrotok(project) {
 }
 
 // Dépôts qui ne sont pas des produits à promouvoir.
-export const NOT_ADVERTISED = new Set(['dashboard', 'drama-studio', 'bd']);
+export const NOT_ADVERTISED = new Set(['dashboard', 'drama-studio', 'studio', 'bd']);
 
 export function appLook(repoName, fallbackLabel = '') {
   const key = String(repoName || '').toLowerCase();
