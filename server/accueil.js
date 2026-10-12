@@ -77,6 +77,8 @@ export async function accueil() {
     envois: pushs,
     vues,
     compteurs: {
+      pagesGoogle: ix.sites.reduce((t, s) => t + (s.indexees || 0), 0),
+      pagesTotal: ix.sites.reduce((t, s) => t + (s.total || 0), 0),
       indexation: problemes.filter((p) => !p.corrige || p.corrige.statut === 'echec').length,
       indexationEnvoyes: problemes.filter((p) => p.envoi?.statut === 'envoye').length,
       enCours: file.filter((it) => it.status === 'running' || it.status === 'waiting').length,

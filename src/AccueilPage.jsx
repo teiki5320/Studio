@@ -1,6 +1,6 @@
 // Accueil du Studio — maquette validée (artifact 8oFkNdUgqU7DzvfMQFjHfC) :
 // sans prose. Un bandeau général animé (l'anneau du code, quatre chiffres
-// qui montent), une rangée de raccourcis (un par entrée du rail), puis un
+// qui montent : fiches, canaux, pages sur Google, vues), une rangée de raccourcis (un par entrée du rail), puis un
 // encart par app avec trois témoins creusés : Code, Fiche, En ligne / Store.
 import React, { useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
@@ -148,14 +148,6 @@ function Encart({ app, site, envoi, delai }) {
   );
 }
 
-function lireTodos() {
-  try {
-    return JSON.parse(localStorage.getItem('v90_dash_todos') || '{}') || {};
-  } catch {
-    return {};
-  }
-}
-
 export function AccueilPage() {
   const { data, error } = useApplis();
   const [ext, setExt] = useState(null);
@@ -177,8 +169,6 @@ export function AccueilPage() {
   const perimees = apps.filter((a) => (ageFiches(a) ?? 0) > FICHE_PERIMEE_JOURS).length;
   const ouverts = apps.reduce((t, a) => t + (a.marketingSummary?.done || 0), 0);
   const canaux = ouverts + apps.reduce((t, a) => t + (a.marketingSummary?.todo || 0), 0);
-  const todos = lireTodos();
-  const actions = apps.reduce((t, a) => t + (a.marketingSummary?.nextActions || []).filter((_, i) => !todos[`${a.id}:${i}`]).length, 0);
   const c = ext?.compteurs || {};
   const envoi = (a) => ext?.envois?.[String(a.repo || '').toLowerCase()];
   const groupes = [
@@ -219,12 +209,10 @@ export function AccueilPage() {
             </b>
             <span className="var">ouverts sur {canaux}</span>
           </a>
-          <a className="gc" href="#/applis">
-            <span className="lab">Marketing</span>
-            <b>
-              <Compte n={actions} delai={100} />
-            </b>
-            <span className="var">actions à faire</span>
+          <a className="gc" href="#/indexation">
+            <span className="lab">Google</span>
+            <b>{ext?.compteurs ? <Compte n={c.pagesGoogle || 0} delai={100} /> : '—'}</b>
+            <span className="var">pages sur {nb(c.pagesTotal)}</span>
           </a>
           <a className="gc cb" href="#/audience">
             <span className="lab">Vues 7 j</span>

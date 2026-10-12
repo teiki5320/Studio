@@ -13,7 +13,6 @@ import './applis.css';
 const TINTS = ['mint', 'peach', 'sun', 'sky', 'lilac'];
 const BADGES = { requis: 'Requis', optionnel: 'Optionnel', gratuit: 'Gratuit' };
 export const FICHE_PERIMEE_JOURS = 45;
-const TODO_KEY = 'v90_dash_todos';
 
 const norm = (s) =>
   String(s || '')
@@ -248,38 +247,17 @@ function Donut({ done, todo }) {
   );
 }
 
-function lireTodos() {
-  try {
-    const t = JSON.parse(localStorage.getItem(TODO_KEY) || '{}');
-    return t && !Array.isArray(t) ? t : {};
-  } catch {
-    return {};
-  }
-}
-
-function Todos({ app, actions }) {
-  const [todos, setTodos] = useState(lireTodos);
-  const basculer = (k) => {
-    const t = { ...todos };
-    if (t[k]) delete t[k];
-    else t[k] = 1;
-    setTodos(t);
-    try {
-      localStorage.setItem(TODO_KEY, JSON.stringify(t));
-    } catch {}
-  };
-  if (!actions.length) return <span className="empty-note">Aucune section « Prochaines actions » trouvée.</span>;
-  return actions.map((a, i) => {
-    const k = `${app.id}:${i}`;
-    return (
-      <label key={k} className={`todo${todos[k] ? ' done' : ''}`}>
-        <input type="checkbox" data-todo={k} checked={Boolean(todos[k])} onChange={() => basculer(k)} />
-        <span className="todo-txt">
-          <span>{a}</span>
-        </span>
-      </label>
-    );
-  });
+// Les 3 priorités de l'app, tirées de sa fiche marketing : de l'information,
+// pas une liste à cocher (ce qui est fait disparaît de la fiche elle-même).
+function Priorites({ liste }) {
+  if (!liste.length) return <span className="empty-note">Pas de section « Les 3 priorités » dans la fiche.</span>;
+  return (
+    <ol className="priorites">
+      {liste.map((a, i) => (
+        <li key={i}>{a}</li>
+      ))}
+    </ol>
+  );
 }
 
 function Services({ app, data, famTint, ouvrir }) {
@@ -423,12 +401,10 @@ function FicheApp({ app, data, volet, famTint, ouvrir }) {
           </div>
           <div className="tile rise">
             <div className="tile-h">
-              <b>Prochaines actions</b>
-              <span>{(m.nextActions || []).length}</span>
+              <b>Les 3 priorités</b>
+              <span>marketing.md</span>
             </div>
-            <div className="todos">
-              <Todos app={app} actions={m.nextActions || []} />
-            </div>
+            <Priorites liste={m.nextActions || []} />
           </div>
         </div>
         {m.kpis?.rows?.length ? (

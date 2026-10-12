@@ -479,3 +479,6 @@ html[data-anim="off"] *, html[data-anim="off"] *::before, html[data-anim="off"] 
 }
 .applis .tb-search { display: flex; align-items: center; gap: 10px; padding: 0 16px; height: 44px; max-width: 420px; border-radius: 18px; background: var(--d-card); box-shadow: var(--d-clay-sm); color: var(--d-muted); }
 .applis .tb-search input { flex: 1; min-width: 0; height: 100%; border: 0; outline: 0; background: transparent; font: inherit; color: var(--d-text); }
+
+.applis .priorites { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
+.applis .priorites li { font-size: 14px; font-weight: 700; line-height: 1.45; }

@@ -170,9 +170,10 @@ function extractMarketingSummary(md) {
     if (any) model = cleanLine(any);
   }
 
-  // Prochaines actions : liste de la section dédiée.
+  // Les 3 priorités : section « Les 3 priorités » (ou, à défaut, l'ancienne
+  // « Prochaines actions »). Le Studio n'affiche que ces trois-là.
   let nextActions = [];
-  const naLines = sectionLines(lines, /prochaines actions|prochaines etapes|a faire ensuite|next/);
+  const naLines = sectionLines(lines, /priorites/) || sectionLines(lines, /prochaines actions|prochaines etapes|a faire ensuite|next/);
   if (naLines) {
     nextActions = naLines
       .filter((l) => /^\s*([-*+]|\d+[.)])\s+/.test(l))
@@ -181,7 +182,7 @@ function extractMarketingSummary(md) {
       .filter((l) => !/^\s*(?:[-*+]|\d+[.)])\s*(?:✅|✔️|☑️|\[[xX]\])/.test(l))
       .map(cleanLine)
       .filter(Boolean)
-      .slice(0, 6);
+      .slice(0, 3);
   }
 
   return {
