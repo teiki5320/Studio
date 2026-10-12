@@ -41,3 +41,16 @@ html[data-theme='clair'] {
   .res-bulles { display: none; }
   .clay-logo, .clay-nav.on .clay-nav-ic, .clay-dot { animation: none; }
 }
+
+/* Barre latérale : sur un écran pas très haut, les 11 entrées dépassaient
+   sous le bas de la barre. Elle se resserre, et défile si besoin. */
+.clay-side { overflow-y: auto; scrollbar-width: none; }
+.clay-side::-webkit-scrollbar { display: none; }
+.clay-side > * { flex: none; }
+@media (min-width: 761px) and (max-height: 1000px) {
+  .clay-side { gap: 2px; padding: 10px 0; }
+  .clay-logo { width: 46px; height: 46px; font-size: 22px; margin-bottom: 4px; }
+  .clay-nav { padding: 6px 6px; gap: 3px; font-size: 12px; }
+  .clay-nav-ic { width: 36px; height: 36px; font-size: 17px; border-radius: 12px; }
+  .clay-sep { margin: 2px 0; }
+}
