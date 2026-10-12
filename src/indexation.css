@@ -1,0 +1,69 @@
+/* Indexation — maquette « I1 Jauges » (12/10) : trois chiffres, une jauge
+   par site ; on choisit un site, ses problèmes s'ouvrent en dessous. */
+.ix { --bleu: #9cc7e8; --bleu-tint: #1f2a33; --creux: #141415; display: flex; flex-direction: column; gap: 20px; }
+html[data-theme='clair'] .ix { --bleu: #3f6f9c; --bleu-tint: #dbe6f2; --creux: #e4d7c8; }
+.ix-haut { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: space-between; }
+.ix-date { font-size: 13.5px; font-weight: 700; color: var(--c-muted); }
+
+.ix-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.ix-kpi { padding: 14px 18px; border-radius: 20px; background: var(--carte); box-shadow: var(--clay-sm); display: flex; flex-direction: column; gap: 2px; }
+.ix-kpi .lab { font-size: 11px; font-weight: 800; letter-spacing: .09em; text-transform: uppercase; color: var(--c-muted); }
+.ix-kpi b { font-size: 32px; font-weight: 800; letter-spacing: -.035em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.ix-kpi b.ok { color: var(--ok); } .ix-kpi b.run { color: var(--run); }
+.ix-kpi .sub { font-size: 12.5px; font-weight: 800; color: var(--c-muted); }
+
+/* Jauges des sites */
+.ix-jauges { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+.ix-jauge { padding: 16px; border: 0; border-radius: 24px; background: var(--carte); box-shadow: var(--clay); color: var(--texte); font: inherit;
+  text-align: left; display: flex; flex-direction: column; gap: 12px; cursor: pointer; min-width: 0;
+  transition: transform .35s var(--ressort), background .3s; }
+.ix-jauge:hover { transform: translateY(-3px); }
+.ix-jauge.on { transform: translateY(-4px); background: #2b211d; }
+html[data-theme='clair'] .ix-jauge.on { background: var(--peach); }
+.ix-jauge-h { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.ix-anneau { position: relative; width: 84px; height: 84px; flex: none; }
+.ix-anneau svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ix-anneau .piste { fill: none; stroke: var(--creux); stroke-width: 9; }
+.ix-anneau .part { fill: none; stroke: var(--ok); stroke-width: 9; stroke-linecap: round; animation: ix-tracer 1s var(--ressort) both; }
+@keyframes ix-tracer { from { stroke-dasharray: 0 214; } }
+.ix-anneau b { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ix-jauge .t { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.ix-jauge .t b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ix-jauge .t small { font-size: 13px; font-weight: 700; color: var(--c-muted); }
+.ix-jauge .t strong { color: var(--texte); }
+.ix-barre { display: flex; gap: 2px; height: 10px; border-radius: 99px; overflow: hidden; background: var(--creux); }
+.ix-barre span { height: 100%; transform-origin: left; animation: ix-pousse .8s var(--ressort) both; }
+@keyframes ix-pousse { from { transform: scaleX(0); } }
+.ix-barre .ok { background: var(--ok); } .ix-barre .bleu { background: var(--bleu); }
+.ix-barre .run { background: var(--run); } .ix-barre .ko { background: var(--ko); }
+
+/* Pastilles d'état */
+.ix-etat { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 800; background: var(--none-tint); color: var(--c-muted); }
+.ix-etat.ok { background: var(--ok-tint); color: var(--ok); }
+.ix-etat.run { background: var(--run-tint); color: var(--run); }
+.ix-etat.ko { background: var(--ko-tint); color: var(--ko); }
+
+/* Problèmes du site choisi */
+.ix-detail { display: flex; flex-direction: column; gap: 12px; }
+.ix-detail h3 { margin: 4px 0 0; font-size: 22px; font-weight: 800; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.ix-detail h3 small { font-size: 13px; font-weight: 700; color: var(--c-muted); }
+@keyframes ix-entree { 0% { opacity: 0; transform: translateY(24px) scale(.95); } 100% { opacity: 1; transform: none; } }
+.ix-detail > * { animation: ix-entree .6s var(--ressort) both; }
+.ix-detail > :nth-child(2) { animation-delay: .05s; } .ix-detail > :nth-child(3) { animation-delay: .1s; }
+.ix-detail > :nth-child(4) { animation-delay: .15s; } .ix-detail > :nth-child(n+5) { animation-delay: .2s; }
+.ix-probleme, .ix-carte { padding: 16px 18px; border-radius: 22px; background: var(--carte); box-shadow: var(--clay); }
+.ix-probleme-h { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ix-probleme-h b { font-size: 15px; font-weight: 800; }
+.ix-nb { font-size: 14px; font-weight: 700; color: var(--c-muted); }
+.ix-point { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.ix-point.ko { background: var(--ko); } .ix-point.run { background: var(--run); } .ix-point.bleu { background: var(--bleu); }
+.ix-explication { margin: 8px 0 0; font-size: 13.5px; font-weight: 600; line-height: 1.45; }
+.ix-solution { margin: 4px 0 0; font-size: 13px; font-weight: 600; color: var(--c-muted); line-height: 1.45; }
+.ix-solution b { color: var(--texte); }
+.ix-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ix-anneau .part, .ix-barre span, .ix-detail > * { animation: none; }
+}
+.ix-actions .clay-btn:disabled { opacity: .55; cursor: default; }
