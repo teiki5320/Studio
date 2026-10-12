@@ -26,6 +26,7 @@ import { MesApplisPage, LexiquePage, useApplis } from './MesApplisPage.jsx';
 import { RoutinesTab, DepotsTab } from './RoutinesTab.jsx';
 import './clay.css';
 import './ressort.css';
+import './reglages.css';
 import { useRessort, BULLES } from './ressort.js';
 
 // ---------- Adresse (#/…) ----------
@@ -341,11 +342,18 @@ function YoutubeCard() {
     return null;
   }
   return (
-    <div className="clay-block">
-      <h3>▶️ YouTube</h3>
+    <div className="rg-carte">
+      <div className="rg-yt">
+        <span className="rg-yt-ic">▶️</span>
+        <span className="t">
+          <b>YouTube</b>
+          <span className={`rg-etat-txt ${etat.connecte ? 'ok' : 'none'}`}>
+            <i />
+            {etat.connecte ? `Connecté${etat.chaine ? ` — ${etat.chaine}` : ''}` : 'Pas connecté'}
+          </span>
+        </span>
       {etat.connecte ? (
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
-          <span className="clay-state ok">Connecté{etat.chaine ? ` — ${etat.chaine}` : ''}</span>
+        <div className="rg-actions">
           <a className="clay-btn ghost small" href="/api/youtube/connecter">
             Reconnecter
           </a>
@@ -357,6 +365,7 @@ function YoutubeCard() {
           </button>
         </div>
       ) : null}
+      </div>
       {etat.connecte && !changer ? null : etat.configure && !changer ? (
         <a className="clay-btn" href="/api/youtube/connecter">
           Connecter YouTube
@@ -421,30 +430,70 @@ function ReglagesPage({ arg }) {
     refreshStudio();
     refreshVoices();
   }, []);
+  // Les pastilles des onglets : routines bloquées, choses qui restent à faire.
+  const [pastilles, setPastilles] = useState({});
+  useEffect(() => {
+    api
+      .routines()
+      .then((l) => setPastilles((p) => ({ ...p, routines: l.filter((r) => r.active && r.statut === 'bloquee').length })))
+      .catch(() => {});
+    api
+      .comptes()
+      .then((d) => setPastilles((p) => ({ ...p, reste: d.sections.flatMap((x) => x.lignes).filter((l) => l.etat === 'a_faire').length })))
+      .catch(() => {});
+  }, [onglet]);
   return (
-    <div className="clay-content">
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        {ONGLETS_REGLAGES.map(([id, nom]) => (
-          <button key={id} className={`clay-btn small${onglet === id ? '' : ' ghost'}`} onClick={() => choisirOnglet(id)}>
-            {nom}
-          </button>
-        ))}
+    <div className="clay-content reglages">
+      <OngletsReglages onglet={onglet} choisir={choisirOnglet} pastilles={pastilles} />
+      <div key={onglet} className="rg-corps" data-sans-ressort>
+        {onglet === 'comptes' || onglet === 'reste' ? (
+          <ComptesTab resteSeulement={onglet === 'reste'} />
+        ) : onglet === 'routines' ? (
+          <RoutinesTab />
+        ) : onglet === 'depots' ? (
+          <DepotsTab />
+        ) : onglet === 'voix' ? (
+          <FrenchVoicesCard voices={voices} onChange={refreshVoices} />
+        ) : (
+          <>
+            <BrandCard studio={studio} onChange={refreshStudio} />
+            <YoutubeCard />
+            <ComptesReseauxCard />
+          </>
+        )}
       </div>
-      {onglet === 'comptes' || onglet === 'reste' ? (
-        <ComptesTab key={onglet} resteSeulement={onglet === 'reste'} />
-      ) : onglet === 'routines' ? (
-        <RoutinesTab />
-      ) : onglet === 'depots' ? (
-        <DepotsTab />
-      ) : onglet === 'voix' ? (
-        <FrenchVoicesCard voices={voices} onChange={refreshVoices} />
-      ) : (
-        <>
-          <BrandCard studio={studio} onChange={refreshStudio} />
-          <YoutubeCard />
-          <ComptesReseauxCard />
-        </>
-      )}
+    </div>
+  );
+}
+
+// La barre d'onglets de Réglages : un curseur d'argile glisse en rebond
+// sous l'onglet choisi (maquette « R1 Onglets »).
+function OngletsReglages({ onglet, choisir, pastilles }) {
+  const barre = useRef(null);
+  const [curseur, setCurseur] = useState(null);
+  React.useLayoutEffect(() => {
+    const mesurer = () => {
+      const b = barre.current?.querySelector(`[data-onglet="${onglet}"]`);
+      if (b) setCurseur({ left: b.offsetLeft, top: b.offsetTop, width: b.offsetWidth, height: b.offsetHeight });
+    };
+    mesurer();
+    window.addEventListener('resize', mesurer);
+    return () => window.removeEventListener('resize', mesurer);
+  }, [onglet, pastilles]);
+  return (
+    <div className="rg-onglets" ref={barre} role="tablist">
+      {curseur ? <span className="rg-curseur" style={curseur} /> : null}
+      {ONGLETS_REGLAGES.map(([id, nom]) => {
+        const [ic, ...mots] = nom.split(' ');
+        const n = pastilles[id];
+        return (
+          <button key={id} type="button" role="tab" aria-selected={onglet === id} data-onglet={id} className={`rg-onglet${onglet === id ? ' on' : ''}`} onClick={() => choisir(id)}>
+            <span className="ic">{ic}</span>
+            <span className="nom">{mots.join(' ')}</span>
+            {n ? <span className={`rg-pastille ${id === 'routines' ? 'ko' : 'run'}`}>{n}</span> : null}
+          </button>
+        );
+      })}
     </div>
   );
 }

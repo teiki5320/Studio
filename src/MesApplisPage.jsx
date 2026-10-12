@@ -700,85 +700,139 @@ export function MesApplisPage({ arg }) {
   );
 }
 
+// Lexique — maquette « L2 Colonnes » (12/10) : les familles à gauche, les
+// services au milieu, la fiche du service choisi toujours ouverte à droite.
+// Sur téléphone, les colonnes s'empilent et la fiche s'ouvre par-dessus.
+const POINT = { requis: 'var(--ko)', gratuit: 'var(--ok)', optionnel: 'var(--c-muted)' };
+
+function FicheLexique({ svc, data, famTint }) {
+  const users = data.apps.filter((a) => a.services.includes(svc.id));
+  return (
+    <div className="lx-fiche" key={svc.id}>
+      <div className="lx-fiche-h">
+        <span className={`row-ico big tint-${famTint(svc.categorie)}`}>{svc.emoji}</span>
+        <span className="lx-fiche-t">
+          <b>{svc.nom}</b>
+          <span>
+            {svc.categorie} <span className={`badge badge-${svc.badge}`}>{BADGES[svc.badge] || svc.badge}</span>
+          </span>
+        </span>
+      </div>
+      {[
+        ['Rôle', svc.role],
+        ['Quand l’utiliser', svc.quand],
+        ['Coût', svc.cout],
+        ['Alternatives', svc.alternatives],
+      ].map(([t, v]) =>
+        v ? (
+          <section key={t}>
+            <h4>{t}</h4>
+            <p>{v}</p>
+          </section>
+        ) : null,
+      )}
+      {svc.concepts?.length ? (
+        <section>
+          <h4>Concepts clés</h4>
+          {svc.concepts.map((c) => (
+            <div key={c.terme} className="lx-concept">
+              <b>{c.terme}</b>
+              <span>{c.def}</span>
+            </div>
+          ))}
+        </section>
+      ) : null}
+      {users.length ? (
+        <section>
+          <h4>Utilisé par</h4>
+          <div className="chips">
+            {users.map((a) => (
+              <a key={a.id} className={`chip tint-${TINTS[data.apps.indexOf(a) % TINTS.length]}`} href={`#/applis/${a.id}`}>
+                {a.emoji} {a.name}
+              </a>
+            ))}
+          </div>
+        </section>
+      ) : null}
+    </div>
+  );
+}
+
 export function LexiquePage({ arg }) {
   const { data, error } = useApplis();
   const [q, setQ] = useState('');
-  const [svc, setSvc] = useState(null);
-  const premier = useRef(true);
+  const [fam, setFam] = useState('');
+  const [choix, setChoix] = useState(arg || '');
+  const [mobile, setMobile] = useState(() => window.matchMedia?.('(max-width: 900px)').matches);
+  const [ouvert, setOuvert] = useState(Boolean(arg));
   useEffect(() => {
-    if (data && arg && premier.current) {
-      premier.current = false;
-      setSvc(data.services.find((s) => s.id === arg) || null);
-    }
-  }, [data, arg]);
+    const m = window.matchMedia?.('(max-width: 900px)');
+    if (!m) return undefined;
+    const on = () => setMobile(m.matches);
+    m.addEventListener('change', on);
+    return () => m.removeEventListener('change', on);
+  }, []);
   if (!data) return <div className="clay-content clay-muted">{error || 'Chargement du lexique…'}</div>;
   const famTint = famTintDe(data);
   const n = norm(q).trim();
-  const voit = (s) => !n || norm(`${s.nom} ${s.resume} ${s.categorie} ${s.role}`).includes(n);
+  const trouve = (s) => !n || norm(`${s.nom} ${s.resume} ${s.categorie} ${s.role}`).includes(n);
+  const familles = data.categories.filter((c) => data.services.some((s) => s.categorie === c));
+  const liste = data.services.filter((s) => trouve(s) && (!fam || s.categorie === fam));
+  const svc = data.services.find((s) => s.id === choix) || liste[0] || null;
+  const choisir = (s) => {
+    setChoix(s.id);
+    setOuvert(true);
+  };
   return (
     <div className="applis">
-      <div className="clay-content dash-body">
-        <label className="tb-search">
-          <span>⌕</span>
-          <input type="search" autoComplete="off" placeholder="Rechercher un service…" value={q} onChange={(e) => setQ(e.target.value)} />
-        </label>
-        <div className="cat-nav rise">
-          {data.categories.map((cat) =>
-            data.services.some((s) => s.categorie === cat) ? (
-              <a
-                key={cat}
-                className={`chip tint-${famTint(cat)}`}
-                href={`#cat-${slug(cat)}`}
-                onClick={(e) => {
-                  e.preventDefault();
-                  document.getElementById(`cat-${slug(cat)}`)?.scrollIntoView({ behavior: 'smooth' });
-                }}
-              >
-                {cat}
-              </a>
-            ) : null,
-          )}
+      <div className="clay-content lx">
+        <div className="lx-haut">
+          <label className="tb-search lx-recherche">
+            <span>⌕</span>
+            <input type="search" autoComplete="off" placeholder="Rechercher un service…" value={q} onChange={(e) => setQ(e.target.value)} />
+            <em>
+              {liste.length} / {data.services.length}
+            </em>
+          </label>
+          <div className="lx-legende">
+            <span className="badge badge-requis">Requis</span> indispensable dans sa famille
+            <span className="badge badge-optionnel">Optionnel</span> selon les besoins
+            <span className="badge badge-gratuit">Gratuit</span> offre gratuite suffisante
+          </div>
         </div>
-        <div className="legend-row rise">
-          <span className="badge badge-requis">Requis</span>
-          <span>indispensable dans sa famille</span>
-          <span className="badge badge-optionnel">Optionnel</span>
-          <span>selon les besoins</span>
-          <span className="badge badge-gratuit">Gratuit</span>
-          <span>offre gratuite suffisante pour démarrer</span>
-        </div>
-        {data.categories.map((cat) => {
-          const liste = data.services.filter((s) => s.categorie === cat && voit(s));
-          if (!liste.length) return null;
-          return (
-            <div key={cat} className="cat-section" id={`cat-${slug(cat)}`}>
-              <h2>
-                <i className={`sw sw-${famTint(cat)}`} />
-                {cat}
-              </h2>
-              <div className="svc-grid">
-                {liste.map((s) => {
-                  const users = data.apps.filter((a) => a.services.includes(s.id));
-                  return (
-                    <button key={s.id} type="button" className="tile svc-card rise" onClick={() => setSvc(s)}>
-                      <span className={`row-ico tint-${famTint(cat)}`}>{s.emoji}</span>
-                      <span className="svc-txt">
-                        <b>{s.nom}</b>
-                        <small>{s.resume}</small>
-                        <span className="svc-meta">
-                          <span className={`badge badge-${s.badge}`}>{BADGES[s.badge] || s.badge}</span>
-                          {users.length ? <em>{users.map((a) => a.emoji).join(' ')}</em> : null}
-                        </span>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
+        <div className="lx-cols">
+          <nav className="lx-familles">
+            {[['', 'Toutes', data.services.filter(trouve).length], ...familles.map((c) => [c, c, data.services.filter((s) => s.categorie === c && trouve(s)).length])].map(([id, nom, nb]) => (
+              <button key={nom} type="button" className={`lx-fam${fam === id ? ' on' : ''}`} onClick={() => setFam(id)}>
+                <i className={id ? `sw sw-${famTint(id)}` : 'sw sw-tout'} />
+                <span>{nom}</span>
+                <em>{nb}</em>
+              </button>
+            ))}
+          </nav>
+          <div className="lx-services">
+            {liste.length ? null : <p className="clay-muted">Aucun service ne correspond.</p>}
+            {liste.map((s) => (
+              <button key={s.id} type="button" className={`lx-svc${svc && s.id === svc.id ? ' on' : ''}`} onClick={() => choisir(s)}>
+                <span className={`row-ico tint-${famTint(s.categorie)}`}>{s.emoji}</span>
+                <span className="lx-svc-t">
+                  <b>{s.nom}</b>
+                  <small>{s.categorie}</small>
+                </span>
+                <i className="lx-point" style={{ background: POINT[s.badge] || 'var(--c-muted)' }} title={BADGES[s.badge] || ''} />
+              </button>
+            ))}
+          </div>
+          {!mobile && svc ? (
+            <div className="lx-droite">
+              <FicheLexique svc={svc} data={data} famTint={famTint} />
             </div>
-          );
-        })}
+          ) : null}
+        </div>
       </div>
-      {svc ? <FicheService svc={svc} app={null} data={data} famTint={famTint} onFermer={() => setSvc(null)} onAller={setSvc} /> : null}
+      {mobile && ouvert && svc ? (
+        <FicheService svc={svc} app={null} data={data} famTint={famTint} onFermer={() => setOuvert(false)} onAller={(x) => setChoix(x.id)} />
+      ) : null}
     </div>
   );
 }

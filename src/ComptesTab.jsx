@@ -6,9 +6,6 @@
 import React, { useEffect, useState } from 'react';
 import { api } from './api.js';
 
-const th = { padding: '6px 8px' };
-const td = { padding: '8px', overflowWrap: 'anywhere' };
-
 export function ComptesTab({ resteSeulement = false }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
@@ -32,50 +29,59 @@ export function ComptesTab({ resteSeulement = false }) {
       .then(setData)
       .catch((e) => setError(e.message));
 
+  const pct = toutes.length ? reglees / toutes.length : 0;
   return (
     <>
       {resteSeulement ? (
-        <div className="clay-block">
-          <h3 style={{ margin: 0 }}>
-            📌 {reglees} / {toutes.length} réglés · reste {toutes.length - reglees}
-          </h3>
-          <div style={{ height: 8, borderRadius: 99, background: 'var(--none-tint)', marginTop: 10, overflow: 'hidden' }}>
-            <div style={{ width: `${toutes.length ? (100 * reglees) / toutes.length : 0}%`, height: '100%', background: 'var(--ok)' }} />
+        <div className="rg-carte rg-reste-h">
+          <div className="rg-anneau">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle className="piste" cx="60" cy="60" r="50" />
+              <circle className="part" cx="60" cy="60" r="50" style={{ strokeDasharray: `${(314 * pct).toFixed(1)} 314` }} />
+            </svg>
+            <span className="mid">
+              <b>{reglees}</b>
+              <small>sur {toutes.length}</small>
+            </span>
+          </div>
+          <div className="t">
+            <h3>
+              {reglees} / {toutes.length} réglés · reste {toutes.length - reglees}
+            </h3>
+            <p className="rg-aide">Touche « À faire » une fois la chose faite : la ligne part dans Comptes &amp; adresses.</p>
           </div>
         </div>
       ) : null}
-      {resteSeulement && !sections.length ? <p className="clay-muted">Tout est réglé 🎉</p> : null}
+      {resteSeulement && !sections.length ? <p className="rg-aide">Tout est réglé 🎉</p> : null}
       {sections.map((s) => (
-        <div key={s.titre} className="clay-block" style={{ overflowX: 'auto' }}>
-          {resteSeulement ? null : <h3 style={{ marginTop: 0, marginBottom: s.sousTitre ? 4 : undefined }}>{s.titre}</h3>}
-          {!resteSeulement && s.sousTitre ? <p className="clay-muted small" style={{ marginTop: 0 }}>{s.sousTitre}</p> : null}
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-            <thead>
-              <tr className="clay-muted small" style={{ textAlign: 'left' }}>
-                <th style={th}>{resteSeulement ? 'Quoi' : s.colonnes?.[0] || 'Quoi'}</th>
-                <th style={th}>{resteSeulement ? 'Quand' : s.colonnes?.[1] || 'Résultat'}</th>
-                {resteSeulement ? <th style={th}>État</th> : null}
-              </tr>
-            </thead>
-            <tbody>
-              {s.lignes.map((l) => (
-                <tr key={l.id} style={{ borderTop: '1px solid var(--ligne)', verticalAlign: 'top' }}>
-                  <td style={{ ...td, fontWeight: 700 }}>
-                    {l.quoi}
-                    {resteSeulement && l.note ? <div className="clay-muted small" style={{ fontWeight: 400 }}>{l.note}</div> : null}
-                  </td>
-                  <td style={td}>{resteSeulement ? l.quand : l.resultat}</td>
-                  {resteSeulement ? (
-                    <td style={td}>
-                      <button className="clay-state att" style={{ border: 0, cursor: 'pointer' }} title="Toucher une fois fait" onClick={() => cocher(l)}>
-                        À faire
-                      </button>
-                    </td>
-                  ) : null}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div key={s.titre} className="rg-carte">
+          {resteSeulement ? null : (
+            <div className="rg-carte-h rg-carte-h2">
+              <h3>{s.titre}</h3>
+              {s.sousTitre ? <small>{s.sousTitre}</small> : null}
+            </div>
+          )}
+          <div className="rg-lignes">
+            {s.lignes.map((l) =>
+              resteSeulement ? (
+                <div key={l.id} className="rg-ligne rg-ligne-reste">
+                  <span className="t">
+                    <b>{l.quoi}</b>
+                    {l.note ? <small>{l.note}</small> : null}
+                  </span>
+                  <span className="quand">{l.quand}</span>
+                  <button className="rg-etat run rg-cocher" title="Toucher une fois fait" onClick={() => cocher(l)}>
+                    À faire
+                  </button>
+                </div>
+              ) : (
+                <div key={l.id} className="rg-ligne rg-ligne-2">
+                  <b>{l.quoi}</b>
+                  <span>{l.resultat}</span>
+                </div>
+              ),
+            )}
+          </div>
         </div>
       ))}
       {error && <p className="error small">{error}</p>}

@@ -39,89 +39,47 @@ export function BrandCard({ studio, onChange }) {
     }
   };
 
-  const hasAny = studio && (studio.sticker || studio.outro);
-
-  return (
-    <details className="brand-card">
-      <summary>
-        🏷️ Ma marque — sticker &amp; outro {hasAny ? '✅' : ''}
-        <span className="brand-hint">appliqués automatiquement à tous les épisodes</span>
-      </summary>
-      <div className="brand-row">
-        <div className="brand-item">
-          <strong>Sticker (logo)</strong>
-          <p className="field-hint">
-            Affiché en haut à droite de chaque épisode. PNG transparent recommandé.
-          </p>
-          {studio?.sticker ? (
-            <img className="brand-preview" src={`/studio/${studio.sticker}`} alt="Sticker" />
-          ) : (
-            <div className="brand-preview empty">Aucun sticker</div>
-          )}
-          <div className="brand-actions">
-            <label className="btn-small upload">
-              ⬆️ {studio?.sticker ? 'Changer' : 'Ajouter'}
-              <input
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                hidden
-                disabled={busy}
-                onChange={(e) => e.target.files[0] && upload(e.target.files[0], 'sticker')}
-              />
-            </label>
-            {studio?.sticker && (
-              <button className="btn-small" disabled={busy} onClick={() => remove('sticker')}>
-                🗑️ Retirer
-              </button>
-            )}
-          </div>
+  // Une carte par élément (maquette Réglages « R1 ») : aperçu en grand,
+  // puis Changer / Retirer.
+  const carte = (kind, titre, aide, accept) => {
+    const fichier = studio?.[kind];
+    const video = kind === 'outro' && studio?.outroIsVideo;
+    return (
+      <div className="rg-carte rg-marque">
+        <div className="rg-carte-h">
+          <h3>{titre}</h3>
+          {fichier ? <span className="rg-etat ok">✓ en place</span> : <span className="rg-etat none">aucun</span>}
         </div>
-        <div className="brand-item">
-          <strong>Outro de fin</strong>
-          <p className="field-hint">
-            Ta vidéo (ou image) de marque, ajoutée après l'écran « À suivre » de chaque épisode.
-            MP4 court conseillé (moins de 30 Mo, 15 s max).
-          </p>
-          {studio?.outro ? (
-            studio.outroIsVideo ? (
-              <video
-                className="brand-preview"
-                src={`/studio/${studio.outro}`}
-                muted
-                loop
-                autoPlay
-                playsInline
-              />
-            ) : (
-              <img className="brand-preview" src={`/studio/${studio.outro}`} alt="Outro" />
-            )
+        <p className="rg-aide">{aide}</p>
+        <div className="rg-apercu">
+          {!fichier ? (
+            <span>{kind === 'sticker' ? 'Aucun sticker' : 'Aucun outro'}</span>
+          ) : video ? (
+            <video src={`/studio/${fichier}`} muted loop autoPlay playsInline />
           ) : (
-            <div className="brand-preview empty">Aucun outro</div>
+            <img src={`/studio/${fichier}`} alt={titre} />
           )}
-          <div className="brand-actions">
-            <label className="btn-small upload">
-              ⬆️ {studio?.outro ? 'Changer' : 'Ajouter'}
-              <input
-                type="file"
-                accept="video/mp4,video/quicktime,image/png,image/jpeg,image/webp"
-                hidden
-                disabled={busy}
-                onChange={(e) => e.target.files[0] && upload(e.target.files[0], 'outro')}
-              />
-            </label>
-            {studio?.outro && (
-              <button className="btn-small" disabled={busy} onClick={() => remove('outro')}>
-                🗑️ Retirer
-              </button>
-            )}
-          </div>
+        </div>
+        <div className="rg-actions">
+          <label className="clay-btn small">
+            ⬆️ {fichier ? 'Changer' : 'Ajouter'}
+            <input type="file" accept={accept} hidden disabled={busy} onChange={(e) => e.target.files[0] && upload(e.target.files[0], kind)} />
+          </label>
+          {fichier ? (
+            <button className="clay-btn small ghost" disabled={busy} onClick={() => remove(kind)}>
+              🗑️ Retirer
+            </button>
+          ) : null}
         </div>
       </div>
-      <p className="field-hint">
-        💡 Ils apparaîtront dans l'aperçu et dans les prochains MP4. Pour les ajouter à un épisode
-        déjà produit, rouvre-le et clique « 🎞️ Monter le MP4 final ».
-      </p>
-    </details>
+    );
+  };
+
+  return (
+    <div className="rg-duo">
+      {carte('sticker', 'Sticker (logo)', 'Affiché en haut à droite de chaque vidéo. PNG transparent recommandé.', 'image/png,image/jpeg,image/webp')}
+      {carte('outro', 'Outro de fin', 'Ta vidéo de marque, ajoutée à la fin de chaque vidéo. MP4 court, 15 s max.', 'video/mp4,video/quicktime,image/png,image/jpeg,image/webp')}
+    </div>
   );
 }
 
@@ -184,72 +142,81 @@ export function FrenchVoicesCard({ voices, onChange }) {
     }
   };
 
+  // La bibliothèque se charge d'elle-même (pré-écoute gratuite).
+  useEffect(() => {
+    search();
+  }, []);
+
   return (
-    <details className="brand-card">
-      <summary>
-        🇫🇷 Voix françaises {adopted.length > 0 ? `✅ ${adopted.length}` : ''}
-        <span className="brand-hint">
-          adopte de vraies voix françaises ElevenLabs — fini l'accent
-        </span>
-      </summary>
-      <p className="field-hint">
-        Les voix de base du studio sont anglophones (accent en français). Ici tu pré-écoutes
-        gratuitement les meilleures voix <strong>natives françaises</strong> de la bibliothèque
-        ElevenLabs et tu les adoptes : elles rejoignent les menus de voix et le casting
-        automatique des nouveaux dramas. (Adoption réservée aux plans ElevenLabs payants.)
-      </p>
-
-      {adopted.length > 0 && (
-        <div className="voice-lib-list">
-          {adopted.map((v) => (
-            <div key={v.id} className="voice-lib-row adopted">
-              <span className="voice-lib-name">
-                ✅ {v.name} <em>({v.gender})</em>
-              </span>
-              <span className="voice-lib-desc">{v.desc}</span>
-              <button className="btn-small" disabled={busy} onClick={() => remove(v.id)}>
-                🗑️ Retirer
-              </button>
-            </div>
-          ))}
+    <>
+      <div className="rg-carte">
+        <div className="rg-carte-h">
+          <h3>🇫🇷 Voix adoptées</h3>
+          <small>dans les menus de voix et le casting automatique</small>
         </div>
-      )}
-
-      {error && <p className="error">{error}</p>}
-
-      {!library ? (
-        <button className="btn-small upload" disabled={busy} onClick={search}>
-          {busy ? '⏳ Recherche…' : '🔍 Chercher les meilleures voix françaises'}
-        </button>
-      ) : (
-        <div className="voice-lib-list">
-          {library.length === 0 && <p className="field-hint">Aucune voix trouvée.</p>}
-          {library.map((v) => {
-            const already = voices.some((x) => x.id === v.voiceId);
-            return (
-              <div key={v.voiceId} className="voice-lib-row">
-                <span className="voice-lib-name">
-                  {v.gender === 'femme' ? '👩' : '👨'} {v.name} <em>({v.gender})</em>
+        {adopted.length ? (
+          <div className="rg-voix-adoptees">
+            {adopted.map((v) => (
+              <div key={v.id} className="rg-voix">
+                <span className="av">{v.gender === 'femme' ? '👩' : '👨'}</span>
+                <span className="t">
+                  <b>{v.name}</b>
+                  <small>{v.desc}</small>
                 </span>
-                <span className="voice-lib-desc">{v.desc}</span>
-                {v.previewUrl && (
-                  <button className="btn-small" onClick={() => listen(v.previewUrl)}>
-                    ▶️ Écouter
-                  </button>
-                )}
-                {already ? (
-                  <span className="voice-lib-ok">✅ Adoptée</span>
-                ) : (
-                  <button className="btn-small upload" disabled={busy} onClick={() => adopt(v)}>
-                    ➕ Adopter
-                  </button>
-                )}
+                <button className="rg-x" title="Retirer cette voix" disabled={busy} onClick={() => remove(v.id)}>
+                  ✓
+                </button>
               </div>
-            );
-          })}
+            ))}
+          </div>
+        ) : (
+          <p className="rg-aide">Aucune voix adoptée pour l’instant.</p>
+        )}
+      </div>
+
+      <div className="rg-carte">
+        <div className="rg-carte-h">
+          <h3>Bibliothèque ElevenLabs</h3>
+          <small>voix nativement françaises · pré-écoute gratuite</small>
         </div>
-      )}
-    </details>
+        {error && <p className="error small">{error}</p>}
+        {!library ? (
+          <p className="rg-aide">{busy ? '⏳ Recherche des meilleures voix françaises…' : ''}</p>
+        ) : (
+          <div className="rg-lignes">
+            {library.length === 0 && <p className="rg-aide">Aucune voix trouvée.</p>}
+            {library.map((v) => {
+              const already = voices.some((x) => x.id === v.voiceId);
+              return (
+                <div key={v.voiceId} className="rg-ligne rg-ligne-voix">
+                  <span className="av">{v.gender === 'femme' ? '👩' : '👨'}</span>
+                  <span className="t">
+                    <b>
+                      {v.name} <em>({v.gender})</em>
+                    </b>
+                    <small>{v.desc}</small>
+                  </span>
+                  <span className="rg-actions">
+                    {v.previewUrl && (
+                      <button className="clay-btn small ghost" onClick={() => listen(v.previewUrl)}>
+                        ▶️ Écouter
+                      </button>
+                    )}
+                    {already ? (
+                      <span className="rg-etat ok">✓ Adoptée</span>
+                    ) : (
+                      <button className="clay-btn small" disabled={busy} onClick={() => adopt(v)}>
+                        ＋ Adopter
+                      </button>
+                    )}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 

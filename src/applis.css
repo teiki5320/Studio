@@ -482,3 +482,56 @@ html[data-anim="off"] *, html[data-anim="off"] *::before, html[data-anim="off"] 
 
 .applis .priorites { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; }
 .applis .priorites li { font-size: 14px; font-weight: 700; line-height: 1.45; }
+
+/* ---------- Lexique « L2 Colonnes » ---------- */
+.applis .lx { display: flex; flex-direction: column; gap: 16px; }
+.applis .lx-haut { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+.applis .lx-recherche { flex: 1 1 320px; width: auto; }
+.applis .lx-recherche em { font-style: normal; font-size: 12px; font-weight: 800; color: var(--d-muted); }
+.applis .lx-legende { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 10px 16px; border-radius: 18px;
+  background: var(--d-card); box-shadow: var(--d-clay-sm); font-size: 12px; font-weight: 700; color: var(--d-muted); }
+.applis .lx-legende .badge { margin-left: 6px; }
+.applis .lx-cols { display: grid; grid-template-columns: 230px minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; align-items: start; }
+.applis .lx-familles, .applis .lx-droite { position: sticky; top: 16px; }
+.applis .lx-familles { display: flex; flex-direction: column; gap: 2px; padding: 10px; border-radius: 22px;
+  background: var(--d-card); box-shadow: var(--d-clay-sm); max-height: calc(100vh - 40px); overflow-y: auto; }
+.applis .lx-fam { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 0; border-radius: 12px; cursor: pointer;
+  background: transparent; color: var(--d-text); font: inherit; font-size: 13px; font-weight: 700; text-align: left;
+  transition: background .2s, transform .25s var(--bounce); }
+.applis .lx-fam span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.applis .lx-fam em { font-style: normal; font-size: 12px; color: var(--d-muted); }
+.applis .lx-fam:hover { background: var(--d-card2); transform: translateX(3px); }
+.applis .lx-fam.on { background: var(--d-card2); box-shadow: var(--d-clay-sm); }
+.applis .lx-fam .sw { width: 8px; height: 8px; border-radius: 50%; }
+.applis .sw-tout { background: var(--d-text); }
+.applis .lx-services { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.applis .lx-svc { display: flex; align-items: center; gap: 12px; padding: 10px 14px 10px 10px; border: 2px solid transparent; border-radius: 18px;
+  cursor: pointer; background: var(--d-card); box-shadow: var(--d-clay-sm); color: var(--d-text); font: inherit; text-align: left;
+  transition: transform .25s var(--bounce), border-color .2s; }
+.applis .lx-svc:hover { transform: translateY(-2px); }
+.applis .lx-svc.on { border-color: var(--d-accent); }
+.applis .lx-svc .row-ico { width: 38px; height: 38px; font-size: 18px; }
+.applis .lx-svc-t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.applis .lx-svc-t b { font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.applis .lx-svc-t small { font-size: 12px; font-weight: 700; color: var(--d-muted); }
+.applis .lx-point { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+@keyframes lx-ressort { 0% { opacity: 0; transform: translateY(16px) scale(.96); } 100% { opacity: 1; transform: none; } }
+.applis .lx-fiche { padding: 20px 22px; border-radius: 26px; background: var(--d-card); box-shadow: var(--d-clay);
+  display: flex; flex-direction: column; gap: 14px; animation: lx-ressort .55s var(--bounce) both;
+  max-height: calc(100vh - 40px); overflow-y: auto; }
+.applis .lx-fiche-h { display: flex; align-items: center; gap: 14px; }
+.applis .lx-fiche-t { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.applis .lx-fiche-t b { font-size: 20px; font-weight: 800; }
+.applis .lx-fiche-t > span { font-size: 12.5px; font-weight: 700; color: var(--d-muted); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.applis .lx-fiche h4 { margin: 0 0 4px; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--d-accent); }
+.applis .lx-fiche p { margin: 0; font-size: 14px; line-height: 1.5; }
+.applis .lx-concept { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; margin-top: 8px; border-radius: 14px;
+  background: var(--d-card2); box-shadow: var(--d-clay-sm); }
+.applis .lx-concept b { font-size: 13.5px; }
+.applis .lx-concept span { font-size: 12.5px; color: var(--d-muted); font-weight: 600; }
+@media (max-width: 1200px) { .applis .lx-cols { grid-template-columns: 200px minmax(0, 1fr) minmax(0, 1fr); } }
+@media (max-width: 900px) {
+  .applis .lx-cols { grid-template-columns: 1fr; }
+  .applis .lx-familles { position: static; flex-direction: row; overflow-x: auto; max-height: none; }
+  .applis .lx-fam { flex: none; }
+}

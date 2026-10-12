@@ -37,38 +37,38 @@ export function ComptesReseauxCard() {
   const ajouter = () => nom.trim() && act(api.ajouterCompteReseau({ reseau, nom: nom.trim() }).then(() => setNom('')));
 
   return (
-    <div className="clay-block">
-      <h3>📱 Comptes des réseaux</h3>
-      <p className="clay-muted small" style={{ marginTop: 0 }}>
-        Chaque compte a sa ligne dans le Planning. « Applis » : les applis pour lesquelles ce compte est coché d'office (placement et remplissage
-        automatique) ; un compte sans appli sert quand aucune règle ne s'applique. Le compte YouTube qui porte le nom de la chaîne connectée se publie
-        en un clic.
-      </p>
-      {RESEAUX.map(([r, libelle]) => {
-        const liste = comptes.filter((c) => c.reseau === r);
-        return liste.length ? (
-          <div key={r} style={{ marginBottom: 10 }}>
-            <div className="clay-muted small" style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, margin: '6px 0' }}>
-              {libelle}
-            </div>
-            {liste.map((c) => (
-              <div key={c.id} className="clay-file" style={{ flexWrap: 'wrap' }}>
-                <div className="clay-file-txt">
+    <div className="rg-carte">
+      <div className="rg-carte-h">
+        <h3>📱 Comptes des réseaux</h3>
+        <small title="« Applis » : les applis pour lesquelles ce compte est coché d'office dans le Planning ; un compte sans appli sert quand aucune règle ne s'applique.">
+          chaque compte a sa ligne dans le Planning
+        </small>
+      </div>
+      <div className="rg-lignes">
+        {RESEAUX.flatMap(([r, libelle]) =>
+          comptes
+            .filter((c) => c.reseau === r)
+            .map((c) => (
+              <div key={c.id} className="rg-ligne rg-ligne-compte">
+                <span className={`rg-reseau ${r}`}>{libelle}</span>
+                <span className="t">
                   <b>{c.nom}</b>
-                  <span className="clay-muted small">{c.applis.length ? c.applis.map(libelleAppli).join(', ') : 'proposé par défaut'}</span>
-                </div>
-                <button className="clay-btn ghost small" onClick={() => setOuvert(ouvert === c.id ? null : c.id)}>
-                  {ouvert === c.id ? 'Fermer' : 'Applis'}
-                </button>
-                <button
-                  className="clay-btn ghost small"
-                  title="Supprimer ce compte"
-                  onClick={() => window.confirm(`Supprimer le compte ${c.nom} ?`) && act(api.retirerCompteReseau(c.id))}
-                >
-                  ✕
-                </button>
+                  <small>{c.applis.length ? c.applis.map(libelleAppli).join(', ') : 'proposé par défaut'}</small>
+                </span>
+                <span className="rg-actions">
+                  <button className="clay-btn ghost small" onClick={() => setOuvert(ouvert === c.id ? null : c.id)}>
+                    {ouvert === c.id ? 'Fermer' : 'Applis'}
+                  </button>
+                  <button
+                    className="clay-btn ghost small"
+                    title="Supprimer ce compte"
+                    onClick={() => window.confirm(`Supprimer le compte ${c.nom} ?`) && act(api.retirerCompteReseau(c.id))}
+                  >
+                    ✕
+                  </button>
+                </span>
                 {ouvert === c.id && (
-                  <div style={{ flexBasis: '100%', display: 'flex', flexWrap: 'wrap', gap: 6, paddingTop: 6 }}>
+                  <div className="rg-choix-applis">
                     {APPLIS.map(([k, lib]) => {
                       const on = c.applis.includes(k);
                       return (
@@ -85,11 +85,10 @@ export function ComptesReseauxCard() {
                   </div>
                 )}
               </div>
-            ))}
-          </div>
-        ) : null;
-      })}
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', marginTop: 8 }}>
+            )),
+        )}
+      </div>
+      <div className="rg-ajout">
         <select className="rp-input" style={{ width: 'auto', margin: 0 }} value={reseau} onChange={(e) => setReseau(e.target.value)}>
           {RESEAUX.map(([k, l]) => (
             <option key={k} value={k}>
