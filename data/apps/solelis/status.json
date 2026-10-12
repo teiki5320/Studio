@@ -1,10 +1,10 @@
 {
   "release": null,
   "ci": {
-    "status": "completed",
-    "conclusion": "success",
-    "updatedAt": "2026-10-12T11:31:39Z",
-    "url": "https://github.com/teiki5320/Solelis/actions/runs/38242884330"
+    "status": "in_progress",
+    "conclusion": null,
+    "updatedAt": "2026-10-12T11:37:07Z",
+    "url": "https://github.com/teiki5320/Solelis/actions/runs/38243797908"
   },
-  "fetchedAt": "2026-10-12T11:31:43.066Z"
+  "fetchedAt": "2026-10-12T11:37:19.255Z"
 }

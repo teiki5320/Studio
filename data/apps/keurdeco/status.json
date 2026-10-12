@@ -1,10 +1,10 @@
 {
   "release": null,
   "ci": {
-    "status": "in_progress",
-    "conclusion": null,
-    "updatedAt": "2026-10-12T11:30:39Z",
+    "status": "completed",
+    "conclusion": "success",
+    "updatedAt": "2026-10-12T11:34:14Z",
     "url": "https://github.com/teiki5320/Keurdeco/actions/runs/38243101627"
   },
-  "fetchedAt": "2026-10-12T11:31:37.521Z"
+  "fetchedAt": "2026-10-12T11:35:32.298Z"
 }

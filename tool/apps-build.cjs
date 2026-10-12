@@ -175,8 +175,14 @@ function extractMarketingSummary(md) {
   let nextActions = [];
   const naLines = sectionLines(lines, /priorites/) || sectionLines(lines, /prochaines actions|prochaines etapes|a faire ensuite|next/);
   if (naLines) {
-    nextActions = naLines
-      .filter((l) => /^\s*([-*+]|\d+[.)])\s+/.test(l))
+    // Une puce peut courir sur plusieurs lignes : les lignes indentées qui
+    // suivent sont recollées, sinon la priorité s'arrêtait en pleine phrase.
+    const puces = [];
+    for (const l of naLines) {
+      if (/^\s*([-*+]|\d+[.)])\s+/.test(l)) puces.push(l);
+      else if (puces.length && /^\s+\S/.test(l)) puces[puces.length - 1] += ` ${l.trim()}`;
+    }
+    nextActions = puces
       // Une ligne déjà cochée n'est plus une action à venir : la garder
       // remplissait la liste de travail terminé, avec une case vide par-dessus.
       .filter((l) => !/^\s*(?:[-*+]|\d+[.)])\s*(?:✅|✔️|☑️|\[[xX]\])/.test(l))
