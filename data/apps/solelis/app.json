@@ -11,8 +11,9 @@
   "services": [
     "github",
     "hebergement-web",
+    "nom-de-domaine",
     "base-sql",
-    "api-tierce",
-    "email-transactionnel"
+    "email-transactionnel",
+    "api-tierce"
   ]
 }

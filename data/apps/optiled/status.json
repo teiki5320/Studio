@@ -1,10 +1,10 @@
 {
   "release": null,
   "ci": {
-    "status": "in_progress",
-    "conclusion": null,
-    "updatedAt": "2026-10-12T10:36:29Z",
-    "url": "https://github.com/teiki5320/optiled/actions/runs/38237382684"
+    "status": "completed",
+    "conclusion": "success",
+    "updatedAt": "2026-10-12T11:30:46Z",
+    "url": "https://github.com/teiki5320/optiled/actions/runs/38242752628"
   },
-  "fetchedAt": "2026-10-12T10:36:52.058Z"
+  "fetchedAt": "2026-10-12T11:31:40.353Z"
 }

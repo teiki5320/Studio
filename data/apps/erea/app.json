@@ -12,12 +12,16 @@
   "tagline": "Jeu de culture historique : placez les événements sur la frise du temps.",
   "services": [
     "github",
+    "hebergement-web",
+    "nom-de-domaine",
     "apple-developer",
     "app-store-connect",
     "xcode-cloud",
     "game-services",
-    "hebergement-web",
+    "storekit",
     "admob",
-    "play-console"
+    "play-console",
+    "android-keystore",
+    "in-app-review"
   ]
 }
