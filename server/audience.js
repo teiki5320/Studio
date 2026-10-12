@@ -57,6 +57,9 @@ async function graphql(query, variables) {
   if (j.errors?.length) {
     throw new Error(`Cloudflare : ${j.errors[0].message}`);
   }
+  if (!j.data) {
+    throw new Error(`Cloudflare : réponse vide (${res.status})`);
+  }
   return j.data;
 }
 
@@ -193,7 +196,9 @@ export async function audience(jours = 30) {
   }));
   sites.sort((a, b) => total(b) - total(a));
   const data = { configure: true, jours: n, debut, sites, erreurs };
-  cache.set(n, { at: Date.now(), data });
+  // Une réponse incomplète (erreur ou aucun site mesuré) n'est pas gardée :
+  // elle afficherait « 0 visiteur » pendant 10 minutes.
+  if (!erreurs.length && hotes.length) cache.set(n, { at: Date.now(), data });
   return data;
 }
 
