@@ -37,7 +37,7 @@ pause et des champs de formulaire.
 
 | | |
 |---|---|
-| État | **Jamais soumise — bloquée sur l'URL de confidentialité** |
+| État | **Jamais soumise — bloquée par le backend en pause** |
 | Console | <https://appstoreconnect.apple.com> |
 | Version publiée | aucune — l'app n'est jamais sortie |
 | Version en cours | `1.0.0` (build `5`) — aucune soumission ; l'existence d'une fiche ASC est **à vérifier dans la console** |

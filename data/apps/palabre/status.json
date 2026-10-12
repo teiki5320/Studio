@@ -1,10 +1,10 @@
 {
   "release": null,
   "ci": {
-    "status": "in_progress",
-    "conclusion": null,
-    "updatedAt": "2026-10-12T11:32:41Z",
+    "status": "completed",
+    "conclusion": "success",
+    "updatedAt": "2026-10-12T11:37:30Z",
     "url": "https://github.com/teiki5320/palabre/actions/runs/38243324385"
   },
-  "fetchedAt": "2026-10-12T11:32:42.874Z"
+  "fetchedAt": "2026-10-12T12:04:03.681Z"
 }

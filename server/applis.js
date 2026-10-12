@@ -77,7 +77,7 @@ export function synchroDue() {
   const dossier = path.join(ROOT, 'data', 'apps');
   const enCours = fs.existsSync(dossier) && fs.readdirSync(dossier).some((id) => {
     const ci = lireJson(path.join(dossier, id, 'status.json'), {}).ci;
-    return ci && ci.status && ci.status !== 'completed';
+    return ci && (ci.enCours || (ci.status && ci.status !== 'completed'));
   });
   return age > TOUTES_LES || (enCours && age > 20 * 60 * 1000);
 }

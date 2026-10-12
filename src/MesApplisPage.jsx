@@ -51,7 +51,7 @@ export function ciInfo(app) {
   const ci = app.status?.ci;
   if (!app.repo) return { k: 'none', label: 'Sans dépôt' };
   if (!ci) return { k: 'none', label: 'Jamais vérifiée' };
-  const base = { url: ci.url || `https://github.com/${app.repo}/actions`, date: fmtDate(ci.updatedAt), dateLong: fmtDate(ci.updatedAt, true) };
+  const base = { url: ci.url || `https://github.com/${app.repo}/actions`, date: fmtDate(ci.updatedAt), dateLong: fmtDate(ci.updatedAt, true), enCours: Boolean(ci.enCours) };
   if (ci.status !== 'completed') return { ...base, k: 'run', label: 'Vérification en cours' };
   if (ci.conclusion === 'success') return { ...base, k: 'ok', label: 'Code OK' };
   if (ci.conclusion === 'failure') return { ...base, k: 'ko', label: 'Erreur de code' };
@@ -75,7 +75,7 @@ function CiPill({ app, big }) {
       <i className="dot" />
       <span className="ci-lbl">
         {c.label}
-        {big ? <small>{c.dateLong || (app.repo ? 'aucune vérification' : 'à créer')}</small> : null}
+        {big ? <small>{c.dateLong || (app.repo ? 'aucune vérification' : 'à créer')}{c.enCours ? ' · revérification en cours' : ''}</small> : null}
       </span>
     </>
   );

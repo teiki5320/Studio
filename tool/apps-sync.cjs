@@ -115,7 +115,7 @@ async function fetchJson(url) {
 async function fetchStatus(repo, precedent) {
   const [release, runs] = await Promise.all([
     fetchJson(`https://api.github.com/repos/${repo}/releases/latest`),
-    fetchJson(`https://api.github.com/repos/${repo}/actions/runs?per_page=1`),
+    fetchJson(`https://api.github.com/repos/${repo}/actions/runs?per_page=10`),
   ]);
   const ancien = precedent || {};
   let releaseOut;
@@ -130,8 +130,13 @@ async function fetchStatus(repo, precedent) {
   if (runs === ECHEC) {
     ciOut = ancien.ci !== undefined ? ancien.ci : null;
   } else {
-    const run = runs && Array.isArray(runs.workflow_runs) ? runs.workflow_runs[0] : null;
-    ciOut = run ? { status: run.status, conclusion: run.conclusion, updatedAt: run.updated_at, url: run.html_url } : null;
+    // Pendant qu'une vérification tourne, on garde le dernier RÉSULTAT connu
+    // (« Code OK »…) et on note seulement qu'une nouvelle est en cours.
+    const liste = runs && Array.isArray(runs.workflow_runs) ? runs.workflow_runs : [];
+    const fini = liste.find((r) => r.status === 'completed');
+    const run = fini || liste[0] || null;
+    const enCours = Boolean(liste[0] && liste[0].status !== 'completed');
+    ciOut = run ? { status: run.status, conclusion: run.conclusion, updatedAt: run.updated_at, url: run.html_url, ...(enCours && fini ? { enCours: true } : {}) } : null;
   }
   return {
     release: releaseOut,

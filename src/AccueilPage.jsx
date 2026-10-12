@@ -96,7 +96,7 @@ const ilYa = (iso) => {
 // Les trois témoins d'une app : [couleur, raison].
 function temoins(app, site) {
   const c = ciInfo(app);
-  const code = [c.k === 'run' ? 'run' : c.k, `Code : ${c.label.toLowerCase()}${c.dateLong ? ` (${c.dateLong})` : ''}`];
+  const code = [c.k === 'run' ? 'run' : c.k, `Code : ${c.label.toLowerCase()}${c.dateLong ? ` (${c.dateLong})` : ''}${c.enCours ? ' · revérification en cours' : ''}`];
   const age = ageFiches(app);
   const fiche = age === null ? ['none', 'Fiche sans date'] : [age > FICHE_PERIMEE_JOURS ? 'run' : 'ok', age > FICHE_PERIMEE_JOURS ? `Fiche figée depuis ${age} jours` : `Fiche de ${age} jour${age > 1 ? 's' : ''}`];
   let enLigne;

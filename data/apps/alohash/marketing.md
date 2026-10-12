@@ -4,7 +4,7 @@ Mis à jour le 12 octobre 2026. Compagnon de INFRA.md.
 
 ## Positionnement
 
-- **Site** : **Keur Cook** (anciennement Alohash), https://keurcook.com ; éditeur ALOHASH (SAS), nom commercial TOA CORP ; contact keurcook@toakeur.com.
+- **Site** : **Keur Cook** (anciennement Alohash), https://keurcook.com ; éditeur ALOHASH (SAS), nom commercial TOA CORP ; pied de page « Un site TOA KEUR » (lien vers https://toakeur.com) ; contact keurcook@toakeur.com.
 - **Promesse** : « Recettes africaines & produits rares » (`src/lib/config.ts`). Les grands plats d'Afrique expliqués pas à pas, et les ingrédients introuvables en grande surface pour les réussir chez soi.
 - **Contenu** :
   - 52 recettes de 16 pays (Afrique de l'Ouest, centrale, de l'Est, australe et Madagascar), avec histoire du plat, ingrédients, étapes, astuces et valeurs nutritionnelles estimées ; une section « La cuisine de … » sur chaque page pays ;
@@ -52,5 +52,5 @@ Aucun outil de mesure d'audience n'est installé ; la bannière cookies est une 
 ## Les 3 priorités
 
 - Écrire de nouveaux articles « Conseils » : il en reste 33 en réserve, la réserve passe sous 20 vers le 13 novembre et se vide le 28 décembre 2026.
-- Afficher « Un site TOA KEUR » en bas du site, comme décidé : le pied de page n'affiche aujourd'hui que « © Keur Cook ».
+- Relever à nouveau les prix indicatifs des 91 produits : le dernier relevé date du 27 septembre 2026 et rien ne le refait automatiquement.
 - Installer une mesure d'audience respectueuse du consentement (Cloudflare Web Analytics, en autorisant son script dans `public/_headers`) pour savoir quelles recettes et quels articles attirent les visiteurs.
