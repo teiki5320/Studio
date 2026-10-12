@@ -1,6 +1,7 @@
 /* Accueil du Studio — d'après la maquette validée (artifact 8oFkNdUgqU7DzvfMQFjHfC),
    à l'échelle d'une vraie page. Jetons de clay.css et applis.css. */
-.accueil { --creux: #141415; }
+.accueil { --creux: #141415; display: flex; flex-direction: column; gap: 26px; }
+.accueil .ac-sstitre { margin: 12px 0 -12px; }
 html[data-theme='clair'] .accueil { --creux: #e4d7c8; }
 
 @keyframes ac-monte { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
