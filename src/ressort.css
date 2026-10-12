@@ -1,0 +1,43 @@
+/* Animation « Ressort » (maquette « Studio Anime A », choisie le 12/10) :
+   les cartes arrivent en rebond, la page glisse un peu, des bulles d'argile
+   flottent en fond, l'icône du menu choisie fait un « pop ».
+   L'entrée des cartes est jouée par ressort.js (Web Animations) ; ici, le
+   reste. Tout s'arrête si le Mac demande « réduire les animations ». */
+:root {
+  --ressort: cubic-bezier(.34, 1.56, .64, 1);
+  --bulle: #18181a;
+  --bulle-ombre: inset 2px 2px 4px rgba(255, 255, 255, .05), inset -6px -6px 16px rgba(0, 0, 0, .6), 0 20px 40px rgba(0, 0, 0, .4);
+}
+html[data-theme='clair'] {
+  --bulle: #eadfd2;
+  --bulle-ombre: inset 2px 2px 4px rgba(255, 255, 255, .6), inset -6px -6px 16px rgba(120, 90, 60, .18), 0 20px 40px rgba(120, 90, 60, .14);
+}
+
+@keyframes res-flotte { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-40px); } }
+@keyframes res-pop { 0% { transform: scale(1); } 40% { transform: scale(1.22) rotate(-6deg); } 70% { transform: scale(.94); } 100% { transform: scale(1); } }
+@keyframes res-lueur { 0%, 100% { box-shadow: 0 0 0 0 rgba(239, 154, 131, 0); } 50% { box-shadow: 0 0 22px 2px rgba(239, 154, 131, .35); } }
+
+/* Bulles d'argile, derrière tout. */
+.res-bulles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.res-bulles i { position: absolute; border-radius: 50%; background: var(--bulle); box-shadow: var(--bulle-ombre);
+  opacity: .8; animation: res-flotte ease-in-out infinite; }
+.clay-side, .clay-main { position: relative; z-index: 1; }
+.clay-side { z-index: 5; }
+
+/* Menu : l'icône choisie fait un pop, les autres se soulèvent au survol. */
+.clay-logo { animation: res-pop 1s ease .2s both; }
+.clay-nav-ic { transition: transform .25s var(--ressort); }
+.clay-nav:hover .clay-nav-ic { transform: translateY(-3px) rotate(-1deg); }
+.clay-nav.on .clay-nav-ic { animation: res-pop .6s ease; }
+.clay-dot { animation: res-lueur 2.4s ease-in-out infinite; }
+
+/* Les cartes se soulèvent en ressort au survol. */
+.clay-tile, .clay-big, .ac-e2, .ac-chiffres .gc, .ac-raccourcis .rc { transition: transform .25s var(--ressort); }
+.clay-tile:hover, .clay-big:hover, .ac-e2:hover { transform: translateY(-4px) scale(1.02); }
+.ac-chiffres .gc:hover, .ac-raccourcis .rc:hover { transform: translateY(-3px); }
+.clay-tile:active, .clay-big:active, .ac-e2:active { transform: scale(.97); }
+
+@media (prefers-reduced-motion: reduce) {
+  .res-bulles { display: none; }
+  .clay-logo, .clay-nav.on .clay-nav-ic, .clay-dot { animation: none; }
+}

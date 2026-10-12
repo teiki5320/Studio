@@ -25,6 +25,8 @@ import { AccueilPage } from './AccueilPage.jsx';
 import { MesApplisPage, LexiquePage } from './MesApplisPage.jsx';
 import { RoutinesTab, DepotsTab } from './RoutinesTab.jsx';
 import './clay.css';
+import './ressort.css';
+import { useRessort, BULLES } from './ressort.js';
 
 // ---------- Adresse (#/…) ----------
 function readRoute() {
@@ -463,6 +465,8 @@ const TITLES = {
 
 export function Shell() {
   const route = useRoute();
+  const mainRef = useRef(null);
+  useRessort(mainRef, `${route.page}/${route.arg || ''}`);
   const [theme, toggleTheme] = useTheme();
   const [projects, setProjects] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -638,8 +642,13 @@ export function Shell() {
 
   return (
     <div className="clay-shell">
+      <div className="res-bulles" aria-hidden="true">
+        {BULLES.map(([x, y, t, d], i) => (
+          <i key={i} style={{ left: `${x}%`, top: `${y}%`, width: t, height: t, animationDuration: `${d}s`, animationDelay: `${-i * 2}s` }} />
+        ))}
+      </div>
       <Sidebar active={active} running={running} />
-      <main className="clay-main">{body}</main>
+      <main className="clay-main" ref={mainRef}>{body}</main>
     </div>
   );
 }

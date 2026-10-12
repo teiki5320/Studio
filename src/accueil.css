@@ -7,7 +7,7 @@ html[data-theme='clair'] .accueil { --creux: #e4d7c8; }
 @keyframes ac-monte { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
 @keyframes ac-battement { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.4); opacity: .5; } }
 @keyframes ac-tracer { to { stroke-dashoffset: 0; } }
-.accueil .anim { animation: ac-monte .5s var(--bounce) both; }
+.accueil .anim { animation: none; } /* l'entrée est jouée par ressort.js */
 .accueil .battant { animation: ac-battement 1.7s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .accueil .anim, .accueil .battant, .accueil .ac-courbe path.trait { animation: none !important; }
@@ -79,3 +79,6 @@ html[data-theme='clair'] .accueil { --creux: #e4d7c8; }
 .ac-legende { display: flex; flex-wrap: wrap; gap: 16px; padding: 12px 16px; border-radius: 18px; background: var(--carte-2); }
 .ac-legende span { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; color: var(--c-muted); }
 .ac-legende i { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+
+/* Maquette « Ressort » : le bandeau général prend une teinte argile chaude. */
+html:not([data-theme='clair']) .ac-general { background: #2b211d; }

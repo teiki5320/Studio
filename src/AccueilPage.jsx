@@ -21,7 +21,7 @@ function Compte({ n, delai = 0 }) {
     let raf;
     const debut = performance.now() + 120 + delai;
     const pas = (t) => {
-      const p = Math.max(0, Math.min(1, (t - debut) / 900));
+      const p = Math.max(0, Math.min(1, (t - debut) / 1400));
       setV(Math.round(n * (1 - (1 - p) ** 3)));
       if (p < 1) raf = requestAnimationFrame(pas);
     };
