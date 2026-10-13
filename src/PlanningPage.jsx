@@ -234,16 +234,28 @@ export function PlanningPage({ appli } = {}) {
       >
         {enRetard(p) && <span style={{ fontSize: 9, fontWeight: 800, color: '#c1523f', letterSpacing: 0.3 }}>EN RETARD</span>}
         <span style={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{v.titre}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <button
+            title="Enlever du planning"
+            onClick={(e) => {
+              e.stopPropagation();
+              act(api.retirerPlanning(p.id));
+            }}
+            style={{ width: 24, height: 24, borderRadius: 7, border: 'none', background: 'transparent', color: encre, fontSize: 13, fontWeight: 800, cursor: 'pointer', padding: 0, lineHeight: 1, opacity: 0.7 }}
+          >
+            ✕
+          </button>
         <button
           title={p.publie ? 'Publiée — toucher pour annuler' : 'Toucher une fois publiée'}
           onClick={(e) => {
             e.stopPropagation();
             basculer(p);
           }}
-          style={{ alignSelf: 'flex-end', width: 24, height: 24, borderRadius: 7, border: `1.5px solid ${encre}`, background: p.publie ? encre : 'transparent', color: p.publie ? fond : encre, fontSize: 12, fontWeight: 800, cursor: 'pointer', padding: 0, lineHeight: 1 }}
+          style={{ width: 24, height: 24, borderRadius: 7, border: `1.5px solid ${encre}`, background: p.publie ? encre : 'transparent', color: p.publie ? fond : encre, fontSize: 12, fontWeight: 800, cursor: 'pointer', padding: 0, lineHeight: 1 }}
         >
           {p.publie ? '✓' : ''}
         </button>
+        </div>
       </div>
     );
   };
@@ -337,7 +349,7 @@ export function PlanningPage({ appli } = {}) {
       {comptes.some((c) => !dejaSur(fiche, c.id)) && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <span className="clay-muted small" style={{ fontWeight: 800 }}>
-            {fps.length ? `Ajouter un compte (${jourCourt(depuisIso(fps[0].date)).toLowerCase()})` : 'Placer aujourd’hui sur… (ou touche ＋ dans la grille)'}
+            {fps.length ? `Ajouter un compte (${jourCourt(depuisIso(fps[0].date)).toLowerCase()})` : 'Placer aujourd’hui sur…'}
           </span>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {comptes
@@ -403,13 +415,14 @@ export function PlanningPage({ appli } = {}) {
 
       {vue === 'semaine' ? (
         <div style={{ padding: '14px 28px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {/* À placer */}
+          {/* À placer : dans le planning d'une appli seulement (le général ne fait que montrer) */}
+          {appli && aPlacer.length > 0 && (
+            <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <b>À placer</b>
             <span className="clay-state run">{aPlacer.length}</span>
           </div>
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '4px 2px 6px', minHeight: 58 }}>
-            {aPlacer.length === 0 && <span className="clay-muted small" style={{ alignSelf: 'center' }}>Tout est placé. Les vidéos validées arrivent ici.</span>}
             {aPlacer.map((v) => {
               const k = cle(v);
               const [fond, encre] = teinte(v);
@@ -434,16 +447,11 @@ export function PlanningPage({ appli } = {}) {
               );
             })}
           </div>
+            </>
+          )}
 
-          {/* Aide + semaine */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: 'var(--carte)', borderRadius: 14, padding: '8px 8px 8px 14px', boxShadow: 'var(--clay-sm)' }}>
-            <span style={{ flex: '1 1 260px', fontSize: 13 }}>
-              {sel
-                ? pubsDe(sel).length
-                  ? `« ${videos.get(sel)?.titre} » : ajoute d'autres comptes avec ＋, ou glisse ses vignettes pour changer de jour.`
-                  : `« ${videos.get(sel)?.titre} » : touche ＋ sur le compte et le jour voulus, ou glisse-la.`
-                : 'Glisse une vidéo sur une case compte × jour, ou touche-la puis ＋. Touche une vignette pour ouvrir sa fiche.'}
-            </span>
+          {/* Semaine */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
             {sel && (
               <button className="clay-btn small" onClick={() => setSel(null)}>
                 Terminé
@@ -482,9 +490,7 @@ export function PlanningPage({ appli } = {}) {
             <div className="clay-block" style={{ margin: 0 }}>
               <b>Aucun compte pour l'instant.</b>
               <p className="clay-muted small" style={{ marginBottom: 0 }}>
-                {appli
-                  ? 'Aucune chaîne n’est reliée à cette appli : ouvre-en une ou relie une chaîne existante, juste au-dessus.'
-                  : <>Ajoute tes comptes TikTok, YouTube et Pinterest dans <a href="#/reglages">Réglages → Comptes des réseaux</a> : chacun aura sa ligne ici.</>}
+                {appli ? 'Crée ou relie une chaîne juste au-dessus.' : 'Crée tes chaînes depuis chaque appli, dans Publicité.'}
               </p>
             </div>
           ) : (
@@ -604,7 +610,6 @@ export function PlanningPage({ appli } = {}) {
             <span className="clay-muted small">
               {faits} / {total} publications faites
             </span>
-            {aFaire.length === 0 && <span className="clay-muted small">Rien à publier aujourd'hui.</span>}
             {aFaire.map((g, i) => {
               const n = g.pubs.filter((p) => p.publie).length;
               const fini = n === g.pubs.length;
