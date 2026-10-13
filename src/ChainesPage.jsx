@@ -287,8 +287,6 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
   const cle = cleAppli(app);
   const siennes = data.comptes.filter((c) => c.applis.includes(cle));
   const manquants = RESEAUX.filter((r) => !siennes.some((c) => c.reseau === r.id));
-  const pub = projects.find((p) => p.kind === 'pub' && String(p.repo || '').toLowerCase() === String(app.repo).toLowerCase());
-  const nPubs = (pub?.episodes || []).length;
   const recettes = cle === 'keurcook' ? projects.find((p) => p.mode === 'recette') : null;
   return (
     <div className="clay-content ch">
@@ -299,11 +297,6 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
           {app.tagline ? <span>{app.tagline}</span> : null}
         </div>
         <div className="ch-actions">
-          {pub ? (
-            <a className="clay-btn" href={`#/projet/${pub.id}`}>
-              📣 {nPubs} pub{nPubs > 1 ? 's' : ''}
-            </a>
-          ) : null}
           {recettes ? (
             <a className="clay-btn" href="#/recettes">
               🍲 Recettes
@@ -327,10 +320,10 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
           </a>
         ))}
       </div>
-      <h3 className="ch-sous">Son logo et son outro</h3>
-      <MarqueAppli cle={cle} />
       <h3 className="ch-sous">Son planning</h3>
       <PlanningPage key={cle} appli={cle} />
+      <h3 className="ch-sous">Son logo et son outro</h3>
+      <MarqueAppli cle={cle} />
     </div>
   );
 }
