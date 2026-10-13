@@ -227,12 +227,10 @@ export function PlanningPage({ appli } = {}) {
           cursor: 'grab',
           background: fond,
           color: encre,
-          opacity: p.publie ? 0.6 : 1,
           outline: fiche === cle(p) ? '2px solid var(--accent)' : 'none',
           outlineOffset: 1,
         }}
       >
-        {enRetard(p) && <span style={{ fontSize: 9, fontWeight: 800, color: '#c1523f', letterSpacing: 0.3 }}>EN RETARD</span>}
         <span style={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{v.titre}</span>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <button
@@ -245,16 +243,17 @@ export function PlanningPage({ appli } = {}) {
           >
             ✕
           </button>
-        <button
-          title={p.publie ? 'Publiée — toucher pour annuler' : 'Toucher une fois publiée'}
-          onClick={(e) => {
-            e.stopPropagation();
-            basculer(p);
-          }}
-          style={{ width: 24, height: 24, borderRadius: 7, border: `1.5px solid ${encre}`, background: p.publie ? encre : 'transparent', color: p.publie ? fond : encre, fontSize: 12, fontWeight: 800, cursor: 'pointer', padding: 0, lineHeight: 1 }}
-        >
-          {p.publie ? '✓' : ''}
-        </button>
+          {/* Diode : verte = publiée, orange = à publier (toucher pour changer) */}
+          <button
+            title={p.publie ? 'Publiée — toucher pour annuler' : 'À publier — toucher une fois publiée'}
+            onClick={(e) => {
+              e.stopPropagation();
+              basculer(p);
+            }}
+            style={{ width: 24, height: 24, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <span style={{ width: 12, height: 12, borderRadius: '50%', background: p.publie ? '#3fbf6a' : '#f0962e', boxShadow: `0 0 0 2px ${fond}, 0 0 8px ${p.publie ? '#3fbf6a' : '#f0962e'}` }} />
+          </button>
         </div>
       </div>
     );
