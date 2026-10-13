@@ -7,6 +7,7 @@
 // Le Studio ne crée pas le compte chez le réseau : Jean le crée sur leur site,
 // guidé pas à pas, puis le Studio l'enregistre (studio/reseaux.json).
 import React, { useEffect, useState } from 'react';
+import { LogoReseau } from './LogoReseau.jsx';
 import { api } from './api.js';
 import { useApplis, Logo } from './MesApplisPage.jsx';
 import { PlanningPage } from './PlanningPage.jsx';
@@ -14,12 +15,12 @@ import { BrandCard } from './App.jsx';
 import './chaines.css';
 
 export const RESEAUX = [
-  { id: 'youtube', nom: 'YouTube', ic: '▶️', creer: 'https://www.youtube.com/create_channel', auto: true },
-  { id: 'tiktok', nom: 'TikTok', ic: '🎵', creer: 'https://www.tiktok.com/signup' },
-  { id: 'instagram', nom: 'Instagram', ic: '📸', creer: 'https://www.instagram.com/accounts/emailsignup/' },
-  { id: 'pinterest', nom: 'Pinterest', ic: '📌', creer: 'https://www.pinterest.fr/business/create/' },
+  { id: 'youtube', nom: 'YouTube', creer: 'https://www.youtube.com/create_channel', auto: true },
+  { id: 'tiktok', nom: 'TikTok', creer: 'https://www.tiktok.com/signup' },
+  { id: 'instagram', nom: 'Instagram', creer: 'https://www.instagram.com/accounts/emailsignup/' },
+  { id: 'pinterest', nom: 'Pinterest', creer: 'https://www.pinterest.fr/business/create/' },
 ];
-const reseau = (id) => RESEAUX.find((r) => r.id === id) || { id, nom: id, ic: '🌐' };
+const reseau = (id) => RESEAUX.find((r) => r.id === id) || { id, nom: id };
 const cleAppli = (a) => String(a?.repo || '').split('/')[1]?.toLowerCase() || a?.id;
 const jour = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
 const auj = () => new Date().toISOString().slice(0, 10);
@@ -57,7 +58,7 @@ function CarteCompte({ c, data, applis, sous }) {
   const servies = applis.filter((a) => c.applis.includes(cleAppli(a)));
   return (
     <a className="ch-carte" href={`#/chaine/${c.id}`}>
-      <span className="ch-ic">{r.ic}</span>
+      <LogoReseau id={c.reseau} taille={42} seul />
       <b>{c.nom}</b>
       {servies.length ? (
         <span className="ch-servies">
@@ -67,7 +68,7 @@ function CarteCompte({ c, data, applis, sous }) {
         </span>
       ) : null}
       <small>
-        {r.nom} · {sous || (servies.length ? `sert ${servies.length} appli${servies.length > 1 ? 's' : ''}` : 'proposé par défaut')}
+        {r.nom} · {sous || (servies.length > 1 ? `commune à ${servies.length} applis` : servies.length ? 'à son nom' : 'reliée à aucune appli')}
       </small>
       <small>
         {n.publiees} publiée{n.publiees > 1 ? 's' : ''} · {n.programmees} programmée{n.programmees > 1 ? 's' : ''}
@@ -78,26 +79,52 @@ function CarteCompte({ c, data, applis, sous }) {
 }
 
 // ---------- Onglet Chaîne ----------
-export function ChainesPage({ themes }) {
+// Les chaînes rangées par appli ou site ; une chaîne commune à plusieurs
+// applis apparaît sous chacune ; celles reliées à aucune, dans « Autres ».
+export function ChainesPage() {
   const { data, error } = useChaines();
   const { data: applis } = useApplis();
   if (!data || !applis) return <div className="clay-content clay-muted">{error || 'Chargement de tes chaînes…'}</div>;
+  const groupes = applis.apps
+    .map((a) => ({ a, comptes: data.comptes.filter((c) => c.applis.includes(cleAppli(a)) || (cleAppli(a) === 'keurcook' && c.applis.includes('recettes'))) }))
+    .filter((g) => g.comptes.length);
+  const autres = data.comptes.filter((c) => !c.applis.length);
   return (
     <div className="clay-content ch">
       <div className="ch-grille">
-        {data.comptes.map((c) => (
-          <CarteCompte key={c.id} c={c} data={data} applis={applis.apps} />
-        ))}
         <a className="ch-carte ch-ajout" href="#/chaine/nouvelle">
           <span className="ch-ic">＋</span>
           <b>Ouvrir une nouvelle chaîne</b>
           <small>YouTube, TikTok, Instagram ou Pinterest, guidé pas à pas</small>
         </a>
       </div>
-      {themes}
+      {groupes.map(({ a, comptes }) => (
+        <React.Fragment key={a.id}>
+          <h3 className="ch-groupe">
+            <Logo app={a} cls="ch-logo" />
+            {a.name}
+          </h3>
+          <div className="ch-grille">
+            {comptes.map((c) => (
+              <CarteCompte key={c.id} c={c} data={data} applis={applis.apps} />
+            ))}
+          </div>
+        </React.Fragment>
+      ))}
+      {autres.length ? (
+        <>
+          <h3 className="ch-groupe">Autres · reliées à aucune appli</h3>
+          <div className="ch-grille">
+            {autres.map((c) => (
+              <CarteCompte key={c.id} c={c} data={data} applis={applis.apps} />
+            ))}
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }
+
 
 // ---------- Une chaîne ----------
 export function ChaineDetail({ id }) {
@@ -118,7 +145,7 @@ export function ChaineDetail({ id }) {
   return (
     <div className="clay-content ch">
       <div className="ch-tete">
-        <span className="ch-ic grand">{r.ic}</span>
+        <LogoReseau id={c.reseau} taille={64} seul />
         <div className="t">
           <h2>{c.nom}</h2>
           <span>
@@ -206,7 +233,7 @@ export function NouvelleChaine({ arg }) {
         <div className="ch-reseaux">
           {RESEAUX.map((x) => (
             <button key={x.id} type="button" className={`ch-reseau${res === x.id ? ' on' : ''}`} onClick={() => setRes(x.id)}>
-              <span className="ch-ic">{x.ic}</span>
+              <LogoReseau id={x.id} taille={30} seul />
               {x.nom}
             </button>
           ))}
@@ -344,7 +371,8 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
           <div className="ch-applis">
             {autres.map((c) => (
               <button key={c.id} type="button" className="ch-appli" onClick={() => basculer(c)}>
-                {reseau(c.reseau)?.ic} {c.nom}
+                <LogoReseau id={c.reseau} taille={16} />
+                {c.nom}
               </button>
             ))}
           </div>

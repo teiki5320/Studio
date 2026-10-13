@@ -7,10 +7,11 @@
 //   #/recettes, #/chaine, #/encours, #/reglages, #/projet/<id>
 // (#/autre, l'ancienne entrée, renvoie vers #/chaine.)
 import React, { useEffect, useRef, useState } from 'react';
+import { LogoReseau } from './LogoReseau.jsx';
 import { VOICES } from '../shared/catalog.js';
 import { api, followJob } from './api.js';
 import { ProjectView } from './ProjectView.jsx';
-import { FrenchVoicesCard, AppCreate, ChannelCreate } from './App.jsx';
+import { FrenchVoicesCard, AppCreate } from './App.jsx';
 import { appLook, logoAppli, NOT_ADVERTISED } from './apps.js';
 import { LogoAppli } from './LogoAppli.jsx';
 import { ComptesReseauxCard } from './ComptesReseaux.jsx';
@@ -269,38 +270,6 @@ function KeurCookPage({ projects, onOpenRepo }) {
   );
 }
 
-// ---------- Chaîne : les chaînes à thème (vidéos de contenu, dramas) ----------
-// En bas de l'onglet Chaîne, repliées : l'onglet montre d'abord les comptes.
-function ChainesAThemes({ projects, onCreate }) {
-  const [error, setError] = useState('');
-  const channels = projects.filter((p) => p.mode === 'chaine' && p.kind !== 'pub');
-  return (
-    <details className="ch-themes">
-      <summary>
-        🎥 Chaînes à thème{channels.length ? ` · ${channels.length}` : ''} <small>vidéos de contenu, créées par le Studio</small>
-      </summary>
-      {channels.length > 0 && (
-        <div className="clay-grid">
-          {channels.map((p) => (
-            <a key={p.id} className="clay-tile" href={`#/projet/${p.id}`}>
-              <span className="clay-tile-ic">🎥</span>
-              <b>{p.title}</b>
-              <span className="clay-badge ok">
-                {(p.episodes || []).length} vidéo{(p.episodes || []).length > 1 ? 's' : ''}
-              </span>
-            </a>
-          ))}
-        </div>
-      )}
-      <ChannelCreate
-        error={error}
-        voices={VOICES}
-        onSubmit={(info) => onCreate(() => api.createChannel(info)).catch((e) => setError(e.message))}
-      />
-    </details>
-  );
-}
-
 // ---------- Recettes : l'atelier unique, créé au premier passage ----------
 function RecettesEntry({ projects, loaded, onCreate }) {
   const started = useRef(false);
@@ -345,7 +314,7 @@ function YoutubeCard() {
   return (
     <div className="rg-carte">
       <div className="rg-yt">
-        <span className="rg-yt-ic">▶️</span>
+        <LogoReseau id="youtube" taille={44} seul />
         <span className="t">
           <b>YouTube</b>
           <span className={`rg-etat-txt ${etat.connecte ? 'ok' : 'none'}`}>
@@ -687,7 +656,7 @@ export function Shell() {
           <RecettesEntry projects={projects} loaded={loaded} onCreate={runCreation} />
         ) : route.page === 'chaine' ? (
           !route.arg ? (
-            <ChainesPage themes={<ChainesAThemes projects={projects} onCreate={runCreation} />} />
+            <ChainesPage />
           ) : route.arg.startsWith('nouvelle') ? (
             <NouvelleChaine key={route.arg} arg={route.arg} />
           ) : (

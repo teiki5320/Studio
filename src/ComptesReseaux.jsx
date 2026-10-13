@@ -2,6 +2,7 @@
 // du Planning (une ligne chacun), et les applis pour lesquelles chaque
 // compte est proposé d'office.
 import React, { useEffect, useState } from 'react';
+import { LogoReseau } from './LogoReseau.jsx';
 import { LogoAppli } from './LogoAppli.jsx';
 import { api } from './api.js';
 import { APP_LOOKS } from './apps.js';
@@ -52,7 +53,10 @@ export function ComptesReseauxCard() {
             .filter((c) => c.reseau === r)
             .map((c) => (
               <div key={c.id} className="rg-ligne rg-ligne-compte">
-                <span className={`rg-reseau ${r}`}>{libelle}</span>
+                <span className={`rg-reseau ${r}`}>
+                  <LogoReseau id={r} taille={18} />
+                  {libelle}
+                </span>
                 <span className="t">
                   <b>{c.nom}</b>
                   <small>

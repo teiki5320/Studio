@@ -5,6 +5,7 @@
 // droite garde la légende, la vidéo et les actions. L'onglet « Publier »
 // déroule le travail du jour, vidéo par vidéo.
 import React, { useEffect, useRef, useState } from 'react';
+import { LogoReseau } from './LogoReseau.jsx';
 import { LogoAppli } from './LogoAppli.jsx';
 import { api, copyText, followJob } from './api.js';
 import { surLeMac } from './VideoSave.jsx';
@@ -16,7 +17,6 @@ const RESEAUX = [
   ['pinterest', 'Pinterest', 'Pin'],
 ];
 const NOM_RESEAU = Object.fromEntries(RESEAUX.map(([k, n]) => [k, n]));
-const COURT = Object.fromEntries(RESEAUX.map(([k, , c]) => [k, c]));
 
 // Une couleur par appli (fond, encre).
 const COULEURS = {
@@ -310,7 +310,10 @@ export function PlanningPage({ appli } = {}) {
               <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, background: 'var(--carte)', borderRadius: 14, padding: '8px 8px 8px 12px', boxShadow: 'var(--clay-sm)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-                    <span className="clay-muted" style={{ fontSize: 11, fontWeight: 800 }}>{NOM_RESEAU[c.reseau]}</span>
+                    <span className="clay-muted" style={{ fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center' }}>
+                      <LogoReseau id={c.reseau} taille={14} />
+                      {NOM_RESEAU[c.reseau]}
+                    </span>
                     <span style={{ fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.nom}>{c.nom}</span>
                   </div>
                   <span className={`clay-state ${p.publie ? 'ok' : retard ? 'ko' : 'run'}`}>{p.publie ? '✓ Publiée' : retard ? 'En retard' : 'À publier'}</span>
@@ -360,7 +363,8 @@ export function PlanningPage({ appli } = {}) {
               .sort((a, b) => Number(fv.proposes?.includes(b.id)) - Number(fv.proposes?.includes(a.id)))
               .map((c) => (
                 <button key={c.id} style={petitBouton} onClick={() => placer(fiche, c.id, fps[0]?.date || aujourdhui)}>
-                  ＋ {COURT[c.reseau]} {c.nom}
+                  ＋ <LogoReseau id={c.reseau} taille={14} />
+                  {c.nom}
                   {fv.proposes?.includes(c.id) ? ' ★' : ''}
                 </button>
               ))}
@@ -483,7 +487,8 @@ export function PlanningPage({ appli } = {}) {
                 .filter((c) => rangement.masques?.[c.id])
                 .map((c) => (
                   <button key={c.id} style={{ ...petitBouton, borderRadius: 999 }} onClick={() => setRangement((x) => ({ ...x, masques: { ...x.masques, [c.id]: false } }))}>
-                    {COURT[c.reseau]} {c.nom} · afficher
+                    <LogoReseau id={c.reseau} taille={14} />
+                    {c.nom} · afficher
                   </button>
                 ))}
             </div>
@@ -525,6 +530,7 @@ export function PlanningPage({ appli } = {}) {
                         style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: '10px 2px 2px', textAlign: 'left', color: 'var(--c-muted)', fontSize: 12 }}
                       >
                         <span style={{ width: 12 }}>{replie ? '▸' : '▾'}</span>
+                        <LogoReseau id={r} taille={20} seul />
                         <span style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--texte)' }}>{nom}</span>
                         <span>
                           {pluriel(tous.length, 'compte')} · {pluriel(n, 'publication')}
@@ -692,6 +698,7 @@ export function PlanningPage({ appli } = {}) {
                             </button>
                             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
                               <span style={{ fontSize: 11, fontWeight: 800, color: enRetard(p) ? 'var(--ko)' : 'var(--c-muted)' }}>
+                                <LogoReseau id={c.reseau} taille={14} />
                                 {NOM_RESEAU[c.reseau]}
                                 {enRetard(p) ? ' · en retard' : ''}
                               </span>
