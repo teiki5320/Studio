@@ -119,12 +119,6 @@ export function planning() {
 }
 
 const jourValide = (d) => /^\d{4}-\d{2}-\d{2}$/.test(String(d || ''));
-const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-const lendemain = (s) => {
-  const d = new Date(`${s}T12:00:00`);
-  d.setDate(d.getDate() + 1);
-  return iso(d);
-};
 
 function compteValide(id) {
   if (!listeComptes().some((c) => c.id === id)) {
@@ -190,32 +184,6 @@ export function retirer(id) {
 export function retirerVideo(projectId, number) {
   const k = `${projectId}:${Number(number)}`;
   ecrire(lire().filter((p) => cle(p) !== k));
-}
-
-// Remplissage automatique : chaque vidéo à placer part sur ses comptes
-// proposés, au premier jour libre de chaque compte (1 vidéo par compte et
-// par jour), à partir d'aujourd'hui. Sans `appliquer` : simple aperçu.
-// `depots` : seulement les vidéos de ces applis (écran d'une appli).
-export function remplir(appliquer = false, depots = null) {
-  const aPlacer = planning().aPlacer.filter((v) => !depots || depots.includes(v.depot));
-  const pubs = lire();
-  const prevues = [];
-  const debut = iso(new Date());
-  for (const v of aPlacer) {
-    for (const compte of v.proposes) {
-      let d = debut;
-      for (let n = 0; n < 60 && pubs.some((p) => p.compte === compte && p.date === d); n++) {
-        d = lendemain(d);
-      }
-      const p = { id: nouvelId(), projectId: v.projectId, number: v.number, compte, date: d, publie: false };
-      pubs.push(p);
-      prevues.push(p);
-    }
-  }
-  if (appliquer && prevues.length) {
-    ecrire(pubs);
-  }
-  return prevues;
 }
 
 // Nombre de publications encore rattachées à un compte (avant de le supprimer).

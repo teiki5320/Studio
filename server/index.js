@@ -94,7 +94,7 @@ import { listRepos, fetchRepoBrief, githubUser } from './github.js';
 import { fetchSiteBrief } from './sitebrief.js';
 import { publicHosts, verifyAccessToken } from './cfaccess.js';
 import { listQueue, addToQueue, removeFromQueue, startQueue } from './queue.js';
-import { planning, placer, modifier as modifierPlanning, retirer as retirerPlanning, retirerVideo as retirerVideoPlanning, remplir as remplirPlanning, publicationsDuCompte, entree as entreePlanning, noterPublication } from './planning.js';
+import { planning, placer, modifier as modifierPlanning, retirer as retirerPlanning, retirerVideo as retirerVideoPlanning, publicationsDuCompte, entree as entreePlanning, noterPublication } from './planning.js';
 import { listeComptes, ajouterCompte, modifierCompte, retirerCompte } from './reseaux.js';
 import {
   etatIndexation,
@@ -1314,14 +1314,6 @@ app.get('/api/planning', (req, res) => {
 app.post('/api/planning', (req, res) => {
   try {
     res.json(placer(req.body || {}));
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-app.post('/api/planning/remplir', (req, res) => {
-  try {
-    const { appliquer, depots } = req.body || {};
-    res.json(remplirPlanning(Boolean(appliquer), Array.isArray(depots) ? depots : null));
   } catch (e) {
     res.status(400).json({ error: e.message });
   }

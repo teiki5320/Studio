@@ -100,8 +100,6 @@ export function PlanningPage({ appli } = {}) {
   const [fiche, setFiche] = useState(null); // vidéo ouverte dans la fiche (clé)
   const [over, setOver] = useState(null); // case survolée pendant un glisser
   const [rangement, setRangement] = useState(lireRangement);
-  const [apercu, setApercu] = useState(null); // remplissage automatique proposé
-  const [annulables, setAnnulables] = useState(null); // ids posés par le remplissage
   const [envoi, setEnvoi] = useState(null);
   const [cur, setCur] = useState(0);
   const drag = useRef(null);
@@ -204,36 +202,6 @@ export function PlanningPage({ appli } = {}) {
   };
   const lienTelechargement = (v) =>
     surLeMac() ? v.video : `${v.video}?dl=1&name=${encodeURIComponent(v.legende.slice(0, 120) + '.mp4')}`;
-
-  // ---------- Remplissage automatique ----------
-  const proposerRemplissage = () =>
-    apercu ? setApercu(null) : api.remplirPlanning(false, appli && depotsDe(appli)).then(setApercu).catch((e) => setError(e.message));
-  const appliquerRemplissage = () =>
-    api
-      .remplirPlanning(true, appli && depotsDe(appli))
-      .then((l) => {
-        setAnnulables(l.map((p) => p.id));
-        setApercu(null);
-        setSel(null);
-        return load();
-      })
-      .catch((e) => setError(e.message));
-  const annulerRemplissage = () => {
-    const ids = annulables || [];
-    setAnnulables(null);
-    act(Promise.all(ids.map((id) => api.retirerPlanning(id))));
-  };
-  const apercuParVideo = [];
-  (apercu || []).forEach((p) => {
-    const k = cle(p);
-    let g = apercuParVideo.find((x) => x.k === k);
-    if (!g) {
-      g = { k, v: videos.get(k), lignes: [] };
-      apercuParVideo.push(g);
-    }
-    const c = compteDe[p.compte];
-    g.lignes.push(`${COURT[c?.reseau] || ''} ${c?.nom || '?'} · ${jourCourt(depuisIso(p.date)).toLowerCase()}`);
-  });
 
   // ---------- Vignette d'une publication dans la grille ----------
   const vignette = (p) => {
@@ -439,12 +407,6 @@ export function PlanningPage({ appli } = {}) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <b>À placer</b>
             <span className="clay-state run">{aPlacer.length}</span>
-            <div style={{ flex: 1 }} />
-            {aPlacer.length > 0 && comptes.length > 0 && (
-              <button className={`clay-btn small${apercu ? ' ghost' : ''}`} onClick={proposerRemplissage}>
-                ✨ Remplir automatiquement
-              </button>
-            )}
           </div>
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '4px 2px 6px', minHeight: 58 }}>
             {aPlacer.length === 0 && <span className="clay-muted small" style={{ alignSelf: 'center' }}>Tout est placé. Les vidéos validées arrivent ici.</span>}
@@ -472,40 +434,6 @@ export function PlanningPage({ appli } = {}) {
               );
             })}
           </div>
-
-          {apercu && (
-            <div className="clay-block" style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-                <b>Aperçu du remplissage</b>
-                <span className="clay-muted small">1 vidéo maximum par compte et par jour, dès aujourd'hui, sur les comptes proposés pour chaque appli (Réglages).</span>
-              </div>
-              {apercuParVideo.length === 0 ? (
-                <span className="clay-muted small">Aucun compte proposé pour ces applis : coche-les dans Réglages → Comptes des réseaux.</span>
-              ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 8 }}>
-                  {apercuParVideo.map((g) => (
-                    <div key={g.k} style={{ display: 'flex', gap: 10, alignItems: 'center', background: 'var(--carte-2)', borderRadius: 12, padding: '8px 10px' }}>
-                      <span style={{ width: 8, height: 34, borderRadius: 999, background: teinte(g.v)[0], flex: 'none' }} />
-                      <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{g.v?.titre}</span>
-                        <span className="clay-muted" style={{ fontSize: 11, lineHeight: 1.35 }}>{g.lignes.join('  ·  ')}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div style={{ display: 'flex', gap: 8 }}>
-                {apercuParVideo.length > 0 && (
-                  <button className="clay-btn" onClick={appliquerRemplissage}>
-                    Appliquer
-                  </button>
-                )}
-                <button className="clay-btn ghost" onClick={() => setApercu(null)}>
-                  Fermer
-                </button>
-              </div>
-            </div>
-          )}
 
           {/* Aide + semaine */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: 'var(--carte)', borderRadius: 14, padding: '8px 8px 8px 14px', boxShadow: 'var(--clay-sm)' }}>
@@ -777,17 +705,6 @@ export function PlanningPage({ appli } = {}) {
         </div>
       )}
 
-      {annulables && (
-        <div style={{ position: 'fixed', left: '50%', bottom: 24, transform: 'translateX(-50%)', display: 'flex', alignItems: 'center', gap: 12, background: 'var(--carte)', borderRadius: 16, padding: '10px 10px 10px 16px', boxShadow: 'var(--clay)', zIndex: 20 }}>
-          <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--ok)' }}>✓ {pluriel(annulables.length, 'publication')} placées</span>
-          <button className="clay-btn ghost small" onClick={annulerRemplissage}>
-            ↶ Annuler
-          </button>
-          <button className="clay-btn ghost small" onClick={() => setAnnulables(null)}>
-            ✕
-          </button>
-        </div>
-      )}
     </div>
   );
 }

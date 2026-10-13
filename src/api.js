@@ -107,7 +107,6 @@ export const api = {
   modifierPlanning: (id, body) => request(`/api/planning/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   retirerPlanning: (id) => request(`/api/planning/${id}`, { method: 'DELETE' }),
   retirerVideoPlanning: (projectId, number) => request(`/api/planning/video/${projectId}/${number}`, { method: 'DELETE' }),
-  remplirPlanning: (appliquer, depots) => request('/api/planning/remplir', { method: 'POST', body: JSON.stringify({ appliquer, depots }) }),
   comptesReseaux: () => request('/api/reseaux/comptes'),
   ajouterCompteReseau: (c) => request('/api/reseaux/comptes', { method: 'POST', body: JSON.stringify(c) }),
   modifierCompteReseau: (id, patch) => request(`/api/reseaux/comptes/${id}`, { method: 'PATCH', body: JSON.stringify(patch) }),
