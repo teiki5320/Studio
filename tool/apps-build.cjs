@@ -569,7 +569,11 @@ function loadApps() {
       if (!valides.length) return null;
       // Une ligne « Mis à jour le … » / « Généré le … » fait foi : sinon, un
       // calendrier de publication cité en tête donnait une date à venir.
-      const ligneMaj = tete.split('\n').find((l) => /\b(mis\s*[àa]\s*jour|g[ée]n[ée]r[ée]|v[ée]rifi[ée])\b/i.test(l));
+      // La ligne peut être coupée en deux (« …mis à jour le » / « > 13 octobre 2026 ») :
+      // on la lit avec la suivante.
+      const lignesTete = tete.split('\n');
+      const iMaj = lignesTete.findIndex((l) => /\b(mis\s*[àa]\s*jour|g[ée]n[ée]r[ée]|v[ée]rifi[ée])\b/i.test(l));
+      const ligneMaj = iMaj > -1 ? `${lignesTete[iMaj]} ${(lignesTete[iMaj + 1] || '').replace(/^>\s*/, '')}` : null;
       if (ligneMaj) {
         const sousDates = [];
         let mm;
