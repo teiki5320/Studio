@@ -345,6 +345,111 @@ function extractListe(lines, re, maxItems) {
   return rows.length ? { header: null, rows } : null;
 }
 
+// ── Parties « Parcours » (maquette F2, 13/10) ───────────────────────────────
+// Sections courtes et normées que la routine des fiches écrit dans chaque
+// fiche, pour que le Studio les dessine : trajets techniques, phases de
+// rémunération, points forts, mesures, boutiques, poids, ce qui reste.
+// Un état s'écrit entre crochets : [ok] [à faire] [bloquant] [pas encore].
+function etatDe(tag) {
+  const t = normalize(String(tag || '')).trim();
+  if (/^(ok|fait|en place|en ligne)$/.test(t)) return 'ok';
+  if (/^(a faire|en cours|a verifier)$/.test(t)) return 'run';
+  if (/^(bloquant|bloque)$/.test(t)) return 'ko';
+  if (/^(pas encore|plus tard)$/.test(t)) return 'none';
+  return null;
+}
+// Sépare « [état] » (au début ou à la fin) du reste du texte.
+function avecEtat(texte) {
+  let etat = null;
+  const t = String(texte).replace(/\s*\[([^\]]+)\]\s*/g, (m, tag) => {
+    const k = etatDe(tag);
+    if (k && !etat) { etat = k; return ' '; }
+    return m;
+  }).trim();
+  return { etat, texte: t };
+}
+// Les puces (« - » ou « 1. ») d'une section, lignes de continuation jointes.
+function pucesDe(lines, re) {
+  const sec = sectionLines(lines, re);
+  if (!sec) return null;
+  const out = [];
+  for (const l of sec) {
+    const m = l.match(/^\s*(?:[-*+]|\d+[.)])\s+(.*)$/);
+    if (m) out.push(m[1].trim());
+    else if (out.length && /^\s+\S/.test(l)) out[out.length - 1] += ' ' + l.trim();
+  }
+  return out.length ? out : null;
+}
+// « 🐙 **Titre** : texte » → { emoji, titre, texte }.
+function titreTexte(p) {
+  const m = p.match(/^(\p{Extended_Pictographic}[️‍\p{Extended_Pictographic}]*)?\s*\*\*(.+?)\*\*\s*:?\s*(.*)$/u);
+  if (!m) return { emoji: null, titre: null, texte: stripInline(p) };
+  return { emoji: m[1] || null, titre: stripInline(m[2]), texte: stripInline(m[3]) };
+}
+function extractParcours(md) {
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
+  const enBref = (pucesDe(lines, /^en bref/) || []).map(titreTexte).filter((x) => x.titre)
+    .map((x) => ({ label: x.titre, value: x.texte.replace(/\.\s*$/, '') }));
+  const trajets = (pucesDe(lines, /^parcours/) || []).map((p) => {
+    const tete = titreTexte(p.split('→')[0]);
+    const reste = p.replace(/^[^:]*?\*\*.+?\*\*\s*:\s*/u, '');
+    const etapes = reste.split('→').map((e) => {
+      const { etat, texte } = avecEtat(e);
+      const em = texte.match(/^(\p{Extended_Pictographic}[️‍\p{Extended_Pictographic}]*)\s*(.*)$/u);
+      const corps = em ? em[2] : texte;
+      const [nom, ...note] = corps.split(/\s+—\s+/);
+      return { emoji: em ? em[1] : null, nom: stripInline(nom), note: stripInline(note.join(' — ')), etat: etat || 'none' };
+    }).filter((e) => e.nom);
+    return { emoji: tete.emoji, nom: tete.titre, etapes };
+  }).filter((t) => t.nom && t.etapes.length);
+  return { enBref, trajets };
+}
+function extractPhases(md) {
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
+  const phases = (pucesDe(lines, /remuneration par phases|phases de remuneration/) || []).map((p) => {
+    const { etat, texte } = avecEtat(p);
+    const x = titreTexte(texte);
+    return { etat: etat || 'none', titre: x.titre || '', texte: x.texte };
+  });
+  const forces = (pucesDe(lines, /^points forts/) || []).map(titreTexte).filter((x) => x.titre).slice(0, 3);
+  const mesures = (pucesDe(lines, /^mesures/) || []).map(titreTexte).filter((x) => x.titre)
+    .map((x) => ({ label: x.titre, value: x.texte }));
+  return { phases, forces, mesures };
+}
+function extractBoutiques(md) {
+  const lines = md.replace(/\r\n/g, '\n').split('\n');
+  const enBref = (pucesDe(lines, /^en bref/) || []).map(titreTexte).filter((x) => x.titre)
+    .map((x) => ({ label: x.titre, value: x.texte.replace(/\.\s*$/, '') }));
+  let boutiques = null;
+  const sec = sectionLines(lines, /^boutiques|^en ligne$/);
+  if (sec) {
+    const rangs = sec.filter((l) => l.includes('|') && !/^\s*\|?\s*:?-{2,}/.test(l))
+      .map((l) => l.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map((c) => c.trim()));
+    if (rangs.length > 1) {
+      boutiques = {
+        colonnes: rangs[0].slice(1).map(stripInline),
+        lignes: rangs.slice(1).map((r) => ({ label: stripInline(r[0]), cellules: r.slice(1).map((c) => {
+          const { etat, texte } = avecEtat(c);
+          return { etat, texte: stripInline(texte).replace(/^<(.+)>$/, '$1') };
+        }) })),
+      };
+    }
+  }
+  const poids = (pucesDe(lines, /^poids/) || []).map((p) => {
+    const x = titreTexte(p);
+    const m = x.texte.match(/([\d.,]+)\s*\/\s*([\d.,]+)\s*([A-Za-zo]+)\s*(?:[—-]\s*(.*))?$/);
+    if (!m) return null;
+    const n = (v) => Number(v.replace(',', '.'));
+    return { emoji: x.emoji, titre: x.titre, valeur: n(m[1]), max: n(m[2]), unite: m[3], note: m[4] ? stripInline(m[4]) : '' };
+  }).filter(Boolean);
+  const reste = (pucesDe(lines, /ce qui reste/) || []).map((p) => {
+    const fait = /^\s*(?:✅|✔️|\[[xX]\])/.test(p);
+    const x = titreTexte(p.replace(/^\s*(?:✅|✔️|⬜|\[[ xX]\])\s*/, ''));
+    return { fait, titre: x.titre || x.texte, texte: x.titre ? x.texte : '' };
+  });
+  return { enBref, boutiques, poids, reste };
+}
+
 // Relie chaque service de l'app à la section d'infra.md dont le titre
 // contient son nom (ou son id).
 function findServiceAnchors(serviceIds, toc) {
@@ -536,14 +641,17 @@ function loadApps() {
       infraHtml: infra.html,
       infraToc: infra.toc,
       infraEssentiel: extractInfraEssentiel(infraMd),
+      parcours: extractParcours(infraMd),
       marketingHtml: marketing.html,
       marketingToc: marketing.toc,
       marketingSummary: extractMarketingSummary(marketingMd),
+      remuneration: extractPhases(marketingMd),
       publicationHtml: publication ? publication.html : null,
       publicationToc: publication ? publication.toc : null,
       // Même forme que « Vue d'ensemble » de l'infra : mêmes puces, même extracteur.
       publicationEssentiel: publicationMd ? extractInfraEssentiel(publicationMd) : null,
       publicationPlateformes: publicationMd ? extractPublicationPlateformes(publicationMd) : null,
+      boutiques: publicationMd ? extractBoutiques(publicationMd) : null,
       serviceAnchors: ancresServices,
       serviceFournisseurs: findServiceProviders(services, infra.toc, ancresServices),
       fiches,
@@ -577,4 +685,6 @@ function build() {
   console.log(`   ${SERVICES.length} services au catalogue (${CATEGORIES.length} familles)`);
 }
 
-build();
+// Lancé en commande : on construit. Requis par les tests : on prête les lecteurs.
+if (require.main === module) build();
+module.exports = { extractParcours, extractPhases, extractBoutiques };
