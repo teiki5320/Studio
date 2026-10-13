@@ -5,6 +5,7 @@
 // droite garde la légende, la vidéo et les actions. L'onglet « Publier »
 // déroule le travail du jour, vidéo par vidéo.
 import React, { useEffect, useRef, useState } from 'react';
+import { LogoAppli } from './LogoAppli.jsx';
 import { api, copyText, followJob } from './api.js';
 import { surLeMac } from './VideoSave.jsx';
 
@@ -267,7 +268,10 @@ export function PlanningPage({ appli } = {}) {
       style={{ position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 10, width: 360, maxWidth: '92%', boxSizing: 'border-box', background: 'var(--side)', borderRadius: '28px 0 0 28px', boxShadow: 'var(--clay)', padding: 20, display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={pastille(teinte(fv)[0], teinte(fv)[1])}>{fv.appli}</span>
+        <span style={pastille(teinte(fv)[0], teinte(fv)[1])}>
+          <LogoAppli de={fv.depot === 'recettes' ? 'keurcook' : fv.depot} taille={16} />
+          {fv.appli}
+        </span>
         <div style={{ flex: 1 }} />
         <button className="clay-pill" style={{ width: 34, height: 34, fontSize: 14 }} title="Fermer" onClick={() => (setFiche(null), setSel(null))}>
           ✕
@@ -548,7 +552,10 @@ export function PlanningPage({ appli } = {}) {
                             <div key={c.id} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 6px 6px 10px', background: 'var(--side)', borderRadius: 12, minHeight: 60, boxSizing: 'border-box' }}>
                                 <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                                  <b style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.nom}>
+                                  <b style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }} title={c.nom}>
+                                    {(c.applis || []).slice(0, 3).map((a) => (
+                                      <LogoAppli key={a} de={a} taille={18} />
+                                    ))}
                                     {c.nom}
                                   </b>
                                   <span className="clay-muted" style={{ fontSize: 11 }}>
@@ -638,7 +645,10 @@ export function PlanningPage({ appli } = {}) {
                   <span className="clay-muted small" style={{ fontWeight: 800 }}>
                     {iCur + 1} sur {aFaire.length}
                   </span>
-                  <span style={pastille(teinte(courant.v)[0], teinte(courant.v)[1])}>{courant.v.appli}</span>
+                  <span style={pastille(teinte(courant.v)[0], teinte(courant.v)[1])}>
+                    <LogoAppli de={courant.v.depot === 'recettes' ? 'keurcook' : courant.v.depot} taille={16} />
+                    {courant.v.appli}
+                  </span>
                   <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
                     <button className="clay-btn ghost" onClick={() => setCur((iCur - 1 + aFaire.length) % aFaire.length)}>
                       ← Précédente

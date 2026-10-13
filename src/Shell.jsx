@@ -11,7 +11,8 @@ import { VOICES } from '../shared/catalog.js';
 import { api, followJob } from './api.js';
 import { ProjectView } from './ProjectView.jsx';
 import { FrenchVoicesCard, AppCreate, ChannelCreate } from './App.jsx';
-import { appLook, NOT_ADVERTISED } from './apps.js';
+import { appLook, logoAppli, NOT_ADVERTISED } from './apps.js';
+import { LogoAppli } from './LogoAppli.jsx';
 import { ComptesReseauxCard } from './ComptesReseaux.jsx';
 import { ComptesTab } from './ComptesTab.jsx';
 import { QueuePanel } from './QueuePanel.jsx';
@@ -220,7 +221,7 @@ function PubPage({ projects, onOpenRepo }) {
               className="clay-tile"
               onClick={() => go(`appli/${r.name}`)}
             >
-              <span className="clay-tile-ic">{look.icon}</span>
+              <span className="clay-tile-ic">{logoAppli(r.name) ? <LogoAppli de={r.name} taille={40} seul /> : look.icon}</span>
               <b>{look.name}</b>
               {badge(count(p))}
             </button>

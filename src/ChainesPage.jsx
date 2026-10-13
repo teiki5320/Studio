@@ -59,6 +59,13 @@ function CarteCompte({ c, data, applis, sous }) {
     <a className="ch-carte" href={`#/chaine/${c.id}`}>
       <span className="ch-ic">{r.ic}</span>
       <b>{c.nom}</b>
+      {servies.length ? (
+        <span className="ch-servies">
+          {servies.map((a) => (
+            <Logo key={a.id} app={a} cls="ch-logo" />
+          ))}
+        </span>
+      ) : null}
       <small>
         {r.nom} · {sous || (servies.length ? `sert ${servies.length} appli${servies.length > 1 ? 's' : ''}` : 'proposé par défaut')}
       </small>

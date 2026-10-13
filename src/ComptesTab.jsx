@@ -4,6 +4,7 @@
 // quand le faire, et la barre de progression. On touche « À faire » une fois
 // la chose faite : la ligne part dans l'autre onglet.
 import React, { useEffect, useState } from 'react';
+import { LogoAppli } from './LogoAppli.jsx';
 import { api } from './api.js';
 
 export function ComptesTab({ resteSeulement = false }) {
@@ -66,7 +67,10 @@ export function ComptesTab({ resteSeulement = false }) {
               resteSeulement ? (
                 <div key={l.id} className="rg-ligne rg-ligne-reste">
                   <span className="t">
-                    <b>{l.quoi}</b>
+                    <b>
+                      <LogoAppli de={l.quoi} taille={18} />
+                      {l.quoi}
+                    </b>
                     {l.note ? <small>{l.note}</small> : null}
                   </span>
                   <span className="quand">{l.quand}</span>
@@ -76,7 +80,10 @@ export function ComptesTab({ resteSeulement = false }) {
                 </div>
               ) : (
                 <div key={l.id} className="rg-ligne rg-ligne-2">
-                  <b>{l.quoi}</b>
+                  <b>
+                    <LogoAppli de={l.quoi} taille={18} />
+                    {l.quoi}
+                  </b>
                   <span>{l.resultat}</span>
                 </div>
               ),

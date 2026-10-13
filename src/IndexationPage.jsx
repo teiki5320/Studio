@@ -4,8 +4,8 @@
 // « Envoyer à Claude » met un problème dans la file de la routine Claude
 // « Indexation : corrections » (6 h, 9 h, 12 h, 19 h).
 import React, { useEffect, useState } from 'react';
+import { LogoAppli } from './LogoAppli.jsx';
 import { api, followJob } from './api.js';
-import { useApplis } from './MesApplisPage.jsx';
 import './indexation.css';
 
 // Couleur d'un problème selon sa gravité : rouge cassé, jaune refusé, bleu en attente de Google.
@@ -122,7 +122,6 @@ export function IndexationPage() {
       return '';
     }
   });
-  const { data: applis } = useApplis();
   const [perf, setPerf] = useState(null);
   useEffect(() => {
     api
@@ -189,10 +188,6 @@ export function IndexationPage() {
       localStorage.setItem('indexation-site', x.propriete);
     } catch {}
   };
-  const emoji = (domaine) => {
-    const cle = domaine.split('.')[0];
-    return applis?.apps.find((a) => a.name.normalize('NFD').toLowerCase().replace(/[^a-z]/g, '') === cle)?.emoji || '🌐';
-  };
   const pct = (n, t) => (t ? Math.round((100 * n) / t) : 0);
 
   return (
@@ -253,7 +248,8 @@ export function IndexationPage() {
                 </span>
                 <span className="t">
                   <b>
-                    {emoji(x.domaine)} {x.domaine}
+                    <LogoAppli de={x.domaine} taille={22} />
+                    {x.domaine}
                   </b>
                   <small>
                     <strong>{nb(x.indexees)}</strong> sur Google, sur {nb(x.total)}
@@ -279,7 +275,8 @@ export function IndexationPage() {
       {choisi ? (
         <div className="ix-detail" key={choisi.propriete} data-sans-ressort>
           <h3>
-            {emoji(choisi.domaine)} {choisi.domaine}
+            <LogoAppli de={choisi.domaine} taille={26} />
+            {choisi.domaine}
             <small>
               {ouverts(choisi).length
                 ? `${ouverts(choisi).length} problème${ouverts(choisi).length > 1 ? 's' : ''}`

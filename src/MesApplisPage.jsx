@@ -828,7 +828,7 @@ function FicheService({ svc, app, data, famTint, onFermer, onAller }) {
             <div className="chips">
               {utilisateurs.map((a) => (
                 <a key={a.id} className={`chip tint-${TINTS[data.apps.indexOf(a) % TINTS.length]}`} href={`#/applis/${a.id}`} onClick={onFermer}>
-                  {a.emoji} {a.name}
+                  <Logo app={a} cls="ch-logo" /> {a.name}
                 </a>
               ))}
             </div>
@@ -921,7 +921,7 @@ function FicheLexique({ svc, data, famTint }) {
           <div className="chips">
             {users.map((a) => (
               <a key={a.id} className={`chip tint-${TINTS[data.apps.indexOf(a) % TINTS.length]}`} href={`#/applis/${a.id}`}>
-                {a.emoji} {a.name}
+                <Logo app={a} cls="ch-logo" /> {a.name}
               </a>
             ))}
           </div>

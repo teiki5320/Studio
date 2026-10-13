@@ -2,6 +2,7 @@
 // la courbe des visiteurs jour par jour, puis les pages, pays et sources.
 // Le tableau des sites se trie en touchant le titre d'une colonne.
 import React, { useEffect, useState } from 'react';
+import { LogoAppli } from './LogoAppli.jsx';
 import { api } from './api.js';
 
 const PERIODES = [
@@ -214,7 +215,10 @@ export function AudiencePage() {
                 onClick={() => setSite(site === l.nom ? 'tous' : l.nom)}
                 style={{ borderTop: '1px solid var(--ligne)', cursor: 'pointer', background: site === l.nom ? 'var(--none-tint)' : 'transparent' }}
               >
-                <td style={{ padding: 8, fontWeight: 700 }}>{l.nom}</td>
+                <td style={{ padding: 8, fontWeight: 700 }}>
+                  <LogoAppli de={l.nom} taille={20} />
+                  {l.nom}
+                </td>
                 <td style={{ padding: 8 }}>{nb(l.visiteurs)}</td>
                 <td style={{ padding: 8 }}>{l.source === 'Domaine' && !l.vues ? '—' : nb(l.vues)}</td>
                 <td style={{ padding: 8 }} className="clay-muted small">

@@ -16,6 +16,36 @@ export const APP_LOOKS = {
   survival: { name: 'Survival', icon: '🏕️' },
 };
 
+// Les vrais logos des applis (public/logos), par clé de dépôt.
+export const LOGOS = {
+  kultiva: 'logos/kultiva.webp',
+  erea: 'logos/erea.webp',
+  solelis: 'logos/solelis.webp',
+  palabre: 'logos/palabre.webp',
+  keurcook: 'logos/alohash.webp',
+  optiled: 'logos/optiled.webp',
+  keurdeco: 'logos/keurdeco.webp',
+  keurbook: 'logos/keurbook.webp',
+};
+const simple = (t) =>
+  String(t || '')
+    .replace(/^teiki5320\//i, '')
+    .normalize('NFD')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+// Le logo d'une appli à partir de n'importe quoi qui la nomme : clé de
+// dépôt, « teiki5320/Keurdeco », « Keur Déco », « keurdeco.com »,
+// « Keur Cook : vérifier… ». Rien si aucune appli ne correspond.
+export function logoAppli(texte) {
+  const t = simple(texte);
+  if (!t) {
+    return null;
+  }
+  const cles = Object.keys(LOGOS);
+  const k = cles.find((c) => t.startsWith(c)) || cles.find((c) => t.includes(c));
+  return k ? LOGOS[k] : null;
+}
+
 // Applis mobiles (les autres sont des sites) : leurs pubs peuvent finir sur
 // les badges officiels des boutiques où elles sont publiées.
 export const APPLIS_MOBILES = new Set(['erea', 'palabre', 'kultiva', 'kultivaprix', 'tama', 'd-sign', 'survival']);

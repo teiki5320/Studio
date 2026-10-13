@@ -3,6 +3,8 @@
 // montrer) : on les lance ou les modifie depuis la colonne « Routines » de
 // l'appli Claude. Réglages → Dépôts : les apps suivies et leur synchro.
 import React, { useEffect, useState } from 'react';
+import { LogoAppli } from './LogoAppli.jsx';
+import { logoAppli } from './apps.js';
 import { api, followJob } from './api.js';
 import { useApplis, ciInfo, fmtDate } from './MesApplisPage.jsx';
 
@@ -19,7 +21,10 @@ function Ligne({ r }) {
   return (
     <div className={`rg-ligne rg-ligne-routine${r.active ? '' : ' eteinte'}`}>
       <span className="t">
-        <b>{r.nom}</b>
+        <b>
+          <LogoAppli de={r.nom} taille={18} />
+          {r.nom}
+        </b>
         {r.description ? <small>{r.description}</small> : null}
         {r.statut === 'bloquee' && r.aFaire ? <small className="chaud">À décider : {r.aFaire}</small> : null}
       </span>
@@ -108,7 +113,7 @@ export function DepotsTab() {
           const c = ciInfo(a);
           return (
             <a key={a.id} className="rg-depot" href={`https://github.com/${a.repo}`} target="_blank" rel="noopener noreferrer">
-              <span className="ic">{a.emoji}</span>
+              <span className="ic">{logoAppli(a.repo) ? <LogoAppli de={a.repo} taille={28} /> : a.emoji}</span>
               <span className="t">
                 <b>{a.name}</b>
                 <small>{a.repo}</small>

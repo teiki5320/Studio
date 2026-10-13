@@ -2,6 +2,7 @@
 // du Planning (une ligne chacun), et les applis pour lesquelles chaque
 // compte est proposé d'office.
 import React, { useEffect, useState } from 'react';
+import { LogoAppli } from './LogoAppli.jsx';
 import { api } from './api.js';
 import { APP_LOOKS } from './apps.js';
 
@@ -11,7 +12,7 @@ const RESEAUX = [
   ['instagram', 'Instagram'],
   ['pinterest', 'Pinterest'],
 ];
-const APPLIS = [...Object.entries(APP_LOOKS).map(([k, v]) => [k, `${v.icon} ${v.name}`]), ['recettes', '🍲 Recettes Keur Cook']];
+const APPLIS = [...Object.entries(APP_LOOKS).map(([k, v]) => [k, v.name]), ['recettes', 'Recettes Keur Cook']];
 const libelleAppli = (k) => (APPLIS.find((a) => a[0] === k) || [k, k])[1];
 
 export function ComptesReseauxCard() {
@@ -54,7 +55,17 @@ export function ComptesReseauxCard() {
                 <span className={`rg-reseau ${r}`}>{libelle}</span>
                 <span className="t">
                   <b>{c.nom}</b>
-                  <small>{c.applis.length ? c.applis.map(libelleAppli).join(', ') : 'proposé par défaut'}</small>
+                  <small>
+                    {c.applis.length
+                      ? c.applis.map((a, i) => (
+                          <React.Fragment key={a}>
+                            {i ? ', ' : ''}
+                            <LogoAppli de={a === 'recettes' ? 'keurcook' : a} taille={14} />
+                            {libelleAppli(a)}
+                          </React.Fragment>
+                        ))
+                      : 'aucune appli'}
+                  </small>
                 </span>
                 <span className="rg-actions">
                   <button className="clay-btn ghost small" onClick={() => setOuvert(ouvert === c.id ? null : c.id)}>
