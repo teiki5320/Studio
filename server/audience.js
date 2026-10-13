@@ -63,12 +63,12 @@ async function graphql(query, variables) {
   return j.data;
 }
 
-const RUM = `query ($acc: String!, $hote: String!, $debut: Date!) {
+const RUM = `query ($acc: String!, $hote: String!, $debut: Date!, $fin: Date!) {
   viewer { accounts(filter: {accountTag: $acc}) {
-    parJour: rumPageloadEventsAdaptiveGroups(limit: 400, filter: {requestHost: $hote, date_geq: $debut}, orderBy: [date_ASC]) { count sum { visits } dimensions { date } }
-    pages: rumPageloadEventsAdaptiveGroups(limit: 15, filter: {requestHost: $hote, date_geq: $debut}, orderBy: [count_DESC]) { count dimensions { requestPath } }
-    pays: rumPageloadEventsAdaptiveGroups(limit: 10, filter: {requestHost: $hote, date_geq: $debut}, orderBy: [count_DESC]) { count dimensions { countryName } }
-    sources: rumPageloadEventsAdaptiveGroups(limit: 10, filter: {requestHost: $hote, date_geq: $debut}, orderBy: [count_DESC]) { count dimensions { refererHost } }
+    parJour: rumPageloadEventsAdaptiveGroups(limit: 400, filter: {requestHost: $hote, date_geq: $debut, date_leq: $fin}, orderBy: [date_ASC]) { count sum { visits } dimensions { date } }
+    pages: rumPageloadEventsAdaptiveGroups(limit: 15, filter: {requestHost: $hote, date_geq: $debut, date_leq: $fin}, orderBy: [count_DESC]) { count dimensions { requestPath } }
+    pays: rumPageloadEventsAdaptiveGroups(limit: 10, filter: {requestHost: $hote, date_geq: $debut, date_leq: $fin}, orderBy: [count_DESC]) { count dimensions { countryName } }
+    sources: rumPageloadEventsAdaptiveGroups(limit: 10, filter: {requestHost: $hote, date_geq: $debut, date_leq: $fin}, orderBy: [count_DESC]) { count dimensions { refererHost } }
   } }
 }`;
 
@@ -97,19 +97,36 @@ const nomPays = (code) => {
   }
 };
 
+// Cloudflare ne garde le détail précis que sur les 7 derniers jours : une
+// demande qui remonte plus loin passe sur un résumé échantillonné, qui perd
+// des visites (Solelis : 32 visiteurs cette semaine, 10 « sur 30 jours »).
+// On prend donc les jours récents dans le détail précis, et les jours plus
+// anciens dans le résumé.
+const jourIso = (decalage) => new Date(Date.now() - decalage * 86400000).toISOString().slice(0, 10);
+const lireRum = (a, nom) => ({
+  jours: (a.parJour || []).map((g) => ({ date: g.dimensions.date, visiteurs: g.sum.visits, vues: g.count })),
+  pages: (a.pages || []).map((g) => ({ nom: g.dimensions.requestPath || '/', vues: g.count })),
+  pays: (a.pays || []).map((g) => ({ nom: nomPays(g.dimensions.countryName), vues: g.count })),
+  // La navigation d'une page à l'autre du même site n'est pas une provenance.
+  sources: (a.sources || [])
+    .filter((g) => String(g.dimensions.refererHost || '').replace(/^www\./, '') !== nom)
+    .map((g) => ({ nom: g.dimensions.refererHost || 'Accès direct', vues: g.count })),
+});
+
 async function siteRum(acc, hote, debut) {
-  const d = await graphql(RUM, { acc, hote, debut });
-  const a = d.viewer.accounts[0] || {};
+  const nom = hote.replace(/^www\./, '');
+  const fin = jourIso(0);
+  const recent = jourIso(6);
+  const precis = lireRum((await graphql(RUM, { acc, hote, debut: debut > recent ? debut : recent, fin })).viewer.accounts[0] || {}, nom);
+  if (debut >= recent) return { nom, source: 'Web Analytics', ...precis };
+  const resume = lireRum((await graphql(RUM, { acc, hote, debut, fin })).viewer.accounts[0] || {}, nom);
   return {
-    nom: hote.replace(/^www\./, ''),
+    nom,
     source: 'Web Analytics',
-    jours: (a.parJour || []).map((g) => ({ date: g.dimensions.date, visiteurs: g.sum.visits, vues: g.count })),
-    pages: (a.pages || []).map((g) => ({ nom: g.dimensions.requestPath || '/', vues: g.count })),
-    pays: (a.pays || []).map((g) => ({ nom: nomPays(g.dimensions.countryName), vues: g.count })),
-    // La navigation d'une page à l'autre du même site n'est pas une provenance.
-    sources: (a.sources || [])
-      .filter((g) => String(g.dimensions.refererHost || '').replace(/^www\./, '') !== hote.replace(/^www\./, ''))
-      .map((g) => ({ nom: g.dimensions.refererHost || 'Accès direct', vues: g.count })),
+    jours: [...resume.jours.filter((j) => j.date < recent), ...precis.jours].sort((x, y) => x.date.localeCompare(y.date)),
+    pages: resume.pages,
+    pays: resume.pays,
+    sources: resume.sources,
   };
 }
 
@@ -167,13 +184,13 @@ export async function audience(jours = 30) {
   // Web Analytics : les sites mesurés, retrouvés par leur nom.
   let hotes = [];
   try {
-    // Les sites mesurés sur 30 jours : un site calme cette semaine reste en
-    // « Web Analytics » au lieu de basculer sur les chiffres bruts du domaine
-    // (robots compris), qui ne se comparent pas. Pas plus de 30 jours :
-    // au-delà, Cloudflare répond une liste vide, sans erreur.
-    const debut30 = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
-    const d = acc ? await graphql(HOTES, { acc, debut: debut30 }) : null;
-    hotes = (d?.viewer.accounts[0]?.hotes || []).map((g) => g.dimensions.requestHost).filter((h) => h && !/localhost|pages\.dev$|^\d/.test(h) && !PRIVES.test(h));
+    // Les sites mesurés : Cloudflare en oublie une partie quand on demande
+    // une longue période (au-delà de 30 jours, la liste revient même vide).
+    // On réunit donc les sites vus sur 7 jours et sur 30 jours.
+    const il = (j) => new Date(Date.now() - (j - 1) * 86400000).toISOString().slice(0, 10);
+    const listes = acc ? await Promise.all([7, 30].map((j) => graphql(HOTES, { acc, debut: il(j) }))) : [];
+    hotes = [...new Set(listes.flatMap((d) => (d?.viewer.accounts[0]?.hotes || []).map((g) => g.dimensions.requestHost)))]
+      .filter((h) => h && !/localhost|pages\.dev$|^\d/.test(h) && !PRIVES.test(h));
   } catch (e) {
     erreurs.push(e.message);
   }
@@ -195,6 +212,31 @@ export async function audience(jours = 30) {
       erreurs.push(`${z.name} : ${e.message}`);
     }
   }));
+  // « www.toakeur.com » et « toakeur.com » sont le même site : on les réunit.
+  const fusion = new Map();
+  const ajoute = (liste, cle, champ) => {
+    const m = new Map(liste.map((x) => [x[cle], { ...x }]));
+    return (autre) => {
+      for (const x of autre) {
+        const y = m.get(x[cle]);
+        if (y) for (const c of champ) y[c] = (y[c] || 0) + (x[c] || 0);
+        else m.set(x[cle], { ...x });
+      }
+      return [...m.values()];
+    };
+  };
+  for (const site of sites) {
+    const deja = fusion.get(site.nom);
+    if (!deja || deja.source !== site.source) {
+      if (!deja) fusion.set(site.nom, site);
+      continue;
+    }
+    deja.jours = ajoute(deja.jours, 'date', ['visiteurs', 'vues'])(site.jours).sort((a, b) => a.date.localeCompare(b.date));
+    deja.pages = ajoute(deja.pages, 'nom', ['vues'])(site.pages).sort((a, b) => b.vues - a.vues).slice(0, 15);
+    deja.pays = ajoute(deja.pays, 'nom', ['vues'])(site.pays).sort((a, b) => b.vues - a.vues);
+    deja.sources = ajoute(deja.sources, 'nom', ['vues'])(site.sources).sort((a, b) => b.vues - a.vues);
+  }
+  sites.splice(0, sites.length, ...fusion.values());
   sites.sort((a, b) => total(b) - total(a));
   const data = { configure: true, jours: n, debut, sites, erreurs };
   // Une réponse incomplète (erreur ou aucun site mesuré) n'est pas gardée :
