@@ -1,6 +1,6 @@
 # PUBLICATION — état de la mise en ligne
 
-> Mis à jour le 12 octobre 2026, d'après le site en ligne et les exécutions GitHub Actions.
+> Mis à jour le 13 octobre 2026, d'après le site en ligne et les exécutions GitHub Actions.
 >
 > Aucun secret ici — uniquement des références.
 
@@ -8,9 +8,9 @@
 
 | | |
 |---|---|
-| Adresse | **En ligne** sur https://keurbook.com (vérifié le 12 octobre 2026 : réponse 200) |
+| Adresse | **En ligne** sur https://keurbook.com (vérifié le 13 octobre 2026 : réponse 200) |
 | Hébergeur | Cloudflare Pages (projet `keurbook`), workflow `deploy.yml` |
-| Dernière publication | 12 octobre 2026, publication programmée réussie (article Conseils du lundi) |
+| Dernière publication | 12 octobre 2026 (19 h UTC), publication réussie après l'ajout de la publicité Google AdSense |
 | Mise en ligne | 1er octobre 2026 |
 | Dépôt | https://github.com/teiki5320/keurbook |
 | Taille publiée | 957 adresses dans le sitemap |
@@ -35,3 +35,5 @@
 - **IndexNow** (Bing, Yandex…) : tout le sitemap est signalé chaque lundi ; dernière exécution
   réussie le 12 octobre 2026.
 - **Mesure d'audience** : aucune.
+- **Publicité** : Google AdSense en place (script chargé sur les pages, `https://keurbook.com/ads.txt`
+  répond). Validation du site par AdSense : à vérifier dans la console.

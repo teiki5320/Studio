@@ -1,6 +1,6 @@
 # MARKETING — plan marketing & rémunération
 
-Mis à jour le 12 octobre 2026. Compagnon de INFRA.md.
+Mis à jour le 13 octobre 2026. Compagnon de INFRA.md.
 
 ## Positionnement
 
@@ -16,7 +16,11 @@ Mis à jour le 12 octobre 2026. Compagnon de INFRA.md.
 
 ## Modèle de rémunération
 
-Affiliation Amazon Partenaires : les boutons « Acheter · prix » mènent à Amazon.fr (tag `keurcook-21`, `src/lib/amazon.ts`) ; Amazon encaisse, livre et verse une commission sur les achats. Le site ne vend rien lui-même. Les recettes et les conseils sont gratuits et attirent les visiteurs. Prix affichés indicatifs, relevés le 27 septembre 2026.
+Deux sources, sans rien vendre soi-même :
+
+- **Affiliation Amazon Partenaires** : les boutons « Acheter · prix » mènent à Amazon.fr (tag `keurcook-21`, `src/lib/amazon.ts`) ; Amazon encaisse, livre et verse une commission sur les achats.
+- **Publicité Google AdSense** (depuis le 12 octobre 2026) : annonces titrées « Publicité » sur les recettes, les articles « Conseils » et les pages pays ; consentement recueilli par le message de Google.
+ Les recettes et les conseils sont gratuits et attirent les visiteurs. Prix affichés indicatifs, relevés le 27 septembre 2026.
 
 | Phase | Levier | Statut |
 | --- | --- | --- |
@@ -26,6 +30,7 @@ Affiliation Amazon Partenaires : les boutons « Acheter · prix » mènent à Am
 | 1. Lancement | Rubrique « Conseils », trois articles par semaine | ✅ (33 en réserve, jusqu'au 28 décembre 2026) |
 | 2. Conversion | Bouton d'achat Amazon sur les ingrédients des recettes | ✅ |
 | 2. Conversion | Mise à jour régulière des prix indicatifs | ⬜ (relevé manuel, dernier le 27 septembre 2026) |
+| 2. Conversion | Annonces Google AdSense sur les recettes, les conseils et les pays | ✅ (en ligne depuis le 12 octobre 2026) |
 | 3. Fidélisation | Newsletter « la recette de la semaine » | ⬜ aucun outil choisi |
 
 ## Canaux
@@ -40,12 +45,13 @@ Affiliation Amazon Partenaires : les boutons « Acheter · prix » mènent à Am
 
 ## KPIs
 
-Aucun outil de mesure d'audience n'est installé ; la bannière cookies est une simple information (cookies nécessaires seulement).
+Aucun outil de mesure d'audience n'est installé ; le consentement aux cookies publicitaires est recueilli par le message de Google (AdSense).
 
 | Indicateur | Source | Valeur |
 | --- | --- | --- |
 | Pages indexées par Google | Google Search Console (domaine keurcook.com) | 189 indexées, 31 non indexées (7 octobre 2026) |
 | Clics, achats et commissions Amazon | https://partenaires.amazon.fr | à vérifier dans la console |
+| Affichages et revenus des annonces | https://adsense.google.com | à vérifier dans la console |
 | Impressions et clics des épingles | Pinterest (statistiques du compte Keur Cook) | à vérifier dans la console |
 | Visites, recettes et articles les plus vus | aucun outil installé | — |
 

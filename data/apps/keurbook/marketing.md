@@ -1,6 +1,6 @@
 # MARKETING — plan marketing & rémunération
 
-Mis à jour le 12 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
+Mis à jour le 13 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
 publications réelles, ou routine qui publie).
 
 ## Positionnement
@@ -14,8 +14,10 @@ publications réelles, ou routine qui publie).
 
 ## Modèle de rémunération
 
-- Affiliation Amazon Partenaires (tag `keurbook-21`) sur les livres et BD présentés. Le site ne
-  vend rien lui-même.
+- Affiliation Amazon Partenaires (tag `keurbook-21`) sur les livres et BD présentés.
+- Publicité Google AdSense depuis le 12 octobre 2026 : emplacements choisis sur les fiches livre et
+  BD, les pages auteur et pays, et les articles Conseils (voir docs/PUBLICITE.md).
+- Le site ne vend rien lui-même.
 
 ## Canaux
 
@@ -36,8 +38,8 @@ publications réelles, ou routine qui publie).
 - Indexation Google (dernier contrôle connu, 7 octobre 2026) : 618 pages indexées, 339 non
   indexées, dont 337 « Détectée, actuellement non indexée ». Suivi chaque matin dans l'onglet
   Indexation du Studio.
-- Visites, clics et revenus d'affiliation : à vérifier dans la console (Search Console, Amazon
-  Partenaires).
+- Visites, clics, revenus d'affiliation et revenus publicitaires : à vérifier dans la console
+  (Search Console, Amazon Partenaires, AdSense).
 
 ## Les 3 priorités
 
