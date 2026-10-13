@@ -144,3 +144,10 @@ html:not([data-theme='clair']) .rg-reste-h { background: #2b211d; }
   .reglages .rg-corps > *, .reglages .rg-duo > *, .rg-anneau .part, .rg-onglet.on .ic { animation: none; }
   .rg-curseur { transition: none; }
 }
+/* Logo et outro d'une appli (Publicité) : deux petites cartes en ligne. */
+.rg-duo-compact { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.rg-duo-compact .rg-marque { display: grid; grid-template-columns: 64px minmax(0, 1fr); grid-template-areas: 'apercu titre' 'apercu actions'; gap: 4px 12px; align-items: center; padding: 12px 14px; }
+.rg-duo-compact .rg-carte-h { grid-area: titre; }
+.rg-duo-compact .rg-carte-h h3 { font-size: 14px; }
+.rg-duo-compact .rg-apercu { grid-area: apercu; width: 64px; height: 64px; aspect-ratio: auto; border-radius: 14px; font-size: 10px; text-align: center; }
+.rg-duo-compact .rg-actions { grid-area: actions; }

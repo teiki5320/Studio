@@ -53,7 +53,7 @@ export function BrandCard({ studio, onChange, appli }) {
           <h3>{titre}</h3>
           {fichier ? <span className="rg-etat ok">✓ en place</span> : <span className="rg-etat none">aucun</span>}
         </div>
-        <p className="rg-aide">{aide}</p>
+        {appli ? null : <p className="rg-aide">{aide}</p>}
         <div className="rg-apercu">
           {!fichier ? (
             <span>{kind === 'sticker' ? 'Aucun sticker' : 'Aucun outro'}</span>
@@ -79,7 +79,7 @@ export function BrandCard({ studio, onChange, appli }) {
   };
 
   return (
-    <div className="rg-duo">
+    <div className={`rg-duo${appli ? ' rg-duo-compact' : ''}`}>
       {carte('sticker', 'Sticker (logo)', 'Affiché en haut à droite de chaque vidéo de cette appli. PNG transparent recommandé.', 'image/png,image/jpeg,image/webp')}
       {carte('outro', 'Outro de fin', 'Ajoutée à la fin de chaque vidéo de cette appli (pas des recettes). MP4 court, 15 s max.', 'video/mp4,video/quicktime,image/png,image/jpeg,image/webp')}
     </div>

@@ -2,8 +2,8 @@
 // Pinterest…), une colonne par jour. Une publication = une vidéo sur un
 // compte, un jour. On glisse une vidéo « à placer » sur une case (ou on la
 // touche, puis ＋) ; une vignette se glisse vers une autre case. La fiche à
-// droite garde la légende, la vidéo et les actions. L'onglet « Publier »
-// déroule le travail du jour, vidéo par vidéo.
+// droite garde la légende, la vidéo et les actions ; une diode dit si
+// chaque publication est faite (verte) ou à faire (orange).
 import React, { useEffect, useRef, useState } from 'react';
 import { LogoReseau } from './LogoReseau.jsx';
 import { LogoAppli } from './LogoAppli.jsx';
@@ -95,14 +95,12 @@ function filtrer(d, cle) {
 export function PlanningPage({ appli } = {}) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
-  const [vue, setVue] = useState('semaine');
   const [debut, setDebut] = useState(() => lundi(new Date()));
   const [sel, setSel] = useState(null); // vidéo à placer (clé), en attente d'une case
   const [fiche, setFiche] = useState(null); // vidéo ouverte dans la fiche (clé)
   const [over, setOver] = useState(null); // case survolée pendant un glisser
   const [rangement, setRangement] = useState(lireRangement);
   const [envoi, setEnvoi] = useState(null);
-  const [cur, setCur] = useState(0);
   const drag = useRef(null);
 
   const load = () =>
@@ -379,49 +377,10 @@ export function PlanningPage({ appli } = {}) {
     </aside>
   );
 
-  // ---------- Onglet Publier : le travail du jour ----------
-  const aFaire = [];
-  publications
-    .filter((p) => p.date === aujourdhui || enRetard(p))
-    .forEach((p) => {
-      const k = cle(p);
-      let g = aFaire.find((x) => x.k === k);
-      if (!g) {
-        g = { k, v: p.video, pubs: [] };
-        aFaire.push(g);
-      }
-      g.pubs.push(p);
-    });
-  aFaire.forEach((g) => g.pubs.sort((a, b) => ordre[a.compte] - ordre[b.compte]));
-  aFaire.sort((a, b) => Number(b.pubs.some(enRetard)) - Number(a.pubs.some(enRetard)));
-  const restant = publications.filter((p) => p.date <= aujourdhui && !p.publie).length;
-  const total = aFaire.reduce((n, g) => n + g.pubs.length, 0);
-  const faits = aFaire.reduce((n, g) => n + g.pubs.filter((p) => p.publie).length, 0);
-  const iCur = Math.min(cur, Math.max(aFaire.length - 1, 0));
-  const courant = aFaire[iCur];
-
-  const onglet = (id, libelle, badge) => (
-    <button
-      onClick={() => setVue(id)}
-      style={{ border: 'none', padding: '8px 14px', borderRadius: 10, fontWeight: 800, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, background: vue === id ? 'var(--accent)' : 'transparent', color: vue === id ? 'var(--accent-ink)' : 'var(--c-muted)' }}
-    >
-      {libelle}
-      {badge ? <span style={pastille('var(--run-tint)', 'var(--run)')}>{badge}</span> : null}
-    </button>
-  );
-
   return (
     <div className="clay-content" style={{ maxWidth: 'none', padding: 0, position: 'relative' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', padding: '16px 28px 0' }}>
-        <div style={{ display: 'flex', background: 'var(--carte)', borderRadius: 14, padding: 4, gap: 4, boxShadow: 'var(--clay-sm)' }}>
-          {onglet('semaine', '🗓️ Semaine')}
-          {onglet('publier', '🚀 Publier', restant)}
-        </div>
-        {error && <span className="error small">{error}</span>}
-      </div>
-
-      {vue === 'semaine' ? (
-        <div style={{ padding: '14px 28px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+      {error && <p className="error small" style={{ padding: '16px 28px 0', margin: 0 }}>{error}</p>}
+      <div style={{ padding: '14px 28px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           {/* À placer : dans le planning d'une appli seulement (le général ne fait que montrer) */}
           {appli && aPlacer.length > 0 && (
             <>
@@ -494,14 +453,7 @@ export function PlanningPage({ appli } = {}) {
             </div>
           )}
 
-          {comptes.length === 0 ? (
-            <div className="clay-block" style={{ margin: 0 }}>
-              <b>Aucun compte pour l'instant.</b>
-              <p className="clay-muted small" style={{ marginBottom: 0 }}>
-                {appli ? 'Crée ou relie une chaîne juste au-dessus.' : 'Crée tes chaînes depuis chaque appli, dans Publicité.'}
-              </p>
-            </div>
-          ) : (
+          {(
             <div style={{ overflowX: 'auto', scrollbarColor: 'var(--carte-2) transparent' }}>
               <div style={{ minWidth: appli ? 700 : 880, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, position: 'sticky', top: 0, background: 'var(--fond)', zIndex: 2, padding: '4px 0' }}>
@@ -516,6 +468,16 @@ export function PlanningPage({ appli } = {}) {
                     );
                   })}
                 </div>
+                {comptes.length === 0 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, marginTop: 8 }}>
+                    <div className="clay-muted" style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', background: 'var(--side)', borderRadius: 12, minHeight: 60, fontSize: 13, fontWeight: 700 }}>
+                      Aucune chaîne
+                    </div>
+                    {jours.map((d) => (
+                      <div key={iso(d)} style={{ background: iso(d) === aujourdhui ? 'var(--carte-2)' : 'var(--carte)', borderRadius: 12, minHeight: 60 }} />
+                    ))}
+                  </div>
+                )}
                 {RESEAUX.map(([r, nom]) => {
                   const tous = comptes.filter((c) => c.reseau === r);
                   if (!tous.length) {
@@ -612,119 +574,6 @@ export function PlanningPage({ appli } = {}) {
           )}
           {ficheJsx}
         </div>
-      ) : (
-        <div className="planning-publier" style={{ display: 'grid', gridTemplateColumns: 'minmax(220px, 290px) minmax(0, 1fr)', minHeight: 'calc(100vh - 160px)' }}>
-          <div style={{ padding: '20px 16px 20px 28px', display: 'flex', flexDirection: 'column', gap: 10, borderRight: '1px solid var(--ligne)' }}>
-            <b>À publier aujourd'hui</b>
-            <div style={{ height: 10, borderRadius: 999, background: 'var(--carte-2)', overflow: 'hidden' }}>
-              <div style={{ height: '100%', borderRadius: 999, background: 'var(--ok)', width: `${total ? Math.round((faits / total) * 100) : 0}%` }} />
-            </div>
-            <span className="clay-muted small">
-              {faits} / {total} publications faites
-            </span>
-            {aFaire.map((g, i) => {
-              const n = g.pubs.filter((p) => p.publie).length;
-              const fini = n === g.pubs.length;
-              const retard = g.pubs.some(enRetard);
-              return (
-                <div
-                  key={g.k}
-                  onClick={() => setCur(i)}
-                  style={{ display: 'flex', gap: 10, alignItems: 'center', padding: 8, borderRadius: 14, cursor: 'pointer', background: i === iCur ? 'var(--carte-2)' : 'transparent', boxShadow: i === iCur ? 'var(--clay-sm)' : 'none' }}
-                >
-                  <span style={{ width: 8, height: 40, borderRadius: 999, background: teinte(g.v)[0], flex: 'none' }} />
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: retard ? 'var(--ko)' : 'var(--c-muted)' }}>
-                      {retard ? `En retard · ${jourCourt(depuisIso(g.pubs.map((p) => p.date).sort()[0])).toLowerCase()}` : "Aujourd'hui"}
-                    </span>
-                    <span style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.25 }}>{g.v.titre}</span>
-                  </div>
-                  <span className={`clay-state ${fini ? 'ok' : 'run'}`}>{fini ? '✓' : `${n}/${g.pubs.length}`}</span>
-                </div>
-              );
-            })}
-          </div>
-          <div style={{ padding: '24px 32px', display: 'flex', flexDirection: 'column', gap: 18 }}>
-            {courant && (
-              <>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-                  <span className="clay-muted small" style={{ fontWeight: 800 }}>
-                    {iCur + 1} sur {aFaire.length}
-                  </span>
-                  <span style={pastille(teinte(courant.v)[0], teinte(courant.v)[1])}>
-                    <LogoAppli de={courant.v.depot === 'recettes' ? 'keurcook' : courant.v.depot} taille={16} />
-                    {courant.v.appli}
-                  </span>
-                  <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-                    <button className="clay-btn ghost" onClick={() => setCur((iCur - 1 + aFaire.length) % aFaire.length)}>
-                      ← Précédente
-                    </button>
-                    <button className="clay-btn" onClick={() => setCur((iCur + 1) % aFaire.length)}>
-                      Suivante →
-                    </button>
-                  </div>
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 28, alignItems: 'flex-start' }}>
-                  {surLeMac() ? (
-                    <video src={courant.v.video} controls playsInline style={{ width: 200, aspectRatio: '9 / 16', borderRadius: 24, background: '#000', boxShadow: 'var(--clay)', flex: 'none' }} />
-                  ) : (
-                    <Apercu v={courant.v} w={200} h={356} />
-                  )}
-                  <div style={{ flex: '1 1 320px', display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
-                    <b style={{ fontSize: 26, lineHeight: 1.2 }}>{courant.v.titre}</b>
-                    <div className="clay-block" style={{ margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                      <span style={{ fontSize: 15, lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{courant.v.legende}</span>
-                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        <button className="clay-btn" onClick={() => copyText(courant.v.legende)}>
-                          📋 Copier la légende
-                        </button>
-                        <a className="clay-btn ghost" href={lienTelechargement(courant.v)} target={surLeMac() ? '_blank' : undefined} rel="noreferrer">
-                          ⬇️ Télécharger la vidéo
-                        </a>
-                      </div>
-                    </div>
-                    <b>Comptes</b>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {courant.pubs.map((p) => {
-                        const c = compteDe[p.compte];
-                        return (
-                          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 12, borderRadius: 16, padding: '8px 10px 8px 8px', background: p.publie ? 'var(--ok-tint)' : 'var(--carte-2)' }}>
-                            <button
-                              onClick={() => basculer(p)}
-                              title={p.publie ? 'Publiée — toucher pour annuler' : 'Toucher une fois publiée'}
-                              style={{ width: 44, height: 44, flex: 'none', borderRadius: 12, border: 'none', cursor: 'pointer', fontWeight: 800, fontSize: 20, color: 'var(--accent-ink)', background: p.publie ? 'var(--ok)' : 'var(--carte)', boxShadow: 'var(--clay-sm)' }}
-                            >
-                              {p.publie ? '✓' : ''}
-                            </button>
-                            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                              <span style={{ fontSize: 11, fontWeight: 800, color: enRetard(p) ? 'var(--ko)' : 'var(--c-muted)' }}>
-                                <LogoReseau id={c.reseau} taille={14} />
-                                {NOM_RESEAU[c.reseau]}
-                                {enRetard(p) ? ' · en retard' : ''}
-                              </span>
-                              <span style={{ fontSize: 15, fontWeight: 700 }}>{c.nom}</span>
-                            </div>
-                            {!p.publie && direct(p) && (
-                              <button className="clay-btn small" disabled={envoi === p.id} onClick={() => publierYoutube(p)}>
-                                {envoi === p.id ? '⏳ Envoi…' : '▶️ Publier sur YouTube'}
-                              </button>
-                            )}
-                            {p.url && (
-                              <a className="clay-btn ghost small" href={p.url} target="_blank" rel="noreferrer">
-                                Voir{p.prive ? ' (privée)' : ''}
-                              </a>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
 
     </div>
   );
