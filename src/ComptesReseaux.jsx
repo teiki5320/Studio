@@ -8,6 +8,7 @@ import { APP_LOOKS } from './apps.js';
 const RESEAUX = [
   ['tiktok', 'TikTok'],
   ['youtube', 'YouTube'],
+  ['instagram', 'Instagram'],
   ['pinterest', 'Pinterest'],
 ];
 const APPLIS = [...Object.entries(APP_LOOKS).map(([k, v]) => [k, `${v.icon} ${v.name}`]), ['recettes', '🍲 Recettes Keur Cook']];

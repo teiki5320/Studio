@@ -1,5 +1,5 @@
 // ---------- Comptes des réseaux sociaux (Planning) ----------
-// Plusieurs comptes par réseau (TikTok, YouTube, Pinterest). Un compte peut
+// Plusieurs comptes par réseau (TikTok, YouTube, Instagram, Pinterest). Un compte peut
 // être « proposé » pour certaines applis (dépôts) : le Planning le coche
 // d'office quand on place une vidéo de ces applis ; un compte sans appli
 // cochée sert de repli. Rangé dans studio/reseaux.json (hors dépôt).
@@ -9,8 +9,8 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { STUDIO_DIR } from './studio.js';
 
-export const RESEAUX = ['tiktok', 'youtube', 'pinterest'];
-const LIBELLES = { tiktok: 'TikTok', youtube: 'YouTube', pinterest: 'Pinterest' };
+export const RESEAUX = ['tiktok', 'youtube', 'instagram', 'pinterest'];
+const LIBELLES = { tiktok: 'TikTok', youtube: 'YouTube', instagram: 'Instagram', pinterest: 'Pinterest' };
 const FICHIER = path.join(STUDIO_DIR, 'reseaux.json');
 
 function lire() {

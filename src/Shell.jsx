@@ -24,6 +24,7 @@ import { AdPage } from './AdPage.jsx';
 import { AccueilPage } from './AccueilPage.jsx';
 import { MesApplisPage, LexiquePage, useApplis } from './MesApplisPage.jsx';
 import { RoutinesTab, DepotsTab } from './RoutinesTab.jsx';
+import { ChainesPage, ChaineDetail, NouvelleChaine, AppliPubPage } from './ChainesPage.jsx';
 import './clay.css';
 import './ressort.css';
 import './reglages.css';
@@ -217,9 +218,7 @@ function PubPage({ projects, onOpenRepo }) {
             <button
               key={r.fullName}
               className="clay-tile"
-              onClick={() =>
-                r.fullName.toLowerCase() === KEURCOOK_REPO ? go('keurcook') : onOpenRepo(r.fullName)
-              }
+              onClick={() => go(`appli/${r.name}`)}
             >
               <span className="clay-tile-ic">{look.icon}</span>
               <b>{look.name}</b>
@@ -269,34 +268,35 @@ function KeurCookPage({ projects, onOpenRepo }) {
   );
 }
 
-// ---------- Chaîne : mes chaînes + création ----------
-function ChainePage({ projects, onCreate }) {
+// ---------- Chaîne : les chaînes à thème (vidéos de contenu, dramas) ----------
+// En bas de l'onglet Chaîne, repliées : l'onglet montre d'abord les comptes.
+function ChainesAThemes({ projects, onCreate }) {
   const [error, setError] = useState('');
   const channels = projects.filter((p) => p.mode === 'chaine' && p.kind !== 'pub');
   return (
-    <div className="clay-content">
+    <details className="ch-themes">
+      <summary>
+        🎥 Chaînes à thème{channels.length ? ` · ${channels.length}` : ''} <small>vidéos de contenu, créées par le Studio</small>
+      </summary>
       {channels.length > 0 && (
-        <>
-          <p className="clay-sub">Mes chaînes</p>
-          <div className="clay-grid">
-            {channels.map((p) => (
-              <a key={p.id} className="clay-tile" href={`#/projet/${p.id}`}>
-                <span className="clay-tile-ic">🎥</span>
-                <b>{p.title}</b>
-                <span className="clay-badge ok">
-                  {(p.episodes || []).length} vidéo{(p.episodes || []).length > 1 ? 's' : ''}
-                </span>
-              </a>
-            ))}
-          </div>
-        </>
+        <div className="clay-grid">
+          {channels.map((p) => (
+            <a key={p.id} className="clay-tile" href={`#/projet/${p.id}`}>
+              <span className="clay-tile-ic">🎥</span>
+              <b>{p.title}</b>
+              <span className="clay-badge ok">
+                {(p.episodes || []).length} vidéo{(p.episodes || []).length > 1 ? 's' : ''}
+              </span>
+            </a>
+          ))}
+        </div>
       )}
       <ChannelCreate
         error={error}
         voices={VOICES}
         onSubmit={(info) => onCreate(() => api.createChannel(info)).catch((e) => setError(e.message))}
       />
-    </div>
+    </details>
   );
 }
 
@@ -515,6 +515,7 @@ const TITLES = {
   keurcook: '🍲 Keur Cook',
   recettes: '🍲 Recettes Keur Cook',
   chaine: 'Chaîne',
+  appli: 'Publicité',
   encours: 'En cours',
   reglages: 'Réglages',
   planning: 'Planning',
@@ -604,7 +605,7 @@ export function Shell() {
   const active =
     route.page === 'projet' || route.page === 'avance'
       ? sectionOfProject(project)
-      : ['recettes', 'keurcook'].includes(route.page)
+      : ['recettes', 'keurcook', 'appli'].includes(route.page)
         ? 'pub'
         : route.page;
 
@@ -666,7 +667,11 @@ export function Shell() {
         ? () => go(route.page === 'recettes' ? 'keurcook' : 'pub')
         : route.page === 'applis' && route.arg
           ? () => go('applis')
-          : null;
+          : route.page === 'appli'
+            ? () => go('pub')
+            : route.page === 'chaine' && route.arg
+              ? () => window.history.back()
+              : null;
     body = (
       <>
         <TopBar title={TITLES[route.page] || 'Publicité'} onBack={back} theme={theme} onTheme={toggleTheme} />
@@ -681,7 +686,20 @@ export function Shell() {
         ) : route.page === 'recettes' ? (
           <RecettesEntry projects={projects} loaded={loaded} onCreate={runCreation} />
         ) : route.page === 'chaine' ? (
-          <ChainePage projects={projects} onCreate={runCreation} />
+          !route.arg ? (
+            <ChainesPage themes={<ChainesAThemes projects={projects} onCreate={runCreation} />} />
+          ) : route.arg.startsWith('nouvelle') ? (
+            <NouvelleChaine key={route.arg} arg={route.arg} />
+          ) : (
+            <ChaineDetail key={route.arg} id={route.arg} />
+          )
+        ) : route.page === 'appli' ? (
+          <AppliPubPage
+            key={route.arg}
+            repo={route.arg}
+            projects={projects}
+            onCreerPub={() => openRepo(`teiki5320/${route.arg}`)}
+          />
         ) : route.page === 'indexation' ? (
           <IndexationPage />
         ) : route.page === 'audience' ? (

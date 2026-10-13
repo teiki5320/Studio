@@ -11,6 +11,7 @@ import { surLeMac } from './VideoSave.jsx';
 const RESEAUX = [
   ['tiktok', 'TikTok', 'TT'],
   ['youtube', 'YouTube', 'YT'],
+  ['instagram', 'Instagram', 'IG'],
   ['pinterest', 'Pinterest', 'Pin'],
 ];
 const NOM_RESEAU = Object.fromEntries(RESEAUX.map(([k, n]) => [k, n]));
