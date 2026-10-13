@@ -10,7 +10,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { VOICES } from '../shared/catalog.js';
 import { api, followJob } from './api.js';
 import { ProjectView } from './ProjectView.jsx';
-import { BrandCard, FrenchVoicesCard, AppCreate, ChannelCreate } from './App.jsx';
+import { FrenchVoicesCard, AppCreate, ChannelCreate } from './App.jsx';
 import { appLook, NOT_ADVERTISED } from './apps.js';
 import { ComptesReseauxCard } from './ComptesReseaux.jsx';
 import { ComptesTab } from './ComptesTab.jsx';
@@ -399,7 +399,7 @@ function YoutubeCard() {
 }
 
 const ONGLETS_REGLAGES = [
-  ['marque', '🎨 Ma marque'],
+  ['marque', '🔌 Réseaux'],
   ['voix', '🎙️ Voix'],
   ['depots', '📦 Dépôts'],
   ['routines', '⏰ Routines'],
@@ -456,7 +456,6 @@ function ReglagesPage({ arg }) {
           <FrenchVoicesCard voices={voices} onChange={refreshVoices} />
         ) : (
           <>
-            <BrandCard studio={studio} onChange={refreshStudio} />
             <YoutubeCard />
             <ComptesReseauxCard />
           </>

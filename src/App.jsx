@@ -5,7 +5,10 @@ import { VOICES } from '../shared/catalog.js';
 import { api, fileToDataUrl } from './api.js';
 
 // « Ma marque » : sticker (logo) et outro perso, appliqués à tous les épisodes.
-export function BrandCard({ studio, onChange }) {
+// `appli` : la marque de cette appli (écran Publicité) ; chaque appli a son
+// logo et son outro, pour pouvoir changer de chaîne et de marque.
+export function BrandCard({ studio, onChange, appli }) {
+  const marque = appli ? studio?.marques?.[appli] || {} : studio;
   const [busy, setBusy] = useState(false);
 
   const upload = async (file, kind) => {
@@ -13,9 +16,9 @@ export function BrandCard({ studio, onChange }) {
     try {
       const dataUrl = await fileToDataUrl(file);
       if (kind === 'sticker') {
-        await api.uploadSticker(dataUrl);
+        await api.uploadSticker(dataUrl, appli);
       } else {
-        await api.uploadOutro(dataUrl);
+        await api.uploadOutro(dataUrl, appli);
       }
       onChange();
     } catch (e) {
@@ -29,9 +32,9 @@ export function BrandCard({ studio, onChange }) {
     setBusy(true);
     try {
       if (kind === 'sticker') {
-        await api.deleteSticker();
+        await api.deleteSticker(appli);
       } else {
-        await api.deleteOutro();
+        await api.deleteOutro(appli);
       }
       onChange();
     } finally {
@@ -42,8 +45,8 @@ export function BrandCard({ studio, onChange }) {
   // Une carte par élément (maquette Réglages « R1 ») : aperçu en grand,
   // puis Changer / Retirer.
   const carte = (kind, titre, aide, accept) => {
-    const fichier = studio?.[kind];
-    const video = kind === 'outro' && studio?.outroIsVideo;
+    const fichier = marque?.[kind];
+    const video = kind === 'outro' && marque?.outroIsVideo;
     return (
       <div className="rg-carte rg-marque">
         <div className="rg-carte-h">
@@ -77,8 +80,8 @@ export function BrandCard({ studio, onChange }) {
 
   return (
     <div className="rg-duo">
-      {carte('sticker', 'Sticker (logo)', 'Affiché en haut à droite de chaque vidéo. PNG transparent recommandé.', 'image/png,image/jpeg,image/webp')}
-      {carte('outro', 'Outro de fin', 'Ta vidéo de marque, ajoutée à la fin de chaque vidéo. MP4 court, 15 s max.', 'video/mp4,video/quicktime,image/png,image/jpeg,image/webp')}
+      {carte('sticker', 'Sticker (logo)', 'Affiché en haut à droite de chaque vidéo de cette appli. PNG transparent recommandé.', 'image/png,image/jpeg,image/webp')}
+      {carte('outro', 'Outro de fin', 'Ajoutée à la fin de chaque vidéo de cette appli (pas des recettes). MP4 court, 15 s max.', 'video/mp4,video/quicktime,image/png,image/jpeg,image/webp')}
     </div>
   );
 }

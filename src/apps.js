@@ -41,6 +41,36 @@ export function outroAfrotok(project) {
   return logoAfrotokVisible(project);
 }
 
+// La marque d'une vidéo (logo + outro). Chaque appli a la sienne, choisie
+// sur son écran dans Publicité (studio.marques[clé du dépôt]) ; les recettes
+// prennent celle de Keur Cook mais ne finissent jamais sur une outro. Sans
+// marque d'appli : l'ancienne règle Afrotok (anciens dramas seulement).
+// L'outro propre à une chaîne passe toujours en premier.
+export function marqueProjet(project, studio) {
+  const s = { ...(studio || {}) };
+  delete s.marques;
+  const depot = project?.mode === 'recette' ? 'keurcook' : String(project?.repo || '').split('/').pop().toLowerCase();
+  const m = depot ? studio?.marques?.[depot] : null;
+  if (m) {
+    s.sticker = m.sticker || null;
+    s.outro = m.outro || null;
+    s.outroIsVideo = Boolean(m.outroIsVideo);
+    s.outroDurationSec = m.outroDurationSec || 0;
+  } else if (!logoAfrotokVisible(project)) {
+    s.sticker = null;
+    s.outro = null;
+  }
+  if (project?.mode === 'recette') {
+    s.outro = null;
+  }
+  if (project?.channelOutro) {
+    s.outro = project.channelOutro;
+    s.outroIsVideo = Boolean(project.channelOutroIsVideo);
+    s.outroDurationSec = project.channelOutroDurationSec || 4;
+  }
+  return s;
+}
+
 // Dépôts qui ne sont pas des produits à promouvoir.
 export const NOT_ADVERTISED = new Set(['dashboard', 'drama-studio', 'studio', 'bd']);
 

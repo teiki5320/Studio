@@ -10,6 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from './api.js';
 import { useApplis, Logo } from './MesApplisPage.jsx';
 import { PlanningPage } from './PlanningPage.jsx';
+import { BrandCard } from './App.jsx';
 import './chaines.css';
 
 export const RESEAUX = [
@@ -267,6 +268,16 @@ export function NouvelleChaine({ arg }) {
 }
 
 // ---------- Publicité → une appli (écran intermédiaire) ----------
+// Le logo et l'outro de l'appli, posés sur toutes ses vidéos.
+function MarqueAppli({ cle }) {
+  const [studio, setStudio] = useState(null);
+  const charger = () => api.getStudio().then(setStudio).catch(() => {});
+  useEffect(() => {
+    charger();
+  }, []);
+  return <BrandCard studio={studio} onChange={charger} appli={cle} />;
+}
+
 export function AppliPubPage({ repo, projects, onCreerPub }) {
   const { data } = useChaines();
   const { data: applis } = useApplis();
@@ -316,6 +327,8 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
           </a>
         ))}
       </div>
+      <h3 className="ch-sous">Son logo et son outro</h3>
+      <MarqueAppli cle={cle} />
       <h3 className="ch-sous">Son planning</h3>
       <PlanningPage key={cle} appli={cle} />
     </div>

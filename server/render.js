@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import { loadStudio, videoDurationSec } from './studio.js';
 import { assetsDir } from './projects.js';
 import { assertNoHealthClaims } from './pipeline.js';
-import { badgesBoutiques, logoAfrotokVisible, outroAfrotok } from '../src/apps.js';
+import { badgesBoutiques, marqueProjet } from '../src/apps.js';
 
 let bundlePromise = null;
 
@@ -27,24 +27,8 @@ async function getBundle() {
 }
 
 export function buildEpisodeProps(project, episode, assetBase, studioBase) {
-  // Marque de l'auteur (sticker + outro) — une chaîne peut avoir sa propre outro.
-  const studio = loadStudio();
-  // Recette explicative : on finit sur le plat fini, aucune outro après.
-  if (project.mode === 'recette') {
-    studio.outro = null;
-  }
-  if (!logoAfrotokVisible(project)) {
-    studio.sticker = null;
-  }
-  // Pubs, recettes, chaînes : pas de vidéo de fin Afrotok.
-  if (!outroAfrotok(project)) {
-    studio.outro = null;
-  }
-  if (project.channelOutro) {
-    studio.outro = project.channelOutro;
-    studio.outroIsVideo = Boolean(project.channelOutroIsVideo);
-    studio.outroDurationSec = project.channelOutroDurationSec || 4;
-  }
+  // Logo + outro : ceux de l'appli (Publicité), sinon l'ancienne marque Afrotok.
+  const studio = marqueProjet(project, loadStudio());
   return {
     episode: {
       number: episode.number,

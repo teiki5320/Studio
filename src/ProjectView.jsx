@@ -24,6 +24,7 @@ import {
 } from '../shared/catalog.js';
 import './studio-redesign.css';
 import { QueuePanel } from './QueuePanel.jsx';
+import { marqueProjet } from './apps.js';
 
 const STATUS_LABELS = {
   script: '📝 scénario',
@@ -1265,18 +1266,8 @@ export function ProjectView({ projectId, onBack }) {
   const unit = isDrama ? 'épisode' : 'vidéo';
   const Unit = isDrama ? 'Épisode' : 'Vidéo';
 
-  // Une chaîne peut avoir sa propre outro (sinon la marque globale s'applique).
-  const effectiveStudio = useMemo(() => {
-    if (project?.channelOutro) {
-      return {
-        ...(studio || {}),
-        outro: project.channelOutro,
-        outroIsVideo: Boolean(project.channelOutroIsVideo),
-        outroDurationSec: project.channelOutroDurationSec || 4,
-      };
-    }
-    return studio;
-  }, [studio, project]);
+  // Logo + outro de l'appli (ou outro propre à la chaîne) — comme au rendu.
+  const effectiveStudio = useMemo(() => (studio ? marqueProjet(project, studio) : studio), [studio, project]);
 
   const duration = useMemo(
     () =>

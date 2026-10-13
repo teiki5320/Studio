@@ -241,28 +241,30 @@ app.get('/api/studio', (req, res) => {
   res.json(loadStudio());
 });
 
+// `appli` (clé du dépôt) : la marque de cette appli ; sans : la marque commune.
+const appliMarque = (req) => (/^[a-z0-9-]{1,40}$/.test(String(req.query.appli || '')) ? req.query.appli : null);
 app.post('/api/studio/sticker', (req, res) => {
   try {
-    res.json(saveSticker(req.body.data || ''));
+    res.json(saveSticker(req.body.data || '', appliMarque(req)));
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
 });
 
 app.delete('/api/studio/sticker', (req, res) => {
-  res.json(removeSticker());
+  res.json(removeSticker(appliMarque(req)));
 });
 
 app.post('/api/studio/outro', async (req, res) => {
   try {
-    res.json(await saveOutro(req.body.data || ''));
+    res.json(await saveOutro(req.body.data || '', appliMarque(req)));
   } catch (e) {
     res.status(400).json({ error: e.message });
   }
 });
 
 app.delete('/api/studio/outro', (req, res) => {
-  res.json(removeOutro());
+  res.json(removeOutro(appliMarque(req)));
 });
 
 // Fichiers du studio (sticker/outro) — servis au Player et au rendu Remotion.

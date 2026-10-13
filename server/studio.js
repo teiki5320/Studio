@@ -33,23 +33,37 @@ function removeFile(name) {
   }
 }
 
-export function saveSticker(base64Data) {
+// Où ranger : la marque d'une appli (studio.marques[appli]) ou, sans appli,
+// l'ancienne marque commune (anciens dramas).
+function cible(s, appli) {
+  if (!appli) {
+    return s;
+  }
+  s.marques = s.marques || {};
+  s.marques[appli] = s.marques[appli] || {};
+  return s.marques[appli];
+}
+const prefixe = (appli) => (appli ? `${appli}_` : '');
+
+export function saveSticker(base64Data, appli) {
   const m = base64Data.match(/^data:image\/(png|jpe?g|webp);base64,(.+)$/);
   if (!m) {
     throw new Error('Format attendu : image PNG, JPG ou WebP (PNG transparent recommandé).');
   }
   const ext = m[1] === 'png' ? 'png' : m[1] === 'webp' ? 'webp' : 'jpg';
   const s = loadStudio();
-  removeFile(s.sticker);
-  s.sticker = `sticker_${Date.now()}.${ext}`;
-  fs.writeFileSync(path.join(STUDIO_DIR, s.sticker), Buffer.from(m[2], 'base64'));
+  const c = cible(s, appli);
+  removeFile(c.sticker);
+  c.sticker = `${prefixe(appli)}sticker_${Date.now()}.${ext}`;
+  fs.writeFileSync(path.join(STUDIO_DIR, c.sticker), Buffer.from(m[2], 'base64'));
   return persist(s);
 }
 
-export function removeSticker() {
+export function removeSticker(appli) {
   const s = loadStudio();
-  removeFile(s.sticker);
-  s.sticker = null;
+  const c = cible(s, appli);
+  removeFile(c.sticker);
+  c.sticker = null;
   return persist(s);
 }
 
@@ -118,7 +132,7 @@ export function videoDurationSec(file) {
 
 // L'outro peut être une vidéo (MP4/MOV) ou une image fixe. Sa durée réelle est
 // mesurée pour caler la fin de l'épisode (bornée pour éviter les erreurs d'envoi).
-export async function saveOutro(base64Data) {
+export async function saveOutro(base64Data, appli) {
   const m = base64Data.match(
     /^data:(video\/(?:mp4|quicktime)|image\/(?:png|jpe?g|webp));base64,(.+)$/,
   );
@@ -137,10 +151,11 @@ export async function saveOutro(base64Data) {
         ? 'webp'
         : 'jpg';
   const s = loadStudio();
-  removeFile(s.outro);
-  s.outro = `outro_${Date.now()}.${ext}`;
-  s.outroIsVideo = isVideo;
-  const full = path.join(STUDIO_DIR, s.outro);
+  const c = cible(s, appli);
+  removeFile(c.outro);
+  c.outro = `${prefixe(appli)}outro_${Date.now()}.${ext}`;
+  c.outroIsVideo = isVideo;
+  const full = path.join(STUDIO_DIR, c.outro);
   fs.writeFileSync(full, Buffer.from(m[2], 'base64'));
   if (isVideo) {
     let dur;
@@ -153,9 +168,9 @@ export async function saveOutro(base64Data) {
         dur = 4;
       }
     }
-    s.outroDurationSec = Math.min(15, Math.max(1, dur));
+    c.outroDurationSec = Math.min(15, Math.max(1, dur));
   } else {
-    s.outroDurationSec = 3.5;
+    c.outroDurationSec = 3.5;
   }
   return persist(s);
 }
@@ -202,11 +217,12 @@ export function removeChannelOutroFile(file) {
   removeFile(file);
 }
 
-export function removeOutro() {
+export function removeOutro(appli) {
   const s = loadStudio();
-  removeFile(s.outro);
-  s.outro = null;
-  s.outroIsVideo = false;
-  s.outroDurationSec = 0;
+  const c = cible(s, appli);
+  removeFile(c.outro);
+  c.outro = null;
+  c.outroIsVideo = false;
+  c.outroDurationSec = 0;
   return persist(s);
 }

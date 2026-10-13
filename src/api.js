@@ -203,12 +203,13 @@ export const api = {
     request('/api/voices/adopt', { method: 'POST', body: JSON.stringify(voice) }),
   removeCustomVoice: (id) => request(`/api/voices/custom/${id}`, { method: 'DELETE' }),
   getStudio: () => request('/api/studio'),
-  uploadSticker: (dataUrl) =>
-    request('/api/studio/sticker', { method: 'POST', body: JSON.stringify({ data: dataUrl }) }),
-  deleteSticker: () => request('/api/studio/sticker', { method: 'DELETE' }),
-  uploadOutro: (dataUrl) =>
-    request('/api/studio/outro', { method: 'POST', body: JSON.stringify({ data: dataUrl }) }),
-  deleteOutro: () => request('/api/studio/outro', { method: 'DELETE' }),
+  // `appli` : la marque de cette appli (sinon la marque commune des anciens dramas).
+  uploadSticker: (dataUrl, appli) =>
+    request(`/api/studio/sticker${appli ? `?appli=${appli}` : ''}`, { method: 'POST', body: JSON.stringify({ data: dataUrl }) }),
+  deleteSticker: (appli) => request(`/api/studio/sticker${appli ? `?appli=${appli}` : ''}`, { method: 'DELETE' }),
+  uploadOutro: (dataUrl, appli) =>
+    request(`/api/studio/outro${appli ? `?appli=${appli}` : ''}`, { method: 'POST', body: JSON.stringify({ data: dataUrl }) }),
+  deleteOutro: (appli) => request(`/api/studio/outro${appli ? `?appli=${appli}` : ''}`, { method: 'DELETE' }),
   getJob: (id) => request(`/api/jobs/${id}`),
   lipsyncTest: () => request('/api/lipsync-test'),
   clearLipsyncTest: () => request('/api/lipsync-test', { method: 'DELETE' }),
