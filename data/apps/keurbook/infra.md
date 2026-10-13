@@ -3,6 +3,22 @@
 Mis à jour le 13 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
+## En bref
+
+- **Plateforme** : site web éditorial, en français, sur ordinateur et mobile
+- **Stack** : Next.js 16 en export statique, React 19, Tailwind CSS 4
+- **Backend** : aucun — site statique, sans base ni compte
+- **Distribution** : Cloudflare Pages, publié par GitHub Actions
+- **Site** : keurbook.com (957 adresses dans le sitemap)
+- **IA et outils** : routine « Écrire les articles Conseils », IndexNow
+
+## Parcours
+
+- 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build [ok] → ☁️ Cloudflare Pages — projet keurbook [ok] → 🌍 keurbook.com — en ligne, réponse 200 [ok]
+- 📝 **Contenu** : ✍️ Articles Conseils — 34 publiés, 16 programmés [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 📡 IndexNow — sitemap signalé chaque lundi [ok] → 🔍 Google — 638 pages indexées sur 957 [à faire]
+- 🛒 **Affiliation** : 📚 Fiche livre ou BD — bouton « Acheter sur Amazon » [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurbook-21 [ok] → 🔗 Liens directs — surtout des recherches, peu d'ASIN [à faire]
+- 📰 **Publicité** : 📰 AdSense (publicité web) — script et 4 blocs en place [ok] → ✅ Validation du site — à vérifier dans la console [pas encore] → 💶 Revenus — aucun constaté [pas encore]
+
 ## Vue d'ensemble
 
 - **Plateforme** : site web éditorial en français sur les livres et BD d'auteurs d'Afrique
@@ -13,7 +29,7 @@ uniquement des noms de variables et de consoles.
 - **Backend** : aucun. Site entièrement statique (dossier `out/`), sans base de données, sans
   compte. La pile à lire reste dans le navigateur du visiteur. Seuls cookies : ceux de Google AdSense,
   après accord dans le bandeau de consentement de Google (voir docs/PUBLICITE.md).
-- **Taille** : 957 adresses dans le sitemap au 12 octobre 2026 (675 livres, 122 BD, 92 auteurs,
+- **Taille** : 957 adresses dans le sitemap au 13 octobre 2026 (675 livres, 122 BD, 92 auteurs,
   26 pays, 34 articles Conseils publiés, pages de liste et pages légales).
 - **Particularités** : interrupteur de maintenance dans `content/maintenance.json` (désactivé),
   tests de cohérence des contenus dans `tests/`, signalement IndexNow chaque lundi.
@@ -61,7 +77,7 @@ uniquement des noms de variables et de consoles.
   chaque jour.
 - **Console** : https://partenaires.amazon.fr (compte Amazon Partenaires de Jean).
 
-## Google AdSense (publicité)
+## AdSense (publicité web)
 
 - **Rôle** : annonces Google sur le site depuis le 12 octobre 2026. Script AdSense et balise
   `google-adsense-account` chargés dans `src/app/layout.tsx` ; identifiant d'éditeur dans

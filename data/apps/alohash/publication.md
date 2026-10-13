@@ -2,11 +2,40 @@
 
 > Mis à jour le 13 octobre 2026. Aucun secret ici.
 
+## En bref
+
+- **Production** : https://keurcook.com, ouvert au public, publié le 13 octobre 2026
+- **Domaine & SSL** : keurcook.com chez Cloudflare, HTTPS géré, www redirigé
+- **Visibilité** : Search Console, IndexNow, Pinterest ; sitemap de 201 adresses
+- **Monétisation** : affiliation Amazon (keurcook-21) et annonces AdSense
+- **Contact** : keurcook@toakeur.com
+
+## Boutiques
+
+| | 🌐 Site |
+|---|---|
+| État | [ok] En ligne, ouvert au public |
+| Hébergement | [ok] Cloudflare Pages, projet keurcook |
+| Domaine | [ok] keurcook.com, www redirigé en 301 |
+| SSL | [ok] Certificat géré par Cloudflare, HSTS |
+| Indexation | [ok] 189 pages indexées par Google (7 octobre 2026) |
+| Mesure d'audience | [à faire] Aucun outil installé |
+
+## Ce qui reste, dans l'ordre
+
+1. ✅ **Site statique sur Cloudflare Pages** : publié par GitHub Actions à chaque envoi sur main.
+2. ✅ **Domaine keurcook.com** : relié au projet, www redirigé, SSL géré par Cloudflare.
+3. ✅ **Ouverture au public** : maintenance coupée le 29 septembre 2026.
+4. ✅ **Référencement** : Search Console déclarée, IndexNow chaque lundi, Pinterest revendiqué.
+5. ✅ **Annonces AdSense** : en ligne depuis le 12 octobre 2026, ads.txt publié.
+6. **Approbation AdSense** : vérifier dans la console que le site est approuvé et sert des annonces.
+7. **Mesure d'audience** : installer un outil respectueux du consentement et l'autoriser dans la CSP.
+
 ## Web · Production
 
 | Version | En production ? | URL | Hébergeur |
 | --- | --- | --- | --- |
-| Web — Keur Cook (recettes, conseils, boutique) | **En ligne, ouvert au public** (maintenance désactivée) ; dernière publication réussie le 12 octobre 2026 au soir (annonces AdSense) | https://keurcook.com (`www` redirigé) | Cloudflare Pages (projet `keurcook`) |
+| Web — Keur Cook (recettes, conseils, boutique) | **En ligne, ouvert au public** (maintenance désactivée) ; dernière publication réussie le 13 octobre 2026 ; annonces AdSense en ligne depuis le 12 octobre 2026 | https://keurcook.com (`www` redirigé) | Cloudflare Pages (projet `keurcook`) |
 
 Site 100 % statique (Next.js `output: "export"`, dossier `out/`), sans serveur ni base de données. Il est construit et publié par GitHub Actions (`.github/workflows/deploy.yml`, « Publier le site ») :
 

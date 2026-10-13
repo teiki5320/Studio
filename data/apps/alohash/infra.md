@@ -2,6 +2,22 @@
 
 Mis à jour le 13 octobre 2026 par un scan du dépôt. Pour mettre à jour : relancer ce même prompt.
 
+## En bref
+
+- **Plateforme** : site web de recettes africaines, en français
+- **Stack** : Next.js 16 en export statique · React 19 · Tailwind 4
+- **Backend** : aucun, site 100 % statique sans base de données
+- **Distribution** : Cloudflare Pages, publié par GitHub Actions
+- **Site** : https://keurcook.com (www redirigé)
+- **IA et outils** : photos OpenArt · Amazon Partenaires · AdSense
+
+## Parcours
+
+- 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ☁️ Hébergement web — Cloudflare Pages, projet keurcook [ok] → 🔗 Nom de domaine — keurcook.com, SSL Cloudflare [ok] → 👥 Visiteurs — site ouvert au public [ok]
+- 📝 **Contenu** : 🐙 GitHub — 33 articles programmés [ok] → ⏰ GitHub Actions — publication lun., mer., ven. [ok] → 🌐 keurcook.com — 34 articles en ligne [ok] → ✍️ Réserve — vide le 28 décembre 2026 [à faire]
+- 🛒 **Affiliation** : 🌐 keurcook.com — boutons « Acheter · prix » [ok] → 🤝 Affiliation — Amazon Partenaires, tag keurcook-21 [ok] → 📦 Amazon.fr — Amazon encaisse et livre [ok]
+- 📢 **Publicité** : 🌐 keurcook.com — cinq emplacements « Publicité » [ok] → 💰 AdSense (publicité web) — approbation à vérifier [à faire]
+
 ## Vue d'ensemble
 
 - **Plateforme** : site web en français **Keur Cook** (anciennement Alohash) de recettes de plats africains (52 recettes, 16 pays), rubrique « Conseils » (articles Markdown dans `content/conseils/`, trois par semaine : lundi, mercredi, vendredi, publication programmée) et boutique de 91 produits en 8 gammes dont les boutons « Acheter · prix » mènent à Amazon.fr (programme Partenaires). Depuis le 12 octobre 2026, des annonces Google AdSense s'affichent aussi sur les recettes, les articles et les pages pays. Le site ne vend rien lui-même. Éditeur : ALOHASH (SAS), nom commercial TOA CORP.
@@ -46,7 +62,7 @@ Mis à jour le 13 octobre 2026 par un scan du dépôt. Pour mettre à jour : rel
 - **Secrets** : aucun dans le dépôt.
 - **Coût** : à vérifier dans la console.
 
-## 4. Affiliation (Amazon Partenaires)
+## 4. Amazon Partenaires (affiliation)
 
 - **Rôle** : les boutons « Acheter · prix » mènent à Amazon.fr (programme Partenaires, tag `keurcook-21`, `src/lib/amazon.ts`) ; Amazon encaisse et livre. Produits retenus : plus de 3,5 étoiles sur Amazon ; prix indicatifs relevés le 27 septembre 2026. `keurcook.com` figure dans la liste des sites du compte (9 octobre 2026). Une routine quotidienne vérifie par lots que les produits cités sont toujours achetables.
 - **Console** : https://partenaires.amazon.fr (compte Amazon Partenaires de Jean).
@@ -70,9 +86,9 @@ Mis à jour le 13 octobre 2026 par un scan du dépôt. Pour mettre à jour : rel
 - **Secrets** : aucun dans le dépôt.
 - **Coût** : crédits OpenArt.
 
-## 7. Publicité Google AdSense
+## 7. AdSense (publicité web)
 
-- **Rôle** : annonces display Google sur cinq emplacements titrés « Publicité » (`src/components/ads/AdSlot.tsx`, `src/lib/ads.ts`) : au milieu et en fin de recette, au milieu et en fin d'article « Conseils », et sur les pages pays ; un seul bloc d'annonces « Keur Cook » sert les cinq. Script `adsbygoogle.js` et balise `google-adsense-account` dans `src/app/layout.tsx`, fichier `public/ads.txt`. Le message de consentement de Google (Confidentialité et messages) gère les cookies publicitaires. Mis en ligne le 12 octobre 2026. Ce service n'a pas d'entrée dans le Lexique.
+- **Rôle** : annonces display Google sur cinq emplacements titrés « Publicité » (`src/components/ads/AdSlot.tsx`, `src/lib/ads.ts`) : au milieu et en fin de recette, au milieu et en fin d'article « Conseils », et sur les pages pays ; un seul bloc d'annonces « Keur Cook » sert les cinq. Script `adsbygoogle.js` et balise `google-adsense-account` dans `src/app/layout.tsx`, fichier `public/ads.txt`. Le message de consentement de Google (Confidentialité et messages) gère les cookies publicitaires. Mis en ligne le 12 octobre 2026.
 - **Console** : https://adsense.google.com (compte Google de gestion).
 - **Identifiants publics** : identifiant d'éditeur `ca-pub-…` et numéro de bloc d'annonces dans `src/lib/ads.ts` et `public/ads.txt` (publics par nature).
 - **Secrets** : aucun.
