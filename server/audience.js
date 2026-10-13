@@ -167,11 +167,12 @@ export async function audience(jours = 30) {
   // Web Analytics : les sites mesurés, retrouvés par leur nom.
   let hotes = [];
   try {
-    // Les sites mesurés sur 3 mois : un site calme cette semaine reste en
+    // Les sites mesurés sur 30 jours : un site calme cette semaine reste en
     // « Web Analytics » au lieu de basculer sur les chiffres bruts du domaine
-    // (robots compris), qui ne se comparent pas.
-    const debut90 = new Date(Date.now() - 89 * 86400000).toISOString().slice(0, 10);
-    const d = acc ? await graphql(HOTES, { acc, debut: debut90 }) : null;
+    // (robots compris), qui ne se comparent pas. Pas plus de 30 jours :
+    // au-delà, Cloudflare répond une liste vide, sans erreur.
+    const debut30 = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
+    const d = acc ? await graphql(HOTES, { acc, debut: debut30 }) : null;
     hotes = (d?.viewer.accounts[0]?.hotes || []).map((g) => g.dimensions.requestHost).filter((h) => h && !/localhost|pages\.dev$|^\d/.test(h) && !PRIVES.test(h));
   } catch (e) {
     erreurs.push(e.message);

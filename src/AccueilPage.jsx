@@ -87,6 +87,42 @@ function Courbe({ jours }) {
   );
 }
 
+// « Fraîcheur des infos » : chaque source, sa dernière mise à jour, et en
+// rouge si elle a cessé de se mettre à jour (ou signale une erreur).
+const depuis = (iso) => {
+  if (!iso) return 'jamais';
+  const min = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (min < 2) return "à l'instant";
+  if (min < 60) return `il y a ${min} min`;
+  const h = Math.round(min / 60);
+  if (h < 36) return `il y a ${h} h`;
+  return `il y a ${Math.round(h / 24)} j`;
+};
+function Fraicheur({ liste }) {
+  if (!liste?.length) return null;
+  const etat = (f) => (f.erreur || !f.le ? 'ko' : (Date.now() - new Date(f.le).getTime()) / 3600000 > f.seuilH ? 'ko' : 'ok');
+  const enRetard = liste.filter((f) => etat(f) === 'ko').length;
+  return (
+    <div className="ac-fraicheur">
+      <span className="ac-sstitre">
+        Fraîcheur des infos {enRetard ? <b className="chaud">· {enRetard} à regarder</b> : <b className="frais">· tout est à jour</b>}
+      </span>
+      <div className="ac-fr-liste">
+        {liste.map((f) => (
+          <a key={f.cle} className={`ac-fr ${etat(f)}`} href={f.lien} title={f.erreur || (f.le ? new Date(f.le).toLocaleString('fr-FR') : 'aucune mise à jour connue')}>
+            <span className="ic">{f.ic}</span>
+            <span className="t">
+              <b>{f.nom}</b>
+              <small>{f.erreur || depuis(f.le)}</small>
+            </span>
+            <i />
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const ilYa = (iso) => {
   if (!iso) return '';
   const j = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
@@ -231,6 +267,8 @@ export function AccueilPage() {
           </a>
         ))}
       </div>
+
+      <Fraicheur liste={ext?.fraicheur} />
 
       {groupes.map(([titre, liste], g) =>
         liste.length ? (

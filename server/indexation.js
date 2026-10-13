@@ -605,3 +605,36 @@ export function passageDuJour() {
   const maintenant = new Date();
   return connecte && maintenant.getHours() >= 7 && (!dernier || new Date(dernier).toDateString() !== maintenant.toDateString());
 }
+
+// ---------- Performances sur Google (7 jours) ----------
+// Combien de fois les pages sont apparues dans Google, combien de clics, et
+// les recherches qui amènent le plus de monde. Google publie ces chiffres
+// avec 2 à 3 jours de retard. Gardé une heure en mémoire.
+let cachePerf = { at: 0, data: null };
+export async function performances() {
+  if (cachePerf.data && Date.now() - cachePerf.at < 3600 * 1000) return cachePerf.data;
+  const etat = lireEtat();
+  const jour = (d) => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+  const [debut, fin] = [jour(9), jour(2)];
+  const sites = {};
+  await Promise.all(
+    Object.keys(etat.sites).map(async (propriete) => {
+      try {
+        const q = (body) => google(`${WM}/sites/${enc(propriete)}/searchAnalytics/query`, { method: 'POST', body: { startDate: debut, endDate: fin, ...body } });
+        const [tot, req] = await Promise.all([q({}), q({ dimensions: ['query'], rowLimit: 5 })]);
+        const t = tot.rows?.[0] || {};
+        sites[propriete] = {
+          clics: t.clicks || 0,
+          vues: t.impressions || 0,
+          position: t.position ? Math.round(t.position * 10) / 10 : null,
+          requetes: (req.rows || []).map((r) => ({ texte: r.keys[0], clics: r.clicks, vues: r.impressions })),
+        };
+      } catch (e) {
+        sites[propriete] = { erreur: e.message };
+      }
+    }),
+  );
+  const data = { debut, fin, sites };
+  cachePerf = { at: Date.now(), data };
+  return data;
+}

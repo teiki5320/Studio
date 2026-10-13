@@ -123,6 +123,13 @@ export function IndexationPage() {
     }
   });
   const { data: applis } = useApplis();
+  const [perf, setPerf] = useState(null);
+  useEffect(() => {
+    api
+      .performancesGoogle()
+      .then(setPerf)
+      .catch(() => setPerf({ sites: {} }));
+  }, []);
   const load = () =>
     api
       .indexation()
@@ -208,6 +215,11 @@ export function IndexationPage() {
           <span className="sub">sur {data.sites.length} sites</span>
         </div>
         <div className="ix-kpi">
+          <span className="lab">Clics depuis Google · 7 j</span>
+          <b>{perf ? nb(Object.values(perf.sites).reduce((t, x) => t + (x.clics || 0), 0)) : '…'}</b>
+          <span className="sub">{perf ? `${nb(Object.values(perf.sites).reduce((t, x) => t + (x.vues || 0), 0))} apparitions dans les résultats` : 'chiffres de Google'}</span>
+        </div>
+        <div className="ix-kpi">
           <span className="lab">Chez Claude</span>
           <b>{chezClaude}</b>
           <span className="sub">routine 6 h · 9 h · 12 h · 19 h</span>
@@ -249,6 +261,11 @@ export function IndexationPage() {
                   </small>
                 </span>
               </span>
+              {perf?.sites[x.propriete] && !perf.sites[x.propriete].erreur ? (
+                <span className="ix-perf">
+                  <b>{nb(perf.sites[x.propriete].clics)}</b> clics · {nb(perf.sites[x.propriete].vues)} apparitions · 7 j
+                </span>
+              ) : null}
               <span className="ix-barre" title={parts.filter(([, v]) => v).map(([, v, l]) => `${v} ${l}`).join(' · ')}>
                 {parts.map(([c, v]) => (v ? <span key={c} className={c} style={{ width: `${(100 * v) / Math.max(1, x.total)}%` }} /> : null))}
               </span>
@@ -272,6 +289,24 @@ export function IndexationPage() {
             </small>
           </h3>
           {choisi.erreur ? <p className="error small">⚠️ {choisi.erreur}</p> : null}
+          {perf?.sites[choisi.propriete]?.requetes?.length ? (
+            <div className="ix-probleme ix-requetes">
+              <div className="ix-probleme-h">
+                <b>🔍 Ce que les gens cherchent pour arriver ici</b>
+                <span className="ix-nb">
+                  · du {date(perf.debut)} au {date(perf.fin)}
+                  {perf.sites[choisi.propriete].position ? ` · position moyenne ${String(perf.sites[choisi.propriete].position).replace('.', ',')}` : ''}
+                </span>
+              </div>
+              {perf.sites[choisi.propriete].requetes.map((r) => (
+                <div key={r.texte} className="ix-requete">
+                  <span>{r.texte}</span>
+                  <b>{nb(r.clics)} clic{r.clics > 1 ? 's' : ''}</b>
+                  <small>{nb(r.vues)} apparitions</small>
+                </div>
+              ))}
+            </div>
+          ) : null}
           {choisi.problemes.map((p) => (
             <Probleme key={p.id} p={p} onFait={load} setError={setError} />
           ))}

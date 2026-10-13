@@ -11,6 +11,7 @@ import { planning } from './planning.js';
 import { etatIndexation } from './indexation.js';
 import { audience, etatCloudflare } from './audience.js';
 import { routines, routinesDuJour } from './routines.js';
+import { applis } from './applis.js';
 
 // L'adresse publique de chaque site suivi (clé = dossier data/apps/<id>).
 const SITES = {
@@ -78,6 +79,30 @@ async function vues7j() {
   }
 }
 
+// La fraîcheur de chaque source d'information : quand a-t-elle été relue
+// pour la dernière fois, et au bout de combien d'heures c'est anormal.
+// Une source qui ne se met plus à jour se voit tout de suite sur l'Accueil.
+function fraicheur(ix, toutes, vues) {
+  const a = applis();
+  const plusVieilleFiche = (a?.apps || [])
+    .map((x) => Object.values(x.fiches || {}).filter(Boolean).sort()[0])
+    .filter(Boolean)
+    .sort()[0];
+  const ficheRoutine = toutes.find((r) => r.id === 'fiches-mes-apps');
+  const bloquees = toutes.filter((r) => r.active && r.statut === 'bloquee');
+  const dernierRun = toutes.map((r) => r.dernierPassage).filter(Boolean).sort().pop();
+  const derniereVue = (vues?.jours || []).map((j) => j.date).sort().pop();
+  const ixErreurs = ix.sites.filter((s) => s.erreur).length;
+  return [
+    { cle: 'code', ic: '🐙', nom: 'Code (GitHub)', le: a?.synchro?.le, seuilH: 7, lien: '#/reglages/depots', erreur: a?.synchro?.ok === false ? a.synchro.erreur || 'synchro en échec' : null },
+    { cle: 'fiches', ic: '📄', nom: 'Fiches des applis', le: plusVieilleFiche ? `${plusVieilleFiche}T12:00:00Z` : null, seuilH: 50, lien: '#/applis', detail: ficheRoutine?.dernierPassage ? 'la plus ancienne' : null },
+    { cle: 'indexation', ic: '🔎', nom: 'Indexation Google', le: ix.dernierPassage, seuilH: 26, lien: '#/indexation', erreur: ixErreurs ? `${ixErreurs} site(s) en erreur` : null },
+    { cle: 'sites', ic: '🌐', nom: 'Sites en ligne', le: cacheSites.at ? new Date(cacheSites.at).toISOString() : null, seuilH: 1, lien: '#/accueil' },
+    { cle: 'audience', ic: '📈', nom: 'Audience', le: derniereVue ? `${derniereVue}T12:00:00Z` : null, seuilH: 50, lien: '#/audience', erreur: etatCloudflare().configure ? null : 'clé Cloudflare absente' },
+    { cle: 'routines', ic: '⏰', nom: 'Routines', le: dernierRun, seuilH: 26, lien: '#/reglages/routines', erreur: bloquees.length ? `${bloquees.length} bloquée${bloquees.length > 1 ? 's' : ''}` : null },
+  ];
+}
+
 export async function accueil() {
   const [sites, pushs, vues] = await Promise.all([etatSites(), envois(), vues7j()]);
   const file = listQueue();
@@ -93,6 +118,7 @@ export async function accueil() {
     sites,
     envois: pushs,
     vues,
+    fraicheur: fraicheur(ix, toutes, vues),
     compteurs: {
       pagesGoogle: ix.sites.reduce((t, s) => t + (s.indexees || 0), 0),
       pagesTotal: ix.sites.reduce((t, s) => t + (s.total || 0), 0),

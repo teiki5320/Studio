@@ -82,3 +82,21 @@ html[data-theme='clair'] .accueil { --creux: #e4d7c8; }
 
 /* Maquette « Ressort » : le bandeau général prend une teinte argile chaude. */
 html:not([data-theme='clair']) .ac-general { background: #2b211d; }
+
+/* Fraîcheur des infos */
+.ac-fraicheur { display: flex; flex-direction: column; gap: 12px; }
+.ac-fraicheur .ac-sstitre { margin: 0; }
+.ac-fraicheur .ac-sstitre b { letter-spacing: .04em; }
+.ac-fraicheur .chaud { color: var(--ko); } .ac-fraicheur .frais { color: var(--ok); }
+.ac-fr-liste { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.ac-fr { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 18px; background: var(--carte); box-shadow: var(--clay-sm); min-width: 0;
+  transition: transform .25s var(--ressort); }
+.ac-fr:hover { transform: translateY(-2px); }
+.ac-fr .ic { font-size: 18px; }
+.ac-fr .t { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ac-fr .t b { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ac-fr .t small { font-size: 11.5px; font-weight: 700; color: var(--c-muted); }
+.ac-fr > i { width: 9px; height: 9px; border-radius: 50%; flex: none; background: var(--ok); }
+.ac-fr.ko { background: var(--ko-tint); }
+.ac-fr.ko > i { background: var(--ko); animation: ac-battement 1.7s ease-in-out infinite; }
+.ac-fr.ko .t small { color: var(--ko); }

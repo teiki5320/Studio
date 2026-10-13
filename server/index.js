@@ -98,6 +98,7 @@ import { planning, placer, modifier as modifierPlanning, retirer as retirerPlann
 import { listeComptes, ajouterCompte, modifierCompte, retirerCompte } from './reseaux.js';
 import {
   etatIndexation,
+  performances,
   estConnexionIndexation,
   urlConnexionIndexation,
   terminerConnexionIndexation,
@@ -1392,6 +1393,13 @@ function lancerPassage() {
   passageId = startJob('Indexation — vérification des sites', (update) => passageIndexation(update)).id;
   return passageId;
 }
+app.get('/api/indexation/performances', async (req, res) => {
+  try {
+    res.json(await performances());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
 app.get('/api/indexation', (req, res) =>
   res.json({ ...etatIndexation(), passageId: getJob(passageId)?.status === 'running' ? passageId : null }),
 );
