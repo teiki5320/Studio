@@ -613,6 +613,32 @@ const SERVICES = [
     ],
   },
   {
+    id: 'adsense',
+    nom: 'AdSense (publicité web)',
+    emoji: '📰',
+    categorie: 'Rémunération',
+    badge: 'optionnel',
+    resume: 'Afficher des pubs Google sur un site et être payé aux affichages et aux clics.',
+    role:
+      "AdSense (Google) place des annonces sur les pages d'un site : un script dans l'en-tête, un " +
+      "fichier ads.txt à la racine, et Google choisit où et quoi afficher (annonces automatiques). " +
+      "Les revenus suivent le trafic et le pays des visiteurs.",
+    concepts: [
+      { terme: 'ads.txt', def: 'Fichier à la racine du site qui déclare quel compte AdSense a le droit de vendre ses espaces.' },
+      { terme: 'Validation du site', def: "Google examine chaque site avant d'y diffuser des annonces (« Préparation en cours », puis « Prêt »)." },
+      { terme: 'Message de consentement', def: "En Europe, le bandeau de choix des cookies certifié Google, à régler dans AdSense → Confidentialité et messages." },
+      { terme: 'RPM', def: 'Revenu pour 1 000 pages vues ; très variable selon le sujet et le pays.' },
+    ],
+    cout: "Gratuit — c'est Google qui paie, à partir de 70 € de revenus cumulés.",
+    quand: "Site de contenu avec du trafic régulier ; sur un site de service ou d'aide, la pub nuit au sérieux.",
+    alternatives: "Affiliation (Amazon Partenaires), sponsoring, ou pas de pub.",
+    consigner: [
+      'Identifiant de compte (pub-…) déclaré dans ads.txt',
+      "État de validation du site dans AdSense",
+      'Message de consentement en place (oui/non)',
+    ],
+  },
+  {
     id: 'stripe',
     nom: 'Stripe',
     emoji: '💰',
