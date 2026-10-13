@@ -20,7 +20,6 @@ const norm = (s) =>
     .replace(/[̀-ͯ]/g, '')
     .toLowerCase();
 const slug = (s) => norm(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-const pct = (done, todo) => (done + todo ? Math.round((done / (done + todo)) * 100) : 0);
 const nomCourt = (svc) => svc.nom.replace(/\s*\(.*\)$/, '');
 
 export function fmtDate(iso, avecHeure) {
@@ -224,42 +223,6 @@ function Faits({ faits }) {
   );
 }
 
-function Donut({ done, todo }) {
-  const p = pct(done, todo);
-  return (
-    <div className="donut-row">
-      <div className="donut" style={{ '--p': p }}>
-        <div>
-          <b>{p} %</b>
-        </div>
-      </div>
-      <div className="donut-legend">
-        <span>
-          <i className="sw sw-accent" />
-          {done} ouverts
-        </span>
-        <span>
-          <i className="sw sw-sun" />
-          {todo} à ouvrir
-        </span>
-      </div>
-    </div>
-  );
-}
-
-// Les 3 priorités de l'app, tirées de sa fiche marketing : de l'information,
-// pas une liste à cocher (ce qui est fait disparaît de la fiche elle-même).
-function Priorites({ liste }) {
-  if (!liste.length) return <span className="empty-note">Pas de section « Les 3 priorités » dans la fiche.</span>;
-  return (
-    <ol className="priorites">
-      {liste.map((a, i) => (
-        <li key={i}>{a}</li>
-      ))}
-    </ol>
-  );
-}
-
 function Services({ app, data, famTint, ouvrir }) {
   const services = app.services.map((id) => data.services.find((s) => s.id === id)).filter(Boolean);
   return (
@@ -300,17 +263,254 @@ function Services({ app, data, famTint, ouvrir }) {
   );
 }
 
-function FicheApp({ app, data, volet, famTint, ouvrir }) {
-  const appTint = TINTS[data.apps.indexOf(app) % TINTS.length];
-  const volets = [
-    ['technique', 'Technique'],
-    ['marketing', 'Marketing'],
-  ];
-  if (app.publicationHtml) volets.push(['publication', 'Publication']);
-  const idx = Math.max(
-    0,
-    volets.findIndex((v) => v[0] === volet),
+// ---------- Fiche d'une app — maquette « F2 Parcours » (13/10) ----------
+// Chaque volet raconte un trajet : la chaîne jusqu'aux boutiques (Technique),
+// les phases de rémunération (Marketing), les étapes qui restent
+// (Publication). Les parties viennent des sections normées des fiches
+// (« Parcours », « Rémunération par phases »…) ; tant qu'une fiche ne les a
+// pas, le volet montre ce qu'elle contient déjà.
+const ETAT_LIB = { ok: 'en place', run: 'à faire', ko: 'bloquant', none: 'pas encore' };
+const COULEUR_TRAJET = ['bleu', 'ok', 'lilas', 'peche', 'run'];
+const publicDe = (app) => (estSite(app) ? 'les visiteurs' : /jeu|game|cartes/i.test(app.tagline || '') ? 'les joueurs' : 'les utilisateurs');
+
+function Legende() {
+  return (
+    <div className="fa-legende">
+      {Object.entries(ETAT_LIB).map(([k, l]) => (
+        <span key={k}>
+          <i className={`fa-pt ${k}`} />
+          {l}
+        </span>
+      ))}
+    </div>
   );
+}
+
+function Trajets({ app, data, ouvrir }) {
+  const trajets = app.parcours?.trajets || [];
+  if (!trajets.length) return null;
+  const service = (nom) => {
+    const n = norm(nom);
+    return data.services.find((s) => app.services.includes(s.id) && (norm(nomCourt(s)).includes(n) || n.includes(norm(nomCourt(s)))));
+  };
+  return (
+    <div className="fa-carte">
+      <div className="fa-carte-h">
+        <h3>
+          Comment {app.name} arrive chez {publicDe(app)}
+        </h3>
+        <small>d’après infra.md · touche une étape pour la fiche du service</small>
+      </div>
+      <div className="fa-trajets">
+        {trajets.map((t, i) => (
+          <div key={i} className={`fa-trajet c-${COULEUR_TRAJET[i % COULEUR_TRAJET.length]}`}>
+            <span className="fa-trajet-nom">
+              <span className="em">{t.emoji}</span>
+              {t.nom}
+            </span>
+            <div className="fa-etapes">
+              {t.etapes.map((e, j) => {
+                const svc = service(e.nom);
+                return (
+                  <React.Fragment key={j}>
+                    {j ? <span className={`fa-lien${t.etapes[j - 1].etat === 'ok' ? ' actif' : ''}`} style={{ '--d': `${j * 0.4}s` }} /> : null}
+                    <button type="button" className={`fa-etape${svc ? ' cliquable' : ''}`} onClick={() => svc && ouvrir(svc)} title={ETAT_LIB[e.etat]}>
+                      <span className="fa-etape-h">
+                        {e.emoji ? <span className="em">{e.emoji}</span> : null}
+                        <b>{e.nom}</b>
+                        <i className={`fa-pt ${e.etat}`} />
+                      </span>
+                      {e.note ? <small>{e.note}</small> : null}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <Legende />
+    </div>
+  );
+}
+
+function Bref({ faits }) {
+  if (!faits?.length) return null;
+  return (
+    <div className="fa-bref">
+      {faits.map((f, i) => (
+        <div key={i} className="fa-bref-c">
+          <span className="lab">{f.label}</span>
+          <span className="val">{lienSiUrl(f.value)}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Phases({ m, r }) {
+  const phases = r?.phases || [];
+  const actuelle = [...phases].reverse().find((p) => p.etat === 'ok');
+  return (
+    <div className="fa-carte fa-phases">
+      <div className="fa-carte-h">
+        <span className="fa-sur">Rémunération · aujourd’hui</span>
+        <h3>{actuelle?.texte || m.model || 'Non renseigné'}</h3>
+      </div>
+      {phases.length > 1 ? (
+        <div className="fa-etapier" style={{ '--n': phases.length }}>
+          {phases.map((p, i) => (
+            <div key={i} className={`fa-phase ${p.etat}`}>
+              <span className="rond">{p.etat === 'ok' ? '✓' : i}</span>
+              <b>
+                {i} — {p.titre}
+              </b>
+              <small>{p.texte}</small>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function Forces({ liste }) {
+  if (!liste?.length) return null;
+  return (
+    <div className="fa-forces">
+      {liste.map((f, i) => (
+        <div key={i} className="fa-carte fa-force">
+          <span className="em">{f.emoji || '✨'}</span>
+          <b>{f.titre}</b>
+          <p>{f.texte}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function Mesures({ liste, kpis }) {
+  const lignes = liste?.length ? liste : (kpis?.rows || []).map((r) => ({ label: r[0], value: r[1] }));
+  if (!lignes.length) return null;
+  return (
+    <div className="fa-carte">
+      <div className="fa-carte-h">
+        <h3>Mesures</h3>
+      </div>
+      <div className="fa-lignes">
+        {lignes.map((l, i) => (
+          <div key={i} className="fa-ligne">
+            <span>{l.label}</span>
+            <b className={/v[ée]rifier|instrumenter|sans objet|aucun/i.test(l.value || '') ? 'gris' : ''}>{l.value || '—'}</b>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Reste({ liste }) {
+  if (!liste?.length) return null;
+  const faits = liste.filter((x) => x.fait).length;
+  return (
+    <div className="fa-carte fa-reste">
+      <div className="fa-carte-h fa-reste-h">
+        <h3>Ce qui reste, dans l’ordre</h3>
+        <b>
+          {faits} / {liste.length}
+        </b>
+      </div>
+      <span className="fa-barre">
+        <span style={{ width: `${(100 * faits) / liste.length}%` }} />
+      </span>
+      <ol>
+        {liste.map((x, i) => (
+          <li key={i} className={x.fait ? 'fait' : ''}>
+            <span className="num">{x.fait ? '✓' : i + 1}</span>
+            <span className="t">
+              <b>{x.titre}</b>
+              {x.texte ? <small>{x.texte}</small> : null}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function Boutiques({ b }) {
+  if (!b) return null;
+  return (
+    <div className="fa-carte fa-boutiques">
+      <table>
+        <thead>
+          <tr>
+            <th />
+            {b.colonnes.map((c) => (
+              <th key={c}>{c}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {b.lignes.map((l) => (
+            <tr key={l.label}>
+              <th>{l.label}</th>
+              {l.cellules.map((c, i) => (
+                <td key={i}>
+                  {c.etat ? <i className={`fa-pt ${c.etat}`} /> : null}
+                  {lienSiUrl(c.texte || '—')}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Poids({ liste }) {
+  return (liste || []).map((p, i) => {
+    const r = p.max ? p.valeur / p.max : 0;
+    return (
+      <div key={i} className="fa-carte fa-poids">
+        <div className="fa-carte-h">
+          <h3>
+            {p.emoji} {p.titre}
+          </h3>
+          <b className={r > 0.9 ? 'ko' : r > 0.75 ? 'run' : 'ok'}>
+            {String(p.valeur).replace('.', ',')} / {p.max} {p.unite}
+          </b>
+        </div>
+        <span className={`fa-barre ${r > 0.9 ? 'ko' : r > 0.75 ? 'run' : 'ok'}`}>
+          <span style={{ width: `${Math.min(100, 100 * r)}%` }} />
+        </span>
+        {p.note ? <p className="fa-note">{p.note}</p> : null}
+      </div>
+    );
+  });
+}
+
+function AnciennesBoutiques({ app }) {
+  const plats = app.publicationPlateformes || [];
+  if (!plats.length) return null;
+  return plats.map((p, i) => (
+    <div key={i} className="fa-carte">
+      <div className="fa-carte-h">
+        <h3>{p.titre}</h3>
+      </div>
+      <Faits faits={p.faits} />
+    </div>
+  ));
+}
+
+function FicheApp({ app, data, volet, famTint, ouvrir }) {
+  const volets = [
+    ['technique', '🛠️', 'Technique'],
+    ['marketing', '📣', 'Marketing'],
+  ];
+  if (app.publicationHtml) volets.push(['publication', '🚀', 'Publication']);
+  const v = volets.find((x) => x[0] === volet) || volets[0];
   // Un titre de la fiche technique rattaché à un service ouvre sa fiche.
   const clicMd = (e) => {
     const h = e.target.closest?.('[id]');
@@ -320,138 +520,101 @@ function FicheApp({ app, data, volet, famTint, ouvrir }) {
     const lien = e.target.closest?.('a[href^="#"]');
     if (lien) revelerAncre(lien.getAttribute('href').slice(1), e);
   };
+  const barre = useRef(null);
+  const [curseur, setCurseur] = useState(null);
+  React.useLayoutEffect(() => {
+    const b = barre.current?.querySelector('.on');
+    if (b) setCurseur({ left: b.offsetLeft, top: b.offsetTop, width: b.offsetWidth, height: b.offsetHeight });
+  }, [v[0], app.id]);
+  const age = ageFiches(app);
+  const plusRecente = Object.values(app.fiches || {}).filter(Boolean).sort().pop();
+  const version = (app.boutiques?.enBref || []).find((f) => /version/i.test(f.label))?.value?.split(/[ (]/)[0];
 
   let corps;
-  if (volet === 'publication' && app.publicationHtml) {
+  if (v[0] === 'publication') {
+    const b = app.boutiques || {};
     const ess = app.publicationEssentiel || { facts: [] };
-    const plats = app.publicationPlateformes || [];
-    const communs = (ess.facts || []).filter((f) => !plats.some((p) => norm(p.titre).startsWith(norm(f.label))));
     corps = (
       <>
-        {communs.length ? (
-          <div className="tile rise">
-            <div className="tile-h">
-              <b>Commun aux boutiques</b>
-              <span>publication.md</span>
-            </div>
-            <Faits faits={communs} />
-          </div>
-        ) : null}
-        {plats.length ? (
-          <div className="pub-grid">
-            {plats.map((p, i) => {
-              const etat = p.faits.find((f) => norm(f.label) === 'etat')?.value;
-              const autres = p.faits.filter((f) => norm(f.label) !== 'etat');
-              const ios = /ios|apple|app store/i.test(p.titre);
-              const and = /android|play/i.test(p.titre);
-              return (
-                <div key={i} className="tile rise">
-                  <div className="store-h">
-                    <span className={`row-ico tint-${ios ? 'sky' : and ? 'mint' : 'lilac'}`}>{ios ? '🍎' : and ? '🤖' : '🌐'}</span>
-                    <div>
-                      <b>{p.titre}</b>
-                      {etat ? <small>{etat}</small> : null}
-                    </div>
-                  </div>
-                  {autres.length ? <Faits faits={autres} /> : null}
-                  {p.notes.map((n, j) => (
-                    <div key={j} className="note">
-                      {n.titre ? <b>{n.titre}</b> : null}
-                      <p>{n.texte}</p>
+        <div className="fa-deux">
+          <Reste liste={b.reste} />
+          <div className="fa-pile">
+            {b.boutiques ? <Boutiques b={b.boutiques} /> : <AnciennesBoutiques app={app} />}
+            <Poids liste={b.poids} />
+            {b.enBref?.length ? (
+              <div className="fa-carte">
+                <div className="fa-lignes">
+                  {b.enBref.map((f, i) => (
+                    <div key={i} className="fa-ligne">
+                      <span>{f.label}</span>
+                      <b>{lienSiUrl(f.value)}</b>
                     </div>
                   ))}
                 </div>
-              );
-            })}
-          </div>
-        ) : null}
-        <Fiche titre="Fiche de publication complète" sous="publication.md" toc={app.publicationToc} html={app.publicationHtml} onClickMd={clicMd} />
-      </>
-    );
-  } else if (volet === 'marketing') {
-    const m = app.marketingSummary || {};
-    corps = (
-      <>
-        <div className="three-col">
-          <div className="tile rise">
-            <div className="tile-h">
-              <b>Canaux</b>
-              <span>marketing.md</span>
-            </div>
-            <Donut done={m.done || 0} todo={m.todo || 0} />
-          </div>
-          <div className="tile tint-lilac rise">
-            <div className="cap-label">Modèle de rémunération actuel</div>
-            <div className="cap-model">{m.model || <span className="empty-note">Non renseigné</span>}</div>
-            {m.jalons?.rows?.length ? (
-              <>
-                <div className="cap-label" style={{ marginTop: 14 }}>
-                  Calendrier
-                </div>
-                <div className="jalons">
-                  {m.jalons.rows.map((r, i) => (
-                    <div key={i} className="jalon">
-                      {r[0] ? <b>{r[0]}</b> : null}
-                      <span>{r[1] || ''}</span>
-                    </div>
-                  ))}
-                </div>
-              </>
+              </div>
+            ) : !b.boutiques && ess.facts?.length ? (
+              <div className="fa-carte">
+                <Faits faits={ess.facts} />
+              </div>
             ) : null}
           </div>
-          <div className="tile rise">
-            <div className="tile-h">
-              <b>Les 3 priorités</b>
-              <span>marketing.md</span>
-            </div>
-            <Priorites liste={m.nextActions || []} />
-          </div>
         </div>
-        {m.kpis?.rows?.length ? (
-          <div className="kpi-row">
-            {m.kpis.rows.map((r, i) => (
-              <div key={i} className={`tile kpi tint-${TINTS[i % TINTS.length]} rise`}>
-                <span className="kpi-lab">{r[0] || ''}</span>
-                <b className="kpi-txt">{r[1] || '—'}</b>
-                {r[2] ? <small>objectif : {r[2]}</small> : null}
-              </div>
-            ))}
+        <Fiche titre="Fiche de publication complète" sous={`publication.md · mise à jour le ${fmtDate(app.fiches?.publication)}`} toc={app.publicationToc} html={app.publicationHtml} onClickMd={clicMd} />
+      </>
+    );
+  } else if (v[0] === 'marketing') {
+    const m = app.marketingSummary || {};
+    const r = app.remuneration || {};
+    corps = (
+      <>
+        <Phases m={m} r={r} />
+        <Forces liste={r.forces} />
+        <div className="fa-deux">
+          <div className="fa-carte">
+            <div className="fa-carte-h">
+              <h3>Les 3 priorités</h3>
+            </div>
+            {(m.nextActions || []).length ? (
+              <ol className="fa-priorites">
+                {m.nextActions.map((a, i) => (
+                  <li key={i}>
+                    <span className="num">{i + 1}</span>
+                    <span>{a}</span>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <span className="empty-note">Pas de section « Les 3 priorités » dans la fiche.</span>
+            )}
           </div>
-        ) : null}
-        <Fiche titre="Plan marketing complet" sous="marketing.md" toc={app.marketingToc} html={app.marketingHtml} onClickMd={clicMd} />
+          <Mesures liste={r.mesures} kpis={m.kpis} />
+        </div>
+        <Fiche titre="Plan marketing complet" sous={`marketing.md · mis à jour le ${fmtDate(app.fiches?.marketing)}`} toc={app.marketingToc} html={app.marketingHtml} onClickMd={clicMd} />
       </>
     );
   } else {
     const ess = app.infraEssentiel || { facts: [] };
+    const bref = app.parcours?.enBref?.length ? app.parcours.enBref : ess.facts;
     corps = (
       <>
-        <div className="two-col">
-          <div className="tile rise">
-            <div className="tile-h">
-              <b>L’essentiel</b>
-              <span>infra.md · vue d’ensemble</span>
-            </div>
-            {ess.facts?.length ? (
-              <Faits faits={ess.facts} />
-            ) : ess.resume ? (
-              <p className="resume">{ess.resume}</p>
-            ) : (
-              <span className="empty-note">Pas de section « Vue d’ensemble » dans l’infra.md.</span>
-            )}
-          </div>
-          <Services app={app} data={data} famTint={famTint} ouvrir={ouvrir} />
-        </div>
-        <Fiche titre="Fiche technique complète" sous={`infra.md · ${app.services.length} services`} toc={app.infraToc} html={app.infraHtml} onClickMd={clicMd} />
+        <Trajets app={app} data={data} ouvrir={ouvrir} />
+        {bref?.length ? <Bref faits={bref} /> : ess.resume ? <p className="resume">{ess.resume}</p> : null}
+        <Services app={app} data={data} famTint={famTint} ouvrir={ouvrir} />
+        <Fiche titre="Fiche technique complète" sous={`infra.md · ${app.services.length} services · mise à jour le ${fmtDate(app.fiches?.infra)}`} toc={app.infraToc} html={app.infraHtml} onClickMd={clicMd} />
       </>
     );
   }
 
   return (
-    <div className="clay-content dash-body">
-      <div className={`tile app-head tint-${appTint} rise`}>
+    <div className="clay-content dash-body fa">
+      <div className="fa-fil">
+        <a href="#/applis">Mes applis</a> › <a href={`#/applis/${app.id}`}>{app.name}</a> › <b>{v[2]}</b>
+      </div>
+      <div className="fa-hero">
         <Logo app={app} cls="app-big" />
-        <div className="app-txt">
-          <h3>{app.name}</h3>
+        <div className="fa-hero-t">
+          <h2>{app.name}</h2>
+          {app.tagline ? <p>{app.tagline}</p> : null}
           <div className="chips">
             {(app.platforms || []).map((p) => (
               <span key={p} className="chip">
@@ -466,21 +629,31 @@ function FicheApp({ app, data, volet, famTint, ouvrir }) {
               <span className="chip">Pas de dépôt</span>
             )}
             <span className="chip">{app.services.length} services</span>
+            {version ? <span className="chip">v{version}</span> : null}
           </div>
         </div>
-        <div className="app-side">
-          <CiPill app={app} big />
+        <CiPill app={app} big />
+      </div>
+      <div className="fa-onglets-l">
+        <div className="fa-onglets" ref={barre}>
+          {curseur ? <span className="fa-curseur" style={curseur} /> : null}
+          {volets.map(([id, ic, nom]) => (
+            <a key={id} className={id === v[0] ? 'on' : ''} href={`#/applis/${app.id}/${id}`}>
+              <span className="ic">{ic}</span>
+              {nom}
+            </a>
+          ))}
         </div>
+        {plusRecente ? (
+          <span className="fa-age">
+            Fiches à jour du {fmtDate(plusRecente)}
+            {age !== null ? ` · ${age === 0 ? "aujourd'hui" : age === 1 ? 'il y a 1 jour' : `il y a ${age} jours`}` : ''}
+          </span>
+        ) : null}
       </div>
-      <div className="seg rise" style={{ '--n': volets.length }}>
-        <span className="seg-thumb" style={{ '--i': idx }} />
-        {volets.map(([id, nom]) => (
-          <a key={id} className={id === volets[idx][0] ? 'active' : ''} href={`#/applis/${app.id}/${id}`}>
-            {nom}
-          </a>
-        ))}
+      <div key={v[0]} className="fa-corps" data-sans-ressort>
+        {corps}
       </div>
-      {corps}
     </div>
   );
 }
