@@ -1318,7 +1318,8 @@ app.post('/api/planning', (req, res) => {
 });
 app.post('/api/planning/remplir', (req, res) => {
   try {
-    res.json(remplirPlanning(Boolean((req.body || {}).appliquer)));
+    const { appliquer, depots } = req.body || {};
+    res.json(remplirPlanning(Boolean(appliquer), Array.isArray(depots) ? depots : null));
   } catch (e) {
     res.status(400).json({ error: e.message });
   }

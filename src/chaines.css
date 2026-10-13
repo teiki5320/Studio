@@ -54,3 +54,4 @@ html[data-theme='clair'] .ch-tete { background: var(--lilac); }
 .ch-themes[open] summary { margin-bottom: 14px; }
 .rg-reseau.instagram { color: #e1306c; }
 .ch-etapes a { color: var(--accent); font-weight: 800; }
+.ch-actions { display: flex; gap: 8px; flex-wrap: wrap; }

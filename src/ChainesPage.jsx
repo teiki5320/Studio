@@ -9,6 +9,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from './api.js';
 import { useApplis, Logo } from './MesApplisPage.jsx';
+import { PlanningPage } from './PlanningPage.jsx';
 import './chaines.css';
 
 export const RESEAUX = [
@@ -286,6 +287,21 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
           <h2>{app.name}</h2>
           {app.tagline ? <span>{app.tagline}</span> : null}
         </div>
+        <div className="ch-actions">
+          {pub ? (
+            <a className="clay-btn" href={`#/projet/${pub.id}`}>
+              📣 {nPubs} pub{nPubs > 1 ? 's' : ''}
+            </a>
+          ) : null}
+          {recettes ? (
+            <a className="clay-btn" href="#/recettes">
+              🍲 Recettes
+            </a>
+          ) : null}
+          <button type="button" className="clay-btn" onClick={onCreerPub}>
+            ＋ Créer une pub
+          </button>
+        </div>
       </div>
       <h3 className="ch-sous">Ses chaînes</h3>
       <div className="ch-grille">
@@ -300,32 +316,8 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
           </a>
         ))}
       </div>
-      <h3 className="ch-sous">Ses vidéos</h3>
-      <div className="ch-grille">
-        {pub ? (
-          <a className="ch-carte" href={`#/projet/${pub.id}`}>
-            <span className="ch-ic">📣</span>
-            <b>
-              {nPubs} pub{nPubs > 1 ? 's' : ''}
-            </b>
-            <small>ouvrir l’atelier de pub</small>
-          </a>
-        ) : null}
-        {recettes ? (
-          <a className="ch-carte" href="#/recettes">
-            <span className="ch-ic">🍲</span>
-            <b>
-              {(recettes.episodes || []).length} recette{(recettes.episodes || []).length > 1 ? 's' : ''}
-            </b>
-            <small>vidéos de recettes</small>
-          </a>
-        ) : null}
-        <button type="button" className="ch-carte ch-ajout" onClick={onCreerPub}>
-          <span className="ch-ic">＋</span>
-          <b>Créer une pub</b>
-          <small>ouvre la création de vidéo</small>
-        </button>
-      </div>
+      <h3 className="ch-sous">Son planning</h3>
+      <PlanningPage key={cle} appli={cle} />
     </div>
   );
 }

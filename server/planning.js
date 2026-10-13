@@ -195,8 +195,9 @@ export function retirerVideo(projectId, number) {
 // Remplissage automatique : chaque vidéo à placer part sur ses comptes
 // proposés, au premier jour libre de chaque compte (1 vidéo par compte et
 // par jour), à partir d'aujourd'hui. Sans `appliquer` : simple aperçu.
-export function remplir(appliquer = false) {
-  const { aPlacer } = planning();
+// `depots` : seulement les vidéos de ces applis (écran d'une appli).
+export function remplir(appliquer = false, depots = null) {
+  const aPlacer = planning().aPlacer.filter((v) => !depots || depots.includes(v.depot));
   const pubs = lire();
   const prevues = [];
   const debut = iso(new Date());

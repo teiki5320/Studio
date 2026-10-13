@@ -73,7 +73,25 @@ function Apercu({ v, w, h }) {
   );
 }
 
-export function PlanningPage() {
+// Les dépôts d'une appli dans le planning (les recettes vont avec Keur Cook).
+const depotsDe = (cle) => (cle === 'keurcook' ? ['keurcook', 'recettes'] : [cle]);
+// Garde seulement ce qui concerne une appli : ses comptes et ses vidéos.
+function filtrer(d, cle) {
+  if (!cle) {
+    return d;
+  }
+  const deps = depotsDe(cle);
+  const aElle = (v) => deps.includes(v?.depot);
+  return {
+    ...d,
+    comptes: d.comptes.filter((c) => (c.applis || []).some((a) => deps.includes(a))),
+    aPlacer: d.aPlacer.filter(aElle),
+    publications: d.publications.filter((p) => aElle(p.video)),
+  };
+}
+
+// `appli` (clé du dépôt) : planning réduit à cette appli (écran Publicité).
+export function PlanningPage({ appli } = {}) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [vue, setVue] = useState('semaine');
@@ -92,7 +110,7 @@ export function PlanningPage() {
     api
       .planning()
       .then((d) => {
-        setData(d);
+        setData(filtrer(d, appli));
         setError('');
       })
       .catch((e) => setError(e.message));
@@ -100,7 +118,7 @@ export function PlanningPage() {
     load();
     const t = setInterval(load, 15000);
     return () => clearInterval(t);
-  }, []);
+  }, [appli]);
   useEffect(() => {
     try {
       localStorage.setItem(RANGEMENT, JSON.stringify(rangement));
@@ -189,10 +207,10 @@ export function PlanningPage() {
 
   // ---------- Remplissage automatique ----------
   const proposerRemplissage = () =>
-    apercu ? setApercu(null) : api.remplirPlanning(false).then(setApercu).catch((e) => setError(e.message));
+    apercu ? setApercu(null) : api.remplirPlanning(false, appli && depotsDe(appli)).then(setApercu).catch((e) => setError(e.message));
   const appliquerRemplissage = () =>
     api
-      .remplirPlanning(true)
+      .remplirPlanning(true, appli && depotsDe(appli))
       .then((l) => {
         setAnnulables(l.map((p) => p.id));
         setApercu(null);
@@ -536,7 +554,9 @@ export function PlanningPage() {
             <div className="clay-block" style={{ margin: 0 }}>
               <b>Aucun compte pour l'instant.</b>
               <p className="clay-muted small" style={{ marginBottom: 0 }}>
-                Ajoute tes comptes TikTok, YouTube et Pinterest dans <a href="#/reglages">Réglages → Comptes des réseaux</a> : chacun aura sa ligne ici.
+                {appli
+                  ? 'Aucune chaîne n’est reliée à cette appli : ouvre-en une ou relie une chaîne existante, juste au-dessus.'
+                  : <>Ajoute tes comptes TikTok, YouTube et Pinterest dans <a href="#/reglages">Réglages → Comptes des réseaux</a> : chacun aura sa ligne ici.</>}
               </p>
             </div>
           ) : (
