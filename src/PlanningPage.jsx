@@ -560,8 +560,8 @@ export function PlanningPage({ appli } = {}) {
               </p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <div style={{ minWidth: 880, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <div style={{ overflowX: 'auto', scrollbarColor: 'var(--carte-2) transparent' }}>
+              <div style={{ minWidth: appli ? 700 : 880, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, position: 'sticky', top: 0, background: 'var(--fond)', zIndex: 2, padding: '4px 0' }}>
                   <span />
                   {jours.map((d) => {

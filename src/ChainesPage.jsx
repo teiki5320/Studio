@@ -188,7 +188,7 @@ export function NouvelleChaine({ arg }) {
     api
       .ajouterCompteReseau({ reseau: res, nom: nom.trim(), applis: pour })
       .then((c) => {
-        window.location.hash = `#/chaine/${c.id || ''}`;
+        window.location.hash = aInit ? `#/appli/${aInit}` : `#/chaine/${c.id || ''}`;
       })
       .catch((e) => setErr(e.message));
   };
@@ -279,14 +279,20 @@ function MarqueAppli({ cle }) {
 }
 
 export function AppliPubPage({ repo, projects, onCreerPub }) {
-  const { data } = useChaines();
+  const { data, charger } = useChaines();
   const { data: applis } = useApplis();
+  const [relier, setRelier] = useState(false);
   if (!data || !applis) return <div className="clay-content clay-muted">Chargement…</div>;
   const app = applis.apps.find((a) => String(a.repo || '').toLowerCase().endsWith(`/${repo.toLowerCase()}`));
   if (!app) return <div className="clay-content clay-muted">Appli inconnue.</div>;
   const cle = cleAppli(app);
   const siennes = data.comptes.filter((c) => c.applis.includes(cle));
-  const manquants = RESEAUX.filter((r) => !siennes.some((c) => c.reseau === r.id));
+  const autres = data.comptes.filter((c) => !c.applis.includes(cle));
+  const basculer = (c) =>
+    api
+      .modifierCompteReseau(c.id, { applis: c.applis.includes(cle) ? c.applis.filter((x) => x !== cle) : [...c.applis, cle] })
+      .then(charger)
+      .catch((e) => alert(e.message));
   const recettes = cle === 'keurcook' ? projects.find((p) => p.mode === 'recette') : null;
   return (
     <div className="clay-content ch">
@@ -312,16 +318,36 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
         {siennes.map((c) => (
           <CarteCompte key={c.id} c={c} data={data} applis={applis.apps} sous={c.applis.length > 1 ? 'partagée' : 'à son nom'} />
         ))}
-        {manquants.map((r) => (
-          <a key={r.id} className="ch-carte ch-ajout" href={`#/chaine/nouvelle/${r.id}/${cle}`}>
-            <span className="ch-ic">{r.ic}</span>
-            <b>{r.nom}</b>
-            <small>Ouvrir pour {app.name}</small>
-          </a>
-        ))}
+        <a className="ch-carte ch-ajout" href={`#/chaine/nouvelle//${cle}`}>
+          <span className="ch-ic">＋</span>
+          <b>Créer une chaîne</b>
+          <small>YouTube, TikTok, Instagram ou Pinterest</small>
+        </a>
+        {autres.length ? (
+          <button type="button" className="ch-carte ch-ajout" onClick={() => setRelier(!relier)}>
+            <span className="ch-ic">🔗</span>
+            <b>Relier une chaîne existante</b>
+            <small>{relier ? 'fermer' : `parmi tes ${autres.length} autres chaînes`}</small>
+          </button>
+        ) : null}
       </div>
+      {relier && autres.length ? (
+        <div className="ch-bloc">
+          <h3>Relier à {app.name}</h3>
+          <div className="ch-applis">
+            {autres.map((c) => (
+              <button key={c.id} type="button" className="ch-appli" onClick={() => basculer(c)}>
+                {reseau(c.reseau)?.ic} {c.nom}
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+      {siennes.length ? (
+        <p className="ch-aide">Pour détacher une chaîne de cette appli : ouvre-la et décoche {app.name}.</p>
+      ) : null}
       <h3 className="ch-sous">Son planning</h3>
-      <PlanningPage key={cle} appli={cle} />
+      <PlanningPage key={`${cle}:${siennes.map((c) => c.id).join(',')}`} appli={cle} />
       <h3 className="ch-sous">Son logo et son outro</h3>
       <MarqueAppli cle={cle} />
     </div>
