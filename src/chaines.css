@@ -57,3 +57,5 @@ html[data-theme='clair'] .ch-tete { background: var(--lilac); }
 .ch-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .ch-servies { display: flex; gap: 4px; flex-wrap: wrap; }
 .ch-groupe { margin: 10px 0 -4px; display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 800; }
+.ch-menu { display: flex; flex-direction: column; gap: 6px; align-self: stretch; margin-top: 6px; }
+.ch-carte.ouvert { outline: 2px solid var(--accent); }

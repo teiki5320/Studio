@@ -52,12 +52,24 @@ function chiffres(data, compte) {
 // YouTube branché = le compte qui porte le nom de la chaîne connectée.
 const publieSeul = (data, c) => c.reseau === 'youtube' && data.youtube && c.nom.toLowerCase() === String(data.youtube).toLowerCase();
 
-function CarteCompte({ c, data, applis, sous }) {
+// `menu` : contenu affiché sous la carte quand on la touche (au lieu
+// d'ouvrir la page de la chaîne).
+function CarteCompte({ c, data, applis, sous, menu }) {
+  const [ouvert, setOuvert] = useState(false);
   const r = reseau(c.reseau);
   const n = chiffres(data, c);
   const servies = applis.filter((a) => c.applis.includes(cleAppli(a)));
   return (
-    <a className="ch-carte" href={`#/chaine/${c.id}`}>
+    <a
+      className={`ch-carte${ouvert ? ' ouvert' : ''}`}
+      href={`#/chaine/${c.id}`}
+      onClick={(e) => {
+        if (menu && !e.target.closest('.ch-menu')) {
+          e.preventDefault();
+          setOuvert(!ouvert);
+        }
+      }}
+    >
       <LogoReseau id={c.reseau} taille={42} seul />
       <b>{c.nom}</b>
       {servies.length ? (
@@ -74,6 +86,11 @@ function CarteCompte({ c, data, applis, sous }) {
         {n.publiees} publiée{n.publiees > 1 ? 's' : ''} · {n.programmees} programmée{n.programmees > 1 ? 's' : ''}
       </small>
       <span className={`ch-etat ${publieSeul(data, c) ? 'ok' : 'main'}`}>{publieSeul(data, c) ? 'branché · publie seul' : 'publication à la main'}</span>
+      {menu && ouvert ? (
+        <span className="ch-menu" onClick={(e) => e.preventDefault()}>
+          {menu}
+        </span>
+      ) : null}
     </a>
   );
 }
@@ -350,7 +367,23 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
       <h3 className="ch-sous">Ses chaînes</h3>
       <div className="ch-grille">
         {siennes.map((c) => (
-          <CarteCompte key={c.id} c={c} data={data} applis={applis.apps} sous={c.applis.length > 1 ? 'partagée' : 'à son nom'} />
+          <CarteCompte
+            key={c.id}
+            c={c}
+            data={data}
+            applis={applis.apps}
+            sous={c.applis.length > 1 ? 'partagée' : 'à son nom'}
+            menu={
+              <>
+                <button type="button" className="clay-btn small ghost" onClick={() => (window.location.hash = `#/chaine/${c.id}`)}>
+                  Ouvrir la chaîne
+                </button>
+                <button type="button" className="clay-btn small" onClick={() => basculer(c)}>
+                  Débrancher de {app.name}
+                </button>
+              </>
+            }
+          />
         ))}
         <a className="ch-carte ch-ajout" href={`#/chaine/nouvelle//${cle}`}>
           <span className="ch-ic">＋</span>
@@ -377,9 +410,6 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
             ))}
           </div>
         </div>
-      ) : null}
-      {siennes.length ? (
-        <p className="ch-aide">Pour détacher une chaîne de cette appli : ouvre-la et décoche {app.name}.</p>
       ) : null}
       <h3 className="ch-sous">Son planning</h3>
       <PlanningPage key={`${cle}:${siennes.map((c) => c.id).join(',')}`} appli={cle} />
