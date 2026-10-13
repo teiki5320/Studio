@@ -102,6 +102,7 @@ export function PlanningPage({ appli } = {}) {
   const [rangement, setRangement] = useState(lireRangement);
   const [envoi, setEnvoi] = useState(null);
   const drag = useRef(null);
+  const glisse = useRef(false); // vrai juste après un glisser (le clic qui suit est ignoré)
 
   const load = () =>
     api
@@ -189,6 +190,54 @@ export function PlanningPage({ appli } = {}) {
     drag.current = null;
     setOver(null);
   };
+  // Glisser au doigt comme à la souris (iPad compris) : la vignette suit le
+  // doigt, la case survolée s'allume, on lâche pour poser. Un simple toucher
+  // (sans bouger) reste un toucher : il ouvre la fiche.
+  const glisser = (e, quoi) => {
+    if (e.button > 0) {
+      return;
+    }
+    const source = e.currentTarget;
+    const [x0, y0] = [e.clientX, e.clientY];
+    let fantome = null;
+    const caseSous = (ev) => document.elementFromPoint(ev.clientX, ev.clientY)?.closest('[data-case]');
+    const bouge = (ev) => {
+      if (!fantome) {
+        if (Math.hypot(ev.clientX - x0, ev.clientY - y0) < 8) {
+          return;
+        }
+        drag.current = quoi;
+        const r = source.getBoundingClientRect();
+        fantome = source.cloneNode(true);
+        Object.assign(fantome.style, { position: 'fixed', zIndex: 50, pointerEvents: 'none', width: `${r.width}px`, opacity: 0.85, transform: 'rotate(-3deg) scale(1.05)', boxShadow: 'var(--clay)', margin: 0 });
+        document.body.appendChild(fantome);
+      }
+      ev.preventDefault();
+      fantome.style.left = `${ev.clientX - 30}px`;
+      fantome.style.top = `${ev.clientY - 20}px`;
+      setOver(caseSous(ev)?.dataset.case || null);
+    };
+    const fin = (ev) => {
+      window.removeEventListener('pointermove', bouge);
+      window.removeEventListener('pointerup', fin);
+      window.removeEventListener('pointercancel', fin);
+      if (!fantome) {
+        return;
+      }
+      fantome.remove();
+      glisse.current = true;
+      setTimeout(() => (glisse.current = false), 50);
+      const c = ev.type === 'pointerup' ? caseSous(ev) : null;
+      if (c) {
+        deposer(c.dataset.compte, c.dataset.jour);
+      } else {
+        finGlisser();
+      }
+    };
+    window.addEventListener('pointermove', bouge, { passive: false });
+    window.addEventListener('pointerup', fin);
+    window.addEventListener('pointercancel', fin);
+  };
   const basculer = (p) => act(api.modifierPlanning(p.id, { publie: !p.publie }));
   const publierYoutube = (p) => {
     setEnvoi(p.id);
@@ -209,13 +258,8 @@ export function PlanningPage({ appli } = {}) {
     return (
       <div
         key={p.id}
-        draggable
-        onDragStart={(e) => {
-          e.dataTransfer.setData('text/plain', p.id);
-          drag.current = { type: 'pub', id: p.id };
-        }}
-        onDragEnd={finGlisser}
-        onClick={() => setFiche(cle(p))}
+        onPointerDown={(e) => glisser(e, { type: 'pub', id: p.id })}
+        onClick={() => !glisse.current && setFiche(cle(p))}
         title={v.titre}
         style={{
           display: 'flex',
@@ -224,6 +268,9 @@ export function PlanningPage({ appli } = {}) {
           borderRadius: 8,
           padding: '5px 5px 5px 7px',
           cursor: 'grab',
+          touchAction: 'none',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
           background: fond,
           color: encre,
           outline: fiche === cle(p) ? '2px solid var(--accent)' : 'none',
@@ -395,14 +442,9 @@ export function PlanningPage({ appli } = {}) {
               return (
                 <div
                   key={k}
-                  draggable
-                  onDragStart={(e) => {
-                    e.dataTransfer.setData('text/plain', k);
-                    drag.current = { type: 'video', cle: k };
-                  }}
-                  onDragEnd={finGlisser}
-                  onClick={() => (setSel(sel === k ? null : k), setFiche(k))}
-                  style={{ flex: '0 0 180px', display: 'flex', gap: 8, alignItems: 'center', padding: 7, borderRadius: 12, background: fond, color: encre, cursor: 'grab', outline: sel === k ? '3px solid var(--accent)' : 'none', outlineOffset: 2 }}
+                  onPointerDown={(e) => glisser(e, { type: 'video', cle: k })}
+                  onClick={() => !glisse.current && (setSel(sel === k ? null : k), setFiche(k))}
+                  style={{ touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', flex: '0 0 180px', display: 'flex', gap: 8, alignItems: 'center', padding: 7, borderRadius: 12, background: fond, color: encre, cursor: 'grab', outline: sel === k ? '3px solid var(--accent)' : 'none', outlineOffset: 2 }}
                 >
                   <Apercu v={v} w={24} h={42} />
                   <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
@@ -541,16 +583,9 @@ export function PlanningPage({ appli } = {}) {
                                 return (
                                   <div
                                     key={j}
-                                    onDragOver={(e) => {
-                                      e.preventDefault();
-                                      if (over !== k) {
-                                        setOver(k);
-                                      }
-                                    }}
-                                    onDrop={(e) => {
-                                      e.preventDefault();
-                                      deposer(c.id, j);
-                                    }}
+                                    data-case={k}
+                                    data-compte={c.id}
+                                    data-jour={j}
                                     style={{ background: j === aujourdhui ? 'var(--carte-2)' : 'var(--carte)', borderRadius: 12, padding: 5, display: 'flex', flexDirection: 'column', gap: 4, minHeight: 60, boxSizing: 'border-box', outline: over === k ? '2px solid var(--accent)' : ici.length > 1 ? '2px solid var(--ko)' : 'none' }}
                                   >
                                     {ici.map(vignette)}
