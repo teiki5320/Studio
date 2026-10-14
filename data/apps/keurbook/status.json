@@ -3,8 +3,9 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-13T08:45:37Z",
-    "url": "https://github.com/teiki5320/keurbook/actions/runs/38371276570"
+    "updatedAt": "2026-10-14T01:56:24Z",
+    "url": "https://github.com/teiki5320/keurbook/actions/runs/38498275548",
+    "enCours": true
   },
-  "fetchedAt": "2026-10-13T08:49:25.836Z"
+  "fetchedAt": "2026-10-14T07:48:00.789Z"
 }

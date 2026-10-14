@@ -3,8 +3,9 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-13T08:43:45Z",
-    "url": "https://github.com/teiki5320/optiled/actions/runs/38370884348"
+    "updatedAt": "2026-10-14T07:41:00Z",
+    "url": "https://github.com/teiki5320/optiled/actions/runs/38529506346",
+    "enCours": true
   },
-  "fetchedAt": "2026-10-13T08:49:30.992Z"
+  "fetchedAt": "2026-10-14T07:48:06.700Z"
 }
