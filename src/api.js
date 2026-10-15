@@ -88,6 +88,7 @@ export const api = {
   accueil: () => request('/api/accueil'),
   routines: () => request('/api/routines'),
   performancesGoogle: () => request('/api/indexation/performances'),
+  historiqueGoogle: () => request('/api/indexation/historique'),
   envoyerAClaude: (id) => request('/api/indexation/envoyer', { method: 'POST', body: JSON.stringify({ id }) }),
   noterCorrige: (id) => request('/api/indexation/corrige', { method: 'POST', body: JSON.stringify({ id }) }),
   deconnecterIndexation: () => request('/api/indexation/deconnecter', { method: 'POST' }),

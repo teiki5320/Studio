@@ -638,3 +638,77 @@ export async function performances() {
   cachePerf = { at: Date.now(), data };
   return data;
 }
+
+// Clics Google semaine par semaine (12 semaines), par site : la courbe de
+// l'onglet Indexation, pour voir si le référencement progresse vraiment.
+let cacheHisto = { at: 0, data: null };
+const lundiDe = (iso) => {
+  const d = new Date(`${iso}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7));
+  return d.toISOString().slice(0, 10);
+};
+export async function historique() {
+  if (cacheHisto.data && Date.now() - cacheHisto.at < 6 * 3600 * 1000) return cacheHisto.data;
+  const etat = lireEtat();
+  const jour = (d) => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+  const [debut, fin] = [lundiDe(jour(86)), jour(2)];
+  const sites = {};
+  await Promise.all(
+    Object.keys(etat.sites).map(async (propriete) => {
+      try {
+        const r = await google(`${WM}/sites/${enc(propriete)}/searchAnalytics/query`, {
+          method: 'POST',
+          body: { startDate: debut, endDate: fin, dimensions: ['date'], rowLimit: 200 },
+        });
+        const semaines = {};
+        for (const row of r.rows || []) {
+          const s = (semaines[lundiDe(row.keys[0])] ||= { clics: 0, vues: 0 });
+          s.clics += row.clicks;
+          s.vues += row.impressions;
+        }
+        sites[propriete] = Object.entries(semaines)
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([semaine, v]) => ({ semaine, ...v }));
+      } catch (e) {
+        sites[propriete] = { erreur: e.message };
+      }
+    }),
+  );
+  const data = { debut, fin, sites };
+  if (Object.values(sites).some(Array.isArray)) cacheHisto = { at: Date.now(), data };
+  return data;
+}
+
+// Les « gains rapides » d'un site (28 derniers jours) : pages déjà montrées
+// par Google en 2e page (place 4 à 20), avec les recherches qui les
+// montrent. C'est la liste de travail de la routine de référencement.
+export async function occasions(domaine) {
+  const etat = lireEtat();
+  const propriete = Object.keys(etat.sites).find((p) => p.replace(/^sc-domain:|^https?:\/\/|\/$/g, '').replace(/^www\./, '') === domaine);
+  if (!propriete) throw new Error(`Site inconnu dans Search Console : ${domaine}`);
+  const jour = (d) => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+  const r = await google(`${WM}/sites/${enc(propriete)}/searchAnalytics/query`, {
+    method: 'POST',
+    body: { startDate: jour(30), endDate: jour(2), dimensions: ['page', 'query'], rowLimit: 2000 },
+  });
+  const pages = {};
+  for (const row of r.rows || []) {
+    const [page, requete] = row.keys;
+    const p = (pages[page] ||= { page, vues: 0, clics: 0, somme: 0, requetes: [] });
+    p.vues += row.impressions;
+    p.clics += row.clicks;
+    p.somme += row.position * row.impressions;
+    p.requetes.push({ texte: requete, vues: row.impressions, clics: row.clicks, position: Math.round(row.position * 10) / 10 });
+  }
+  const liste = Object.values(pages)
+    .map(({ somme, ...p }) => ({
+      ...p,
+      position: Math.round((somme / p.vues) * 10) / 10,
+      requetes: p.requetes.sort((a, b) => b.vues - a.vues).slice(0, 5),
+    }))
+    .filter((p) => p.position >= 4 && p.position <= 20 && p.vues >= 5)
+    .sort((a, b) => b.vues - a.vues)
+    .slice(0, 15);
+  return { domaine, debut: jour(30), fin: jour(2), pages: liste };
+}
+

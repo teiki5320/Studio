@@ -111,6 +111,47 @@ function Probleme({ p, onFait, setError }) {
   );
 }
 
+// Clics Google semaine par semaine, un site par ligne : des barres qui
+// montent si le référencement progresse. La dernière semaine est en cours.
+function Courbe() {
+  const [h, setH] = useState(null);
+  useEffect(() => {
+    api.historiqueGoogle().then(setH).catch(() => setH({ sites: {} }));
+  }, []);
+  if (!h) return null;
+  const lignes = Object.entries(h.sites)
+    .filter(([, v]) => Array.isArray(v) && v.length)
+    .map(([prop, v]) => ({ domaine: prop.replace(/^sc-domain:|^https?:\/\/|\/$/g, ''), semaines: v.slice(-8) }))
+    .sort((a, b) => b.semaines.reduce((t, x) => t + x.clics, 0) - a.semaines.reduce((t, x) => t + x.clics, 0));
+  if (!lignes.length) return null;
+  const max = Math.max(1, ...lignes.flatMap((l) => l.semaines.map((x) => x.clics)));
+  return (
+    <div className="ix-carte ix-courbe">
+      <b className="ix-courbe-t">Clics depuis Google, semaine par semaine</b>
+      {lignes.map((l) => {
+        const [avant, derniere] = l.semaines.slice(-3, -1).map((x) => x.clics);
+        return (
+          <div key={l.domaine} className="ix-courbe-l">
+            <span className="d">
+              <LogoAppli de={l.domaine} taille={18} />
+              {l.domaine}
+            </span>
+            <span className="barres">
+              {l.semaines.map((x) => (
+                <i key={x.semaine} title={`semaine du ${x.semaine.slice(8)}/${x.semaine.slice(5, 7)} : ${x.clics} clics`} style={{ height: `${Math.max(3, (x.clics / max) * 100)}%` }} />
+              ))}
+            </span>
+            <span className="n">
+              {derniere ?? 0} <small>{derniere > avant ? '↑' : derniere < avant ? '↓' : '='}</small>
+            </span>
+          </div>
+        );
+      })}
+      <small className="ix-perf">Le chiffre = la dernière semaine complète (↑ ↓ par rapport à la précédente) ; la barre pâle = semaine en cours. Google a 2 à 3 jours de retard.</small>
+    </div>
+  );
+}
+
 export function IndexationPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
@@ -220,6 +261,7 @@ export function IndexationPage() {
           <span className="sub">routine 6 h · 9 h · 12 h · 19 h</span>
         </div>
       </div>
+      <Courbe />
       {data.sites.length === 0 && (
         <div className="ix-carte">
           <p className="ix-explication">Aucune vérification encore. Touche « Vérifier maintenant » : la première peut prendre une vingtaine de minutes.</p>
