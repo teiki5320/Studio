@@ -534,7 +534,7 @@ Règles :
 
 // ---------- File d'attente pour Claude ----------
 // « Envoyer à Claude » range le problème ici ; la routine Claude « Indexation :
-// corrections » (6 h, 9 h, 12 h, 19 h) prend la file, corrige chaque site et
+// corrections » (routine « Référencement du jour », 6 h) prend la file, corrige chaque site et
 // renvoie son compte rendu (retourClaude).
 export function envoyerAClaude(id) {
   trouverProbleme(id);

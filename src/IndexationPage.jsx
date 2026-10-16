@@ -2,7 +2,7 @@
 // gardées, et la liste des problèmes en français avec leur solution. Le
 // Studio vérifie tout seul chaque matin ; on peut aussi relancer à la main.
 // « Envoyer à Claude » met un problème dans la file de la routine Claude
-// « Indexation : corrections » (6 h, 9 h, 12 h, 19 h).
+// « Sites · Référencement du jour » (chaque matin à 6 h).
 import React, { useEffect, useState } from 'react';
 import { LogoAppli } from './LogoAppli.jsx';
 import { api, followJob } from './api.js';
@@ -85,7 +85,7 @@ function Probleme({ p, onFait, setError }) {
           </button>
         ) : null}
       </div>
-      {envoye ? <p className="clay-muted small">Claude s’en occupe au prochain passage : 6 h, 9 h, 12 h ou 19 h.</p> : null}
+      {envoye ? <p className="clay-muted small">Claude s’en occupe demain matin à 6 h.</p> : null}
       {p.envoi?.statut === 'bloque' ? (
         <p className="error small" style={{ whiteSpace: 'pre-line' }}>
           ⚠️ Claude n’a pas pu corriger : {p.envoi.message}
@@ -258,7 +258,7 @@ export function IndexationPage() {
         <div className="ix-kpi">
           <span className="lab">Chez Claude</span>
           <b>{chezClaude}</b>
-          <span className="sub">routine 6 h · 9 h · 12 h · 19 h</span>
+          <span className="sub">routine chaque matin à 6 h</span>
         </div>
       </div>
       <Courbe />
