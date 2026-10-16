@@ -16,7 +16,7 @@ import { applis } from './applis.js';
 // L'adresse publique de chaque site suivi (clé = dossier data/apps/<id>).
 const SITES = {
   alohash: 'https://www.keurcook.com',
-  optiled: 'https://www.optiled.fr',
+  optiled: 'https://www.kultiled.com',
   keurdeco: 'https://www.keurdeco.com',
   keurbook: 'https://www.keurbook.com',
   solelis: 'https://solelis.com',
