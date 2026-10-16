@@ -712,3 +712,30 @@ export async function occasions(domaine) {
   return { domaine, debut: jour(30), fin: jour(2), pages: liste };
 }
 
+// Les recherches d'un site (28 derniers jours) avec la page que Google
+// montre pour chacune : sert à repérer les recherches sans vraie page
+// (place au-delà de 20, ou page sans rapport) pour en écrire une.
+export async function recherches(domaine) {
+  const etat = lireEtat();
+  const propriete = Object.keys(etat.sites).find((p) => p.replace(/^sc-domain:|^https?:\/\/|\/$/g, '').replace(/^www\./, '') === domaine);
+  if (!propriete) throw new Error(`Site inconnu dans Search Console : ${domaine}`);
+  const jour = (d) => new Date(Date.now() - d * 86400000).toISOString().slice(0, 10);
+  const r = await google(`${WM}/sites/${enc(propriete)}/searchAnalytics/query`, {
+    method: 'POST',
+    body: { startDate: jour(30), endDate: jour(2), dimensions: ['query', 'page'], rowLimit: 2000 },
+  });
+  const parRecherche = {};
+  for (const row of r.rows || []) {
+    const [texte, page] = row.keys;
+    const q = (parRecherche[texte] ||= { texte, vues: 0, clics: 0, pages: [] });
+    q.vues += row.impressions;
+    q.clics += row.clicks;
+    q.pages.push({ page, vues: row.impressions, position: Math.round(row.position * 10) / 10 });
+  }
+  const liste = Object.values(parRecherche)
+    .map((q) => ({ ...q, pages: q.pages.sort((a, b) => a.position - b.position).slice(0, 3) }))
+    .sort((a, b) => b.vues - a.vues)
+    .slice(0, 100);
+  return { domaine, debut: jour(30), fin: jour(2), recherches: liste };
+}
+

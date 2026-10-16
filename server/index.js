@@ -101,6 +101,7 @@ import {
   performances,
   historique as historiqueGoogle,
   occasions as occasionsGoogle,
+  recherches as recherchesGoogle,
   estConnexionIndexation,
   urlConnexionIndexation,
   terminerConnexionIndexation,
@@ -1395,6 +1396,13 @@ app.get('/api/indexation/historique', async (req, res) => {
     res.json(await historiqueGoogle());
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+app.get('/api/indexation/recherches', async (req, res) => {
+  try {
+    res.json(await recherchesGoogle(String(req.query.site || '')));
+  } catch (e) {
+    res.status(400).json({ error: e.message });
   }
 });
 app.get('/api/indexation/occasions', async (req, res) => {
