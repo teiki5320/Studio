@@ -1068,10 +1068,9 @@ export const RECIPE_IMAGE_STYLES = {
 export const RECIPE_SCRIPT_STYLES = {
   pedagogique: { label: 'Pédagogique (voix calme, étapes numérotées)', seconds: 60, ouverture: 'titre', parle: true },
   rapide: { label: 'Rapide sans parole (textes et bruits de cuisine)', seconds: 30, ouverture: 'titre', parle: false },
-  platdabord: { label: "Le plat d'abord (phrase choc, puis la recette)", seconds: 45, ouverture: 'hook', parle: true },
-  histoire: { label: "L'histoire du plat (raconté pendant qu'on cuisine)", seconds: 60, ouverture: 'titre', parle: true },
-  devine: { label: 'Devine le pays (réponse à la fin)', seconds: 45, ouverture: 'hook', parle: true },
-  parlent: { label: 'Les ingrédients qui parlent (humour)', seconds: 50, ouverture: 'titre', parle: true },
+  platdabord: { label: "Le plat d'abord (le plat fini, puis la recette)", seconds: 45, ouverture: 'hook', parle: true },
+  devine: { label: 'Devine le pays (la recette, le pays dit à la fin)', seconds: 45, ouverture: 'hook', parle: true },
+  parlent: { label: 'Les ingrédients qui parlent (la recette racontée par eux)', seconds: 50, ouverture: 'titre', parle: true },
 };
 
 function consignesScript(id, seconds) {
@@ -1090,17 +1089,10 @@ Pour CHAQUE plan, "sfx" : le bruit de cuisine de ce plan, EN ANGLAIS, 8 mots au 
     case 'platdabord':
       return `LE TON : énergique et gourmand, tutoiement, phrases courtes qui claquent. Total des narrations ≈ ${words} mots.
 STRUCTURE OBLIGATOIRE :
-1. UN plan "hook" — le plat fini en très gros plan, au moment le plus appétissant (la sauce qui coule, la vapeur). Narration : UNE phrase choc vraie, sans exagération inventée (ex. « Le plat que tout le Cameroun attend le dimanche. »). onScreen : 6 mots au plus.
+1. UN plan "hook" — le plat fini en très gros plan, au moment le plus appétissant (la sauce qui coule, la vapeur). Narration : UNE phrase vraie qui présente le plat (ex. « Le ndolé, le plat de fête du Cameroun. Voici comment le faire. »), sans exagération ni ton publicitaire. onScreen : 6 mots au plus.
 2. UN plan "ingredients" — la liste COMPLÈTE avec quantités. Narration : « Il te faut ça. »
 3. ${etapes(5, 7, 6, 'Narration rapide avec les quantités et les temps, 15 mots au plus.')}
 4. UN plan "final" — le plat servi. Narration courte qui donne envie. onScreen : « Bon appétit ».`;
-    case 'histoire':
-      return `LE TON : une conteuse chaleureuse, vouvoiement. Pendant que la recette avance à l'image, la voix RACONTE le plat : son origine, quand on le mange, ce qu'il représente — UNIQUEMENT avec ce que dit la recette (son histoire, sa description) ou des faits largement connus, jamais inventés. Les quantités et les temps passent par le texte à l'écran. Total des narrations ≈ ${words} mots.
-STRUCTURE OBLIGATOIRE :
-1. UN plan "titre" — le plat fini. Narration : le nom du plat et son pays, avec une phrase qui ouvre l'histoire.
-2. UN plan "ingredients" — la liste COMPLÈTE avec quantités. Narration : la suite de l'histoire.
-3. ${etapes(5, 7, 6, "Narration : l'histoire continue (25 mots au plus), en lien avec ce qu'on voit quand c'est possible.")}
-4. UN plan "final" — le plat servi. Narration : la chute de l'histoire, puis « Bon appétit ». onScreen : « Bon appétit ».`;
     case 'devine':
       return `LE TON : un jeu, tutoiement, complice. Le NOM du plat et son PAYS restent SECRETS jusqu'au dernier plan : ni la narration ni le texte à l'écran ne les disent avant. Total des narrations ≈ ${words} mots.
 STRUCTURE OBLIGATOIRE :
