@@ -184,6 +184,70 @@ function Encart({ app, site, envoi, delai }) {
   );
 }
 
+// Raccourcis vers les sites de travail, en trois menus déroulants (choix de
+// Jean, 16/10) : code et Google, Apple, création et réseaux.
+const LIENS = [
+  [
+    '🛠️ Code & Google',
+    [
+      ['GitHub', 'https://github.com/teiki5320'],
+      ['Cloudflare', 'https://dash.cloudflare.com'],
+      ['Google Search Console', 'https://search.google.com/search-console'],
+      ['Google AdSense', 'https://adsense.google.com'],
+      ['Google AdMob', 'https://admob.google.com'],
+      ['Google Play Console', 'https://play.google.com/console'],
+      ['Google Cloud Console', 'https://console.cloud.google.com'],
+      ['Amazon Partenaires', 'https://partenaires.amazon.fr'],
+    ],
+  ],
+  [
+    '🍎 Apple',
+    [
+      ['App Store Connect', 'https://appstoreconnect.apple.com'],
+      ['Apple Developer', 'https://developer.apple.com/account'],
+    ],
+  ],
+  [
+    '🎨 Création & réseaux',
+    [
+      ['OpenArt', 'https://openart.ai'],
+      ['ElevenLabs', 'https://elevenlabs.io/app'],
+      ['YouTube Studio', 'https://studio.youtube.com'],
+      ['TikTok Studio', 'https://www.tiktok.com/tiktokstudio'],
+      ['Pinterest', 'https://fr.pinterest.com'],
+    ],
+  ],
+];
+function LiensMenus() {
+  const [ouvert, setOuvert] = useState(null);
+  useEffect(() => {
+    if (ouvert === null) return undefined;
+    const fermer = (e) => !e.target.closest('.ac-liens') && setOuvert(null);
+    document.addEventListener('pointerdown', fermer);
+    return () => document.removeEventListener('pointerdown', fermer);
+  }, [ouvert]);
+  return (
+    <div className="ac-liens">
+      {LIENS.map(([titre, liens], i) => (
+        <div key={titre} className={`ac-lien-menu${ouvert === i ? ' ouvert' : ''}`}>
+          <button type="button" className="clay-btn ghost small" onClick={() => setOuvert(ouvert === i ? null : i)}>
+            {titre} <span className="fl">▾</span>
+          </button>
+          {ouvert === i ? (
+            <div className="ac-lien-liste">
+              {liens.map(([nom, url]) => (
+                <a key={url} href={url} target="_blank" rel="noopener noreferrer" onClick={() => setOuvert(null)}>
+                  {nom} <span>↗</span>
+                </a>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function AccueilPage() {
   const { data, error } = useApplis();
   const [ext, setExt] = useState(null);
@@ -223,9 +287,12 @@ export function AccueilPage() {
 
   return (
     <div className="clay-content accueil">
-      <div className="ac-salut anim">
-        <div className="jour">{jour}</div>
-        <h3>Bonjour Jean</h3>
+      <div className="ac-haut">
+        <div className="ac-salut anim">
+          <div className="jour">{jour}</div>
+          <h3>Bonjour Jean</h3>
+        </div>
+        <LiensMenus />
       </div>
 
       <div className="ac-general anim" style={{ animationDelay: '.05s' }}>

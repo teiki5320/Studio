@@ -100,3 +100,16 @@ html:not([data-theme='clair']) .ac-general { background: #2b211d; }
 .ac-fr.ko { background: var(--ko-tint); }
 .ac-fr.ko > i { background: var(--ko); animation: ac-battement 1.7s ease-in-out infinite; }
 .ac-fr.ko .t small { color: var(--ko); }
+/* Raccourcis vers les sites de travail (trois menus déroulants) */
+.ac-haut { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.ac-liens { display: flex; gap: 8px; flex-wrap: wrap; position: relative; z-index: 30; }
+.ac-lien-menu { position: relative; }
+.ac-lien-menu .fl { display: inline-block; transition: transform .25s var(--ressort); }
+.ac-lien-menu.ouvert .fl { transform: rotate(180deg); }
+.ac-lien-liste { position: absolute; top: calc(100% + 8px); right: 0; min-width: 230px; display: flex; flex-direction: column; padding: 6px;
+  border-radius: 18px; background: var(--carte); box-shadow: var(--clay); animation: ac-deroule .3s var(--ressort) both; }
+@keyframes ac-deroule { from { opacity: 0; transform: translateY(-6px) scale(.97); } }
+.ac-lien-liste a { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 12px; color: var(--texte);
+  text-decoration: none; font-size: 14px; font-weight: 700; }
+.ac-lien-liste a:hover { background: var(--carte-2); }
+.ac-lien-liste a span { color: var(--c-muted); }
