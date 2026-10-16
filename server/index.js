@@ -127,6 +127,8 @@ import { etatYoutube, enregistrerCles, urlConnexion, terminerConnexion, deconnec
 import {
   RECIPE_SECONDS,
   RECIPE_TONES,
+  RECIPE_IMAGE_STYLES,
+  RECIPE_SCRIPT_STYLES,
   buildRepoBriefPrompt,
   askClaudeForJson,
   buildSiteBriefPrompt,
@@ -423,6 +425,12 @@ app.post('/api/projects/channel', (req, res) => {
 
 // ---------- Recettes ----------
 // Les recettes lues dans le dépôt de Keur Cook, pour la liste déroulante.
+// Les deux menus de l'atelier de recettes : style d'image, style de script.
+app.get('/api/recipes/styles', (req, res) => {
+  const liste = (o) => Object.entries(o).map(([id, v]) => ({ id, label: v.label, seconds: v.seconds }));
+  res.json({ images: liste(RECIPE_IMAGE_STYLES), scripts: liste(RECIPE_SCRIPT_STYLES) });
+});
+
 app.get('/api/recipes', (req, res) => {
   try {
     res.json(listRecipes());

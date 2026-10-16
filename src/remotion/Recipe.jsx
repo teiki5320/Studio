@@ -430,6 +430,9 @@ const PlanRecette = ({ scene, recipe, episodeTitle, assetBase, durationInFrames,
       ) : null}
       {kind === 'cta' ? <CarteFin texte={scene.onScreen || 'keurcook.com'} /> : null}
 
+      {/* Bruit de cuisine du plan (vidéo sans parole) */}
+      {scene.sfx ? <Audio src={`${assetBase}/${scene.sfx}`} volume={0.8} /> : null}
+
       {/* Voix off */}
       {lines.map((line, i) =>
         line.audio ? (
@@ -463,7 +466,9 @@ const PlanRecette = ({ scene, recipe, episodeTitle, assetBase, durationInFrames,
   );
 };
 
-export const Recipe = ({ episode, assetBase, musicFile, studio, studioBase }) => {
+export const Recipe = ({ episode, assetBase, musicFile, musicVolume, studio, studioBase }) => {
+  // Musique composée pour la vidéo (styles au choix) : son propre volume.
+  const volume = typeof musicVolume === 'number' ? musicVolume : 0.1;
   const scenes = episode?.scenes || [];
   if (scenes.length === 0) {
     return (
@@ -524,10 +529,10 @@ export const Recipe = ({ episode, assetBase, musicFile, studio, studioBase }) =>
       {musicFile ? (
         studio?.outroIsVideo && clipFrames > 0 ? (
           <Sequence from={0} durationInFrames={mainFrames} layout="none">
-            <Audio src={`${assetBase}/${musicFile}`} loop volume={0.1} />
+            <Audio src={`${assetBase}/${musicFile}`} loop volume={volume} />
           </Sequence>
         ) : (
-          <Audio src={`${assetBase}/${musicFile}`} loop volume={0.1} />
+          <Audio src={`${assetBase}/${musicFile}`} loop volume={volume} />
         )
       ) : null}
 

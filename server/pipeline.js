@@ -39,6 +39,9 @@ import {
   buildAdPrompt,
   buildAdVideoPrompt,
   buildRecipePrompt,
+  buildStyledRecipePrompt,
+  RECIPE_IMAGE_STYLES,
+  RECIPE_SCRIPT_STYLES,
   buildKeurCookAdPrompt,
   buildKeurDecoAdPrompt,
   buildKeurbookAdPrompt,
@@ -222,20 +225,26 @@ function recomputeSceneDuration(scene) {
 // dessus, avec les mains. Elle est passée en référence à TOUS les plans —
 // c'est elle qui garde le même bois, les mêmes mains et la même vaisselle
 // du premier au dernier geste.
-export async function ensureKitchenReference(project, update) {
+export async function ensureKitchenReference(project, update, episode = null) {
   if (project.mode !== 'recette' || currentProvider() !== 'openart') {
     return;
   }
-  const k = project.kitchen || (project.kitchen = { image: null, imageUrl: null, version: 0 });
+  // Style d'image choisi (Kawaii, Pâte à modeler…) : sa propre référence,
+  // générée une fois par atelier. « Réaliste » garde la référence historique.
+  const style = styleImageDe(episode);
+  const k =
+    style && style !== 'realiste'
+      ? ((project.kitchens || (project.kitchens = {}))[style] ||= { image: null, imageUrl: null, version: 0 })
+      : project.kitchen || (project.kitchen = { image: null, imageUrl: null, version: 0 });
   if (k.image && k.imageUrl) {
     return;
   }
   update('Plan de travail de référence (vue du dessus, mains)…', 0.02);
   k.version = (k.version || 0) + 1;
-  const file = `kitchen_v${k.version}.jpg`;
+  const file = style && style !== 'realiste' ? `kitchen_${style}_v${k.version}.jpg` : `kitchen_v${k.version}.jpg`;
   try {
     const { ok, url, provider } = await generateImage(
-      KITCHEN_REFERENCE_PROMPT,
+      style && RECIPE_IMAGE_STYLES[style] ? RECIPE_IMAGE_STYLES[style].reference : KITCHEN_REFERENCE_PROMPT,
       path.join(assetsDir(project.id), file),
       {},
     );
@@ -266,10 +275,16 @@ export async function ensureKitchenReference(project, update) {
 // Claude l'a oublié ou si le prompt a été retouché à la main.
 function sceneImagePrompt(project, scene) {
   const prompt = String(scene.imagePrompt || '').trim();
-  if (project.mode !== 'recette' || prompt.includes(RECIPE_IMAGE_STYLE)) {
+  const style = RECIPE_IMAGE_STYLES[scene.imageStyle]?.style || RECIPE_IMAGE_STYLE;
+  if (project.mode !== 'recette' || prompt.includes(style)) {
     return prompt;
   }
-  return `${prompt.replace(/[\s.,;]+$/, '')}. ${RECIPE_IMAGE_STYLE}`;
+  return `${prompt.replace(/[\s.,;]+$/, '')}. ${style}`;
+}
+
+// Style d'image d'une vidéo de recette (porté par chacun de ses plans).
+function styleImageDe(episode) {
+  return (episode?.scenes || []).find((sc) => sc.imageStyle)?.imageStyle || null;
 }
 
 // Options de génération d'une image de scène : références + leur nature.
@@ -285,7 +300,8 @@ function sceneImageOptions(project, scene, episode = null) {
 // scène — et, pour une recette, le plan de travail de référence.
 function sceneReferenceUrls(project, scene) {
   if (project.mode === 'recette') {
-    return project.kitchen && project.kitchen.imageUrl ? [project.kitchen.imageUrl] : [];
+    const k = scene.imageStyle && scene.imageStyle !== 'realiste' ? project.kitchens?.[scene.imageStyle] : project.kitchen;
+    return k && k.imageUrl ? [k.imageUrl] : [];
   }
   return (scene.characters || [])
     .map((id) => (project.characters || []).find((c) => c.id === id))
@@ -504,6 +520,11 @@ function wantedClipIndexes(project, scenes) {
   if (project.mode !== 'recette' && scenes.some((sc) => sc.clip && sc.fixedDuration)) {
     return scenes.map((sc, i) => (sc.clip ? i : -1)).filter((i) => i >= 0);
   }
+  // Recette « tout animé » (styles au choix) : chaque plan a son clip, sauf
+  // la vraie photo du plat.
+  if (project.mode === 'recette' && scenes.some((sc) => sc.toutAnime)) {
+    return scenes.map((sc, i) => (sc.videoDisabled ? -1 : i)).filter((i) => i >= 0);
+  }
   if (project.mode === 'recette') {
     return scenes
       .map((sc, i) => (sc.clip ? i : -1))
@@ -521,7 +542,7 @@ async function generateEpisodeAssets(project, episode, update) {
   // 0. Portraits + décors de référence (OpenArt) — visages et lieux constants.
   await ensureCharacterPortraits(project, update);
   await ensureLocationImages(project, update);
-  await ensureKitchenReference(project, update);
+  await ensureKitchenReference(project, update, episode);
 
   // 0 bis. Storyboard : découpage des scènes en plans (dramas uniquement,
   // UN appel Claude, aucun appel payant). Sans storyboard (anciens épisodes,
@@ -788,6 +809,13 @@ export async function generateShotVideo(project, episode, scene, shot) {
 // Recette : le mouvement d'un plan culinaire — vapeur, sauce qui mijote,
 // geste de la main. Aucun visage, aucune bouche qui parle.
 function recipeMotionPrompt(scene) {
+  const st = scene.imageStyle && scene.imageStyle !== 'realiste' ? RECIPE_IMAGE_STYLES[scene.imageStyle] : null;
+  if (st) {
+    return (
+      `Bring this image to life with ${st.mouvement}. Keep EXACTLY the same art style, colours, objects and ` +
+      `background as the source image. No realistic human face, nobody speaks, no text appears. Shot: ${scene.imagePrompt}`
+    );
+  }
   return (
     `Bring this food shot to life with subtle, appetising motion: rising steam, ` +
     `simmering sauce, slow stirring or pouring, gentle cinematic camera push-in. ` +
@@ -1279,7 +1307,10 @@ export async function createRecipeProject(info) {
 // Vidéo de recette explicative : l'ordre est garanti ici, quoi que Claude ait
 // rendu — titre (photo du site), ingrédients, étapes numérotées 1, 2, 3…
 // sans doublon, plat fini. Rien après : ni appel à l'action, ni accroche.
-function structureRecipeEpisode(episode, recipe) {
+// opts.ouverture « hook » : la vidéo s'ouvre sur une accroche (le plat en
+// gros plan) au lieu du carton titre ; opts.style : style d'image choisi.
+function structureRecipeEpisode(episode, recipe, opts = {}) {
+  const suffixe = opts.style ? '' : ` ${RECIPE_IMAGE_STYLE}`;
   const blank = (kind, text, image, fields = {}) => ({
     id: '',
     location: '',
@@ -1294,17 +1325,19 @@ function structureRecipeEpisode(episode, recipe) {
     kind,
     onScreen: '',
     ingredients: [],
-    imagePrompt: `${image} ${RECIPE_IMAGE_STYLE}`,
+    imagePrompt: `${image}${suffixe}`,
     ...fields,
   });
-  const kindOf = (sc) => (sc.kind === 'geste' ? 'etape' : sc.kind === 'hook' ? 'titre' : sc.kind);
+  const hook = opts.ouverture === 'hook';
+  const kindOf = (sc) =>
+    sc.kind === 'geste' ? 'etape' : (sc.kind === 'hook' || sc.kind === 'titre') ? (hook ? 'hook' : 'titre') : sc.kind;
   const scenes = (episode.scenes || []).map((sc) => ({ ...sc, kind: kindOf(sc) }));
   const pick = (kind) => scenes.find((sc) => sc.kind === kind);
 
   const titre =
-    pick('titre') ||
+    pick(hook ? 'hook' : 'titre') ||
     blank(
-      'titre',
+      hook ? 'hook' : 'titre',
       [recipe.name, recipe.country ? `plat du ${recipe.country}` : '', recipe.servings ? `Pour ${recipe.servings}.` : '']
         .filter(Boolean)
         .join(', ')
@@ -1328,7 +1361,9 @@ function structureRecipeEpisode(episode, recipe) {
     blank('final', 'Bon appétit !', 'Two african hands placing the finished dish, beautifully plated, on the worktop, seen from directly above.', {
       onScreen: 'Bon appétit',
     });
-  titre.onScreen = '';
+  if (!hook) {
+    titre.onScreen = '';
+  }
   episode.scenes = [titre, ingredients, ...etapes, final].map((sc, i) => ({ ...sc, id: `s${i + 1}` }));
   episode.hook = '';
 }
@@ -1338,7 +1373,18 @@ export async function createRecipeVideo(project, params, update) {
     throw new Error('Réservé aux projets Recettes.');
   }
   applyVoicePreset(project);
-  const seconds = RECIPE_SECONDS.includes(params.seconds) ? params.seconds : project.targetSeconds || 60;
+  // Styles choisis dans les deux menus de l'atelier (sinon : l'ancienne
+  // vidéo pédagogique réaliste, 2 plans animés).
+  const img = RECIPE_IMAGE_STYLES[params.imageStyle] ? params.imageStyle : null;
+  const scr = RECIPE_SCRIPT_STYLES[params.scriptStyle] ? params.scriptStyle : null;
+  const styled = Boolean(img || scr);
+  const imgDef = RECIPE_IMAGE_STYLES[img || 'realiste'];
+  const scrDef = RECIPE_SCRIPT_STYLES[scr || 'pedagogique'];
+  const seconds = styled
+    ? scrDef.seconds
+    : RECIPE_SECONDS.includes(params.seconds)
+    ? params.seconds
+    : project.targetSeconds || 60;
   const tone = params.tone || project.tone || 'chaleureux';
 
   // Deux entrées possibles : une recette du dépôt de Keur Cook, ou un texte
@@ -1358,10 +1404,21 @@ export async function createRecipeVideo(project, params, update) {
 
   const number = (project.episodes || []).reduce((m, e) => Math.max(m, e.number), 0) + 1;
   update('Découpage de la recette en gestes par Claude…');
-  const raw = await askClaudeForJson(buildRecipePrompt(project, texte, seconds));
+  const raw = await askClaudeForJson(
+    styled
+      ? buildStyledRecipePrompt(texte, img || 'realiste', scr || 'pedagogique')
+      : buildRecipePrompt(project, texte, seconds),
+  );
   ensureUsage(project).claudeCalls += 1;
 
   const episode = normalizeEpisode(raw, number, 20);
+  // Bruit de cuisine demandé pour chaque plan (script sans parole).
+  episode.scenes.forEach((sc, i) => {
+    const sfx = raw.scenes?.[i]?.sfx;
+    if (typeof sfx === 'string' && sfx.trim()) {
+      sc.sfxPrompt = sfx.trim().slice(0, 120);
+    }
+  });
   // Fiche de la recette : celle que Claude a lue dans le texte, complétée
   // par la fiche du dépôt quand la vidéo vient de Keur Cook.
   const r = raw.recipe && typeof raw.recipe === 'object' ? raw.recipe : {};
@@ -1396,11 +1453,27 @@ export async function createRecipeVideo(project, params, update) {
       l.speaker = 'narrator';
     }
   }
-  structureRecipeEpisode(episode, recipe);
+  structureRecipeEpisode(episode, recipe, styled ? { ouverture: scrDef.ouverture, style: img || 'realiste' } : {});
+  if (styled) {
+    episode.imageStyle = img || 'realiste';
+    episode.scriptStyle = scr || 'pedagogique';
+    const muet = { titre: 3, hook: 3, ingredients: 4.5, etape: 3, final: 3 };
+    for (const sc of episode.scenes) {
+      sc.imageStyle = episode.imageStyle;
+      sc.toutAnime = true;
+      sc.clip = true;
+      // Sans parole : la durée du plan est fixée, rien n'est lu à voix haute.
+      if (!scrDef.parle) {
+        sc.lines = [];
+        sc.fixedDuration = true;
+        sc.durationSec = muet[sc.kind] || 3;
+      }
+    }
+  }
 
   // La photo du plat prise dans le dépôt de Keur Cook ouvre la vidéo (plan
   // titre, zoom lent) : c'est le vrai plat, sans crédit d'image.
-  if (params.usePhoto !== false && recipe.photo) {
+  if (params.usePhoto !== false && recipe.photo && (!styled || (imgDef.photoDuSite && scrDef.ouverture === 'titre'))) {
     const target = episode.scenes[0];
     const file = `e${number}_${target.id}_keurcook.webp`;
     try {
@@ -1413,6 +1486,37 @@ export async function createRecipeVideo(project, params, update) {
       delete target.clip;
     } catch (e) {
       console.error('Photo de Keur Cook :', e.message);
+    }
+  }
+  if (styled) {
+    const dir = assetsDir(project.id);
+    // Musique composée pour cette vidéo (sa durée + le carton de fin).
+    if (raw.music) {
+      try {
+        update('Composition de la musique par ElevenLabs…');
+        const file = `e${number}_musique.mp3`;
+        await composeMusic(String(raw.music).slice(0, 400), seconds + 6, path.join(dir, file));
+        episode.musicFile = file;
+        episode.musicVolume = scrDef.parle ? 0.16 : 0.5;
+      } catch (e) {
+        console.error('Musique de la recette :', e.message);
+      }
+    }
+    // Sans parole : un bruit de cuisine par plan (friture, couteau…).
+    if (!scrDef.parle) {
+      for (const sc of episode.scenes) {
+        if (!sc.sfxPrompt) {
+          continue;
+        }
+        try {
+          update(`Bruit de cuisine — ${sc.sfxPrompt}…`);
+          const file = `e${number}_${sc.id}_bruit.mp3`;
+          await composeSfx(sc.sfxPrompt, sc.durationSec || 3, path.join(dir, file));
+          sc.sfx = file;
+        } catch (e) {
+          console.error('Bruit de cuisine :', e.message);
+        }
+      }
     }
   }
   project.episodes.push(episode);
@@ -2873,7 +2977,7 @@ export async function retryFailedAssets(project, episode, update) {
   const failures = [];
 
   await ensureCharacterPortraits(project, update);
-  await ensureKitchenReference(project, update);
+  await ensureKitchenReference(project, update, episode);
 
   // 1. Images manquantes ou en erreur
   if (provider !== 'manual') {
@@ -3001,7 +3105,7 @@ export async function regenerateAllImages(project, episode, update) {
   const scenes = episode.scenes || [];
   const failures = [];
   await ensureCharacterPortraits(project, update);
-  await ensureKitchenReference(project, update);
+  await ensureKitchenReference(project, update, episode);
   for (let i = 0; i < scenes.length; i++) {
     const scene = scenes[i];
     // Recette : la photo du plat venue de Keur Cook est gratuite et fidèle — on la garde.
@@ -3039,7 +3143,7 @@ export async function regenerateAllImages(project, episode, update) {
 export async function regenerateSceneImage(project, episode, scene, update) {
   update('Génération de la nouvelle image…');
   await ensureCharacterPortraits(project, update);
-  await ensureKitchenReference(project, update);
+  await ensureKitchenReference(project, update, episode);
   scene.version += 1;
   const file = `e${episode.number}_${scene.id}_v${scene.version}.jpg`;
   const { ok, url, provider } = await generateImage(

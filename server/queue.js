@@ -15,6 +15,7 @@ import crypto from 'node:crypto';
 import { STUDIO_DIR } from './studio.js';
 import { startJob } from './jobs.js';
 import { loadProject } from './projects.js';
+import { RECIPE_IMAGE_STYLES, RECIPE_SCRIPT_STYLES } from './claudegen.js';
 import {
   createChannelVideo,
   createRecipeVideo,
@@ -207,7 +208,13 @@ export function addToQueue(raw) {
     }
     const seconds = [45, 60, 90].includes(Number(raw.seconds)) ? Number(raw.seconds) : 60;
     const name = String(raw.label || slug).slice(0, 80);
-    item = { kind: 'recette', slug, seconds, label: `Recette — ${name}, ${seconds} s` };
+    // Styles choisis dans les deux menus (facultatifs : sans eux, l'ancienne vidéo).
+    const imageStyle = RECIPE_IMAGE_STYLES[raw.imageStyle] ? raw.imageStyle : null;
+    const scriptStyle = RECIPE_SCRIPT_STYLES[raw.scriptStyle] ? raw.scriptStyle : null;
+    const styles = imageStyle || scriptStyle
+      ? ` (${(RECIPE_IMAGE_STYLES[imageStyle || 'realiste'].label).split(' (')[0]} · ${(RECIPE_SCRIPT_STYLES[scriptStyle || 'pedagogique'].label).split(' (')[0]})`
+      : `, ${seconds} s`;
+    item = { kind: 'recette', slug, seconds, imageStyle, scriptStyle, label: `Recette — ${name}${styles}` };
   } else {
     throw new Error('Type de vidéo inconnu.');
   }
@@ -279,7 +286,15 @@ async function produceItem(it, update) {
       ? await createChannelVideo(p, it.angle, step('Script', 0, 0.05))
       : await createRecipeVideo(
           p,
-          { slug: it.slug, text: '', seconds: it.seconds, tone: p.tone || 'chaleureux', usePhoto: true },
+          {
+            slug: it.slug,
+            text: '',
+            seconds: it.seconds,
+            tone: p.tone || 'chaleureux',
+            usePhoto: true,
+            imageStyle: it.imageStyle,
+            scriptStyle: it.scriptStyle,
+          },
           step('Découpage', 0, 0.05),
         );
   it.number = number;

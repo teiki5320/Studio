@@ -61,7 +61,14 @@ function Apercu({ project, episode }) {
     <div className="rp-video">
       <Player
         component={Recipe}
-        inputProps={{ episode, assetBase: `/files/${project.id}`, musicFile: project.musicFile, studio, studioBase: '/studio' }}
+        inputProps={{
+          episode,
+          assetBase: `/files/${project.id}`,
+          musicFile: episode.musicFile || project.musicFile,
+          musicVolume: episode.musicVolume,
+          studio,
+          studioBase: '/studio',
+        }}
         durationInFrames={Math.max(1, recipeDurationInFrames(episode, studio))}
         fps={FPS}
         compositionWidth={WIDTH}
@@ -83,6 +90,10 @@ export function RecipesPage({ projectId }) {
   const [queue, setQueue] = useState([]);
   const [selected, setSelected] = useState(null); // numéro de la vidéo affichée
   const [error, setError] = useState('');
+  // Les deux menus : style d'image et style de script.
+  const [styles, setStyles] = useState({ images: [], scripts: [] });
+  const [imageStyle, setImageStyle] = useState('realiste');
+  const [scriptStyle, setScriptStyle] = useState('pedagogique');
 
   const loadProject = () =>
     api
@@ -95,6 +106,10 @@ export function RecipesPage({ projectId }) {
 
   useEffect(() => {
     loadProject();
+    api
+      .recipeStyles()
+      .then(setStyles)
+      .catch(() => {});
     api
       .recipes()
       .then((r) => {
@@ -142,7 +157,7 @@ export function RecipesPage({ projectId }) {
     const r = (recipes || []).find((x) => x.slug === slug);
     setError('');
     api
-      .addToQueue({ kind: 'recette', projectId, slug, seconds: 60, label: r ? r.label : slug })
+      .addToQueue({ kind: 'recette', projectId, slug, seconds: 60, imageStyle, scriptStyle, label: r ? r.label : slug })
       .then(() => api.queue())
       .then((list) => setQueue(list.filter((it) => it.projectId === projectId)))
       .catch((e) => setError(e.message));
@@ -200,6 +215,22 @@ export function RecipesPage({ projectId }) {
               </option>
             ))}
           </select>
+          <label className="small clay-muted">🎨 Style d'image</label>
+          <select className="rp-input" value={imageStyle} onChange={(e) => setImageStyle(e.target.value)}>
+            {styles.images.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+          <label className="small clay-muted">✍️ Style de script</label>
+          <select className="rp-input" value={scriptStyle} onChange={(e) => setScriptStyle(e.target.value)}>
+            {styles.scripts.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.label} · {s.seconds} s
+              </option>
+            ))}
+          </select>
           <button className="clay-btn rp-generate" disabled={!slug} onClick={generate}>
             🎬 Générer la vidéo
           </button>
@@ -244,7 +275,16 @@ export function RecipesPage({ projectId }) {
               className={`rp-ep${shown && shown.number === ep.number ? ' on' : ''}`}
               onClick={() => setSelected(ep.number)}
             >
-              <span className="rp-ep-title">{ep.title}</span>
+              <span className="rp-ep-title">
+                {ep.title}
+                {ep.imageStyle ? (
+                  <small className="clay-muted">
+                    {' '}
+                    · {(styles.images.find((s) => s.id === ep.imageStyle)?.label || ep.imageStyle).split(' (')[0]} ·{' '}
+                    {(styles.scripts.find((s) => s.id === ep.scriptStyle)?.label || ep.scriptStyle).split(' (')[0]}
+                  </small>
+                ) : null}
+              </span>
               <EtatValidation project={project} ep={ep} onChange={loadProject} />
               {ep.renderedFile && !surLeMac() && (
                 <a

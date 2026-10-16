@@ -951,6 +951,223 @@ CONTRAINTES STRICTES :
 - Le texte à l'écran est court et lisible sur un téléphone.`;
 }
 
+// ---------- Recettes : styles d'image et de script au choix ----------
+// Deux menus dans l'atelier de recettes. Le style d'image fixe le rendu de
+// TOUS les plans (et de l'image de référence qui les garde cohérents) ; le
+// style de script fixe la structure, la narration et la durée. Chaque plan
+// est animé (un clip par plan, sauf la vraie photo du plat).
+const SANS_TEXTE = '9:16 vertical, no on-screen text, no letters, no logo, no watermark';
+
+export const RECIPE_IMAGE_STYLES = {
+  realiste: {
+    label: 'Réaliste (vue du dessus, mains)',
+    photoDuSite: true,
+    style: RECIPE_IMAGE_STYLE,
+    reference: KITCHEN_REFERENCE_PROMPT,
+    consigne:
+      "Vue DU DESSUS d'un plan de travail ; on ne voit que DEUX MAINS AFRICAINES (peau brune), jamais de visage ni de corps ; les MÊMES ustensiles et le MÊME plan de travail d'un plan à l'autre.",
+    mouvement: 'appetising realistic motion: rising steam, simmering sauce, slow stirring or pouring, hands moving naturally, gentle camera push-in',
+  },
+  cinema: {
+    label: 'Réaliste cinéma (gros plans, ralentis)',
+    photoDuSite: true,
+    style:
+      'extreme close-up macro food cinematography, shallow depth of field, slow-motion feel, warm golden side light, ' +
+      'dark moody rustic background, rich glistening textures, visible steam, african hands with dark brown skin may ' +
+      `appear at the edge of the frame — NO face, NO body, photorealistic, ${SANS_TEXTE}`,
+    reference:
+      'Macro food cinematography reference: a dark rustic wooden table under warm golden side light, an enamel pot ' +
+      `and a wooden spoon, shallow depth of field, moody and appetising, photorealistic, ${SANS_TEXTE}, no person.`,
+    consigne:
+      "Gros plans très rapprochés sur la nourriture et le geste (la sauce qui coule, la vapeur, le couteau qui tranche) ; au plus des mains au bord du cadre, jamais de visage.",
+    mouvement: 'cinematic slow-motion: dripping sauce, rising steam, sizzling oil, slow camera dolly, shallow depth of field',
+  },
+  kawaii: {
+    label: 'Kawaii (mignon, pastel)',
+    photoDuSite: false,
+    style:
+      'kawaii 3D illustration, soft pastel colours, cute round ingredients and utensils with tiny smiling faces and rosy ' +
+      'cheeks, chibi style, glossy soft lighting, clean pastel kitchen counter, slight top-down angle, adorable and playful, ' +
+      `no human, ${SANS_TEXTE}`,
+    reference:
+      'Kawaii 3D illustration reference: a clean pastel kitchen counter, a cute smiling cooking pot and a cute smiling ' +
+      `wooden spoon with rosy cheeks, soft glossy light, chibi style, ${SANS_TEXTE}.`,
+    consigne:
+      "Univers kawaii : les ingrédients et les ustensiles ont de petits visages souriants et font eux-mêmes les gestes de la recette ; aucun humain.",
+    mouvement: 'cute playful animation: ingredients bounce, wiggle and blink, the pot giggles, steam curls into little hearts, soft squash-and-stretch',
+  },
+  pate: {
+    label: 'Pâte à modeler',
+    photoDuSite: false,
+    style:
+      'claymation stop-motion style, everything handmade from colourful modelling clay with visible fingerprints and soft ' +
+      'textures, miniature clay kitchen set, clay ingredients and clay utensils, clay hands with dark brown skin, warm studio ' +
+      `lighting, handcrafted charm, ${SANS_TEXTE}`,
+    reference:
+      'Claymation reference set: a miniature kitchen worktop entirely made of modelling clay, a clay enamel pot and a clay ' +
+      `wooden spoon, visible fingerprints, warm studio light, ${SANS_TEXTE}, no person.`,
+    consigne:
+      'Tout est en pâte à modeler, sur le MÊME petit décor de cuisine en pâte ; des mains en pâte à la peau brune font les gestes, jamais de visage.',
+    mouvement: 'stop-motion animation at a slightly choppy frame rate: clay pieces squish, roll and stack, clay steam puffs, handcrafted feel',
+  },
+  miniature: {
+    label: 'Miniature (petits personnages, marmite géante)',
+    photoDuSite: false,
+    style:
+      'tilt-shift miniature diorama photography, tiny african figurines about 2 cm tall cooking with real full-size food: ' +
+      'giant ingredients, a huge pot, tiny cooks climbing, carrying and stirring, playful scale contrast, macro lens, shallow ' +
+      `depth of field, warm light, photorealistic, ${SANS_TEXTE}`,
+    reference:
+      'Tilt-shift miniature diorama reference: a real wooden kitchen worktop with a giant enamel pot and a giant wooden ' +
+      `spoon, two tiny african cook figurines (2 cm tall) standing beside them, macro lens, warm light, ${SANS_TEXTE}.`,
+    consigne:
+      "Monde miniature : de toutes petites figurines de cuisiniers africains préparent la recette avec des ingrédients et une marmite géants (effet d'échelle drôle).",
+    mouvement: 'tiny figurines move busily: carrying giant ingredients, climbing the pot, stirring with effort, tilt-shift look kept',
+  },
+  manga: {
+    label: 'Manga (dessin animé japonais)',
+    photoDuSite: false,
+    style:
+      'Japanese anime illustration, hand-painted warm watercolour backgrounds, lush detailed anime food that looks glossy, ' +
+      'steaming and mouth-watering, soft cel shading, cozy kitchen, anime hands with dark brown skin, no face visible, ' +
+      SANS_TEXTE,
+    reference:
+      'Japanese anime illustration reference: a cozy kitchen worktop with a steaming enamel pot and a wooden spoon, ' +
+      `hand-painted warm watercolour background, soft cel shading, ${SANS_TEXTE}, no person.`,
+    consigne:
+      "Dessin animé japonais chaleureux, nourriture brillante et fumante ; des mains dessinées à la peau brune font les gestes, jamais de visage.",
+    mouvement: 'anime-style animation: sparkling food, curling steam, sauce glistening, gentle camera pan, keep the exact painted style',
+  },
+  aquarelle: {
+    label: 'Aquarelle (livre de cuisine)',
+    photoDuSite: false,
+    style:
+      'delicate watercolour and ink illustration like a vintage hand-painted cookbook page, soft paper texture, loose brush ' +
+      `strokes, warm earthy palette, top-down view of the worktop and ingredients, ${SANS_TEXTE}`,
+    reference:
+      'Watercolour and ink cookbook illustration reference: top-down view of a worktop with an enamel pot and a wooden ' +
+      `spoon, soft paper texture, warm earthy palette, ${SANS_TEXTE}, no person.`,
+    consigne: "Illustration à l'aquarelle vue du dessus, comme une page de vieux livre de cuisine ; au plus des mains dessinées, jamais de visage.",
+    mouvement: 'watercolour comes alive: paint gently blooming and flowing, steam drawn in ink curls, ingredients sliding in softly',
+  },
+  wax: {
+    label: 'Wax africain (illustration colorée)',
+    photoDuSite: false,
+    style:
+      'bold flat vector illustration inspired by African wax print fabrics, vibrant orange, indigo, yellow and green, ' +
+      'geometric wax patterns on the tablecloth and backgrounds, stylised hands with dark brown skin, graphic and joyful, ' +
+      `top-down view, ${SANS_TEXTE}`,
+    reference:
+      'Flat vector illustration reference inspired by African wax print fabrics: top-down view of a worktop covered with a ' +
+      `wax pattern tablecloth, an enamel pot and a wooden spoon, vibrant orange, indigo, yellow and green, ${SANS_TEXTE}, no person.`,
+    consigne: 'Illustration graphique aux motifs de tissu wax, couleurs vives, vue du dessus ; des mains stylisées à la peau brune, jamais de visage.',
+    mouvement: 'motion-design animation: shapes pop in with bounce, wax patterns gently shift, steam drawn as graphic swirls',
+  },
+};
+
+export const RECIPE_SCRIPT_STYLES = {
+  pedagogique: { label: 'Pédagogique (voix calme, étapes numérotées)', seconds: 60, ouverture: 'titre', parle: true },
+  rapide: { label: 'Rapide sans parole (textes et bruits de cuisine)', seconds: 30, ouverture: 'titre', parle: false },
+  platdabord: { label: "Le plat d'abord (phrase choc, puis la recette)", seconds: 45, ouverture: 'hook', parle: true },
+  histoire: { label: "L'histoire du plat (raconté pendant qu'on cuisine)", seconds: 60, ouverture: 'titre', parle: true },
+  devine: { label: 'Devine le pays (réponse à la fin)', seconds: 45, ouverture: 'hook', parle: true },
+  parlent: { label: 'Les ingrédients qui parlent (humour)', seconds: 50, ouverture: 'titre', parle: true },
+};
+
+function consignesScript(id, seconds) {
+  const words = Math.round(seconds * 2.3);
+  const etapes = (min, max, mots, quoi) =>
+    `DE ${min} À ${max} plans "etape" — les étapes de la recette, dans l'ordre (REGROUPE les petites étapes voisines, sans rien oublier d'important). Chaque plan "etape" porte un numéro (stepNumber) : 1, 2, 3… qui se suivent, jamais deux fois le même. ${quoi} Le texte à l'écran (onScreen) reprend l'essentiel chiffré en ${mots} mots au plus (ex. « 200 g de feuilles · 30 min »).`;
+  switch (id) {
+    case 'rapide':
+      return `LE TON : AUCUNE voix. Tout passe par le texte à l'écran, la musique et les bruits de cuisine. Rythme rapide, plans courts.
+STRUCTURE OBLIGATOIRE :
+1. UN plan "titre" — le plat fini, appétissant. "lines": [].
+2. UN plan "ingredients" — la liste COMPLÈTE avec quantités (12 lignes au plus). "lines": [].
+3. ${etapes(5, 7, 5, '"lines": [] (aucune narration).')}
+4. UN plan "final" — le plat servi. onScreen : « Bon appétit ». "lines": [].
+Pour CHAQUE plan, "sfx" : le bruit de cuisine de ce plan, EN ANGLAIS, 8 mots au plus (ex. « onions sizzling in hot oil », « knife chopping on wooden board »).`;
+    case 'platdabord':
+      return `LE TON : énergique et gourmand, tutoiement, phrases courtes qui claquent. Total des narrations ≈ ${words} mots.
+STRUCTURE OBLIGATOIRE :
+1. UN plan "hook" — le plat fini en très gros plan, au moment le plus appétissant (la sauce qui coule, la vapeur). Narration : UNE phrase choc vraie, sans exagération inventée (ex. « Le plat que tout le Cameroun attend le dimanche. »). onScreen : 6 mots au plus.
+2. UN plan "ingredients" — la liste COMPLÈTE avec quantités. Narration : « Il te faut ça. »
+3. ${etapes(5, 7, 6, 'Narration rapide avec les quantités et les temps, 15 mots au plus.')}
+4. UN plan "final" — le plat servi. Narration courte qui donne envie. onScreen : « Bon appétit ».`;
+    case 'histoire':
+      return `LE TON : une conteuse chaleureuse, vouvoiement. Pendant que la recette avance à l'image, la voix RACONTE le plat : son origine, quand on le mange, ce qu'il représente — UNIQUEMENT avec ce que dit la recette (son histoire, sa description) ou des faits largement connus, jamais inventés. Les quantités et les temps passent par le texte à l'écran. Total des narrations ≈ ${words} mots.
+STRUCTURE OBLIGATOIRE :
+1. UN plan "titre" — le plat fini. Narration : le nom du plat et son pays, avec une phrase qui ouvre l'histoire.
+2. UN plan "ingredients" — la liste COMPLÈTE avec quantités. Narration : la suite de l'histoire.
+3. ${etapes(5, 7, 6, "Narration : l'histoire continue (25 mots au plus), en lien avec ce qu'on voit quand c'est possible.")}
+4. UN plan "final" — le plat servi. Narration : la chute de l'histoire, puis « Bon appétit ». onScreen : « Bon appétit ».`;
+    case 'devine':
+      return `LE TON : un jeu, tutoiement, complice. Le NOM du plat et son PAYS restent SECRETS jusqu'au dernier plan : ni la narration ni le texte à l'écran ne les disent avant. Total des narrations ≈ ${words} mots.
+STRUCTURE OBLIGATOIRE :
+1. UN plan "hook" — le plat fini, appétissant. Narration : « De quel pays vient ce plat ? Reste jusqu'à la fin. » onScreen : « De quel pays vient ce plat ? ».
+2. UN plan "ingredients" — la liste COMPLÈTE avec quantités. Narration : un premier indice vrai (sans nommer le pays).
+3. ${etapes(5, 7, 6, "Narration : l'étape avec ses quantités, et de temps en temps un nouvel indice vrai (20 mots au plus).")}
+4. UN plan "final" — le plat servi. Narration : la réponse (« C'était le … du … ! Bon appétit. »). onScreen : le nom du plat · le pays.`;
+    case 'parlent':
+      return `LE TON : comédie légère. Ce sont LES INGRÉDIENTS qui parlent, à la première personne, chacun son tour, avec humour et tendresse (« Moi, c'est l'oignon : je fais pleurer, mais sans moi, rien n'a de goût. »). Toujours une seule voix. Les quantités et les temps sont dits ou écrits. Total des narrations ≈ ${words} mots.
+STRUCTURE OBLIGATOIRE :
+1. UN plan "titre" — le plat fini. Narration : le plat se présente lui-même (nom, pays).
+2. UN plan "ingredients" — la liste COMPLÈTE avec quantités. Narration : « On est la bande du … ! »
+3. ${etapes(5, 7, 6, "Narration : l'ingrédient principal de l'étape raconte ce qui lui arrive, avec la quantité ou le temps, 22 mots au plus.")}
+4. UN plan "final" — le plat servi. Narration : le plat dit « Bon appétit ! ». onScreen : « Bon appétit ».`;
+    default:
+      return `LE TON : une voix calme et pédagogique, qui VOUVOIE (« Faites tremper… », « Ajoutez… »). Les QUANTITÉS et les TEMPS sont dits à voix haute. Total des narrations ≈ ${words} mots.
+STRUCTURE OBLIGATOIRE :
+1. UN plan "titre" — le plat fini. Narration : le nom du plat, son pays, et pour combien de personnes. Pas d'accroche.
+2. UN plan "ingredients" — la liste COMPLÈTE avec quantités. Narration : « Voici les ingrédients. »
+3. ${etapes(6, 8, 6, "Narration : l'étape avec ses quantités et ses temps, 25 mots au plus.")}
+4. UN plan "final" — le plat servi. Narration : « Bon appétit ! ». onScreen : « Bon appétit ».`;
+  }
+}
+
+export function buildStyledRecipePrompt(texte, imageStyle, scriptStyle) {
+  const img = RECIPE_IMAGE_STYLES[imageStyle] || RECIPE_IMAGE_STYLES.realiste;
+  const scr = RECIPE_SCRIPT_STYLES[scriptStyle] || RECIPE_SCRIPT_STYLES.pedagogique;
+  return `Tu réalises des vidéos de cuisine verticales d'environ ${scr.seconds} secondes pour TikTok, YouTube Shorts et Instagram, à partir d'une vraie recette. Le plat doit être compris dès les 2 premières secondes. Pas d'« abonnez-vous », pas de nom de site.
+
+RECETTE (à suivre fidèlement) :
+"""
+${String(texte).slice(0, 12000)}
+"""
+
+STYLE D'IMAGE : ${img.label}. ${img.consigne} Tous les plans partagent le MÊME décor et les MÊMES objets, décrits de la même façon d'un plan à l'autre. CHAQUE plan sera animé : décris une action visible.
+
+${consignesScript(scriptStyle, scr.seconds)}
+
+Réponds UNIQUEMENT avec un objet JSON valide (aucun texte autour) :
+{
+  "title": "nom du plat",
+  "music": "EN ANGLAIS : la musique de fond instrumentale qui va avec ce style et ce plat (genre, instruments, tempo), 25 mots au plus",
+  "recipe": {
+    "name": "nom du plat",
+    "country": "pays ou région d'origine (chaîne vide si le texte ne le dit pas)",
+    "totalText": "temps total tel qu'indiqué (ex. « 1 h 30 »), chaîne vide si absent",
+    "servings": "nombre de parts (ex. « 6 personnes »), chaîne vide si absent",
+    "ingredients": [tous les ingrédients avec leur quantité, repris du texte],
+    "steps": [les étapes du texte, une phrase chacune]
+  },
+  "scenes": [{
+    "kind": "${scr.ouverture} | ingredients | etape | final",
+    "gesture": "LE GESTE de ce plan, 6 mots maximum",
+    "onScreen": "texte à l'écran (voir la structure)",
+    "stepNumber": numéro d'étape pour kind=etape (1, 2, 3…), null sinon,
+    "ingredients": [pour kind=ingredients UNIQUEMENT ; [] sinon],
+    "lines": [{"speaker": "narrator", "text": "la narration du plan"}],${scr.parle ? '' : '\n    "sfx": "le bruit de cuisine du plan, en anglais",'}
+    "imagePrompt": "EN ANGLAIS : ce qu'on voit dans ce plan (l'action, les ingrédients, les ustensiles) — le style sera ajouté automatiquement, ne le décris pas"
+  }]
+}
+
+CONTRAINTES STRICTES :
+- INTERDICTION ABSOLUE de toute allégation de santé ou de nutrition : jamais les mots santé, sain, bienfaits, bien-être, digestion, vitamines, minéraux, protéines, calories, antioxydant, anti-inflammatoire, immunité, détox, minceur, brûle-graisse, ventre plat, nutritif, énergisant, ni aucune promesse sur le corps. On parle de goût, de texture, de gestes et de tradition.
+- Aucune quantité, aucun temps, aucun ingrédient, aucun fait inventé : tout vient de la recette ci-dessus.
+- Le texte à l'écran est court et lisible sur un téléphone.`;
+}
+
 // ---------- Pub Keur Cook : « Tour d'Afrique » ----------
 // Une pub = un pays : son plat emblématique (vraie photo du site) et son
 // ingrédient secret (vraie photo du produit rare). Style TikTok : accroche

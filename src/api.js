@@ -44,6 +44,7 @@ export const api = {
   addToQueue: (item) => request('/api/queue', { method: 'POST', body: JSON.stringify(item) }),
   removeFromQueue: (id) => request(`/api/queue/${id}`, { method: 'DELETE' }),
   recipes: () => request('/api/recipes'),
+  recipeStyles: () => request('/api/recipes/styles'),
   createRecipeStudio: (info) =>
     request('/api/projects/recipe-studio', { method: 'POST', body: JSON.stringify(info) }),
   createRecipeVideo: (id, params) =>
