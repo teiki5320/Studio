@@ -1,4 +1,4 @@
-// ---------- OptiLED : les cultures et leurs vrais chiffres ----------
+// ---------- Kultiled : les cultures et leurs vrais chiffres ----------
 // Les chiffres des pubs sont ceux du site : on compile avec esbuild ses
 // propres fonctions (build/pages-legumes.ts : exemple chiffré de chaque fiche
 // culture, réglages par défaut du calculateur) et on les appelle ici.
@@ -14,7 +14,7 @@ export function optiledRepo() {
   const raw = (process.env.OPTILED_REPO || '').trim();
   const dir = raw ? (raw.startsWith('~/') ? path.join(os.homedir(), raw.slice(2)) : raw) : path.join(os.homedir(), 'Dev', 'apps', 'optiled');
   if (!fs.existsSync(path.join(dir, 'build', 'pages-legumes.ts'))) {
-    throw new Error("Le dépôt d'OptiLED est introuvable (~/Dev/apps/optiled, ou OPTILED_REPO dans .env).");
+    throw new Error("Le dépôt d'Kultiled est introuvable (~/Dev/apps/optiled, ou OPTILED_REPO dans .env).");
   }
   return dir;
 }
@@ -82,7 +82,7 @@ export { chargerLegumes } from './build/fiches.ts';`,
         photo,
       });
     } catch (e) {
-      console.error(`OptiLED — ${l.id} :`, e.message);
+      console.error(`Kultiled — ${l.id} :`, e.message);
     }
   }
   cache = { sig, cultures };

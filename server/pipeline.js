@@ -1807,7 +1807,7 @@ export async function createKeurbookAd(project, { livre = '' } = {}, update) {
   return { number };
 }
 
-// ---------- Pub OptiLED : « Le calcul en 30 s », « Time-lapse » ----------
+// ---------- Pub Kultiled : « Le calcul en 30 s », « Time-lapse » ----------
 export const OPTILED_FORMATS = {
   calcul: '🔢 Le calcul en 30 s — les vrais chiffres du site',
   timelapse: '🌱 Time-lapse — la plante pousse sous les LED',
@@ -1831,14 +1831,14 @@ export async function optiledAdPlan(project) {
 
 export async function createOptiledAd(project, { format = 'calcul', culture = '' } = {}, update) {
   if (project.kind !== 'pub') {
-    throw new Error('Réservé à la campagne de pub OptiLED.');
+    throw new Error('Réservé à la campagne de pub Kultiled.');
   }
   applyVoicePreset(project);
   const cultures = await chargeCultures();
   const state = project.opTour || (project.opTour = { done: [] });
   const c = cultures.find((x) => x.id === culture) || cultures.find((x) => !state.done.includes(x.id)) || cultures[0];
   if (!c) {
-    throw new Error("Aucune culture lisible dans le dépôt d'OptiLED.");
+    throw new Error("Aucune culture lisible dans le dépôt d'Kultiled.");
   }
   const fmt = OPTILED_FORMATS[format] ? format : 'calcul';
   const secs = 30; // durée fixée (on ne la demande plus)
@@ -1886,7 +1886,7 @@ export async function createOptiledAd(project, { format = 'calcul', culture = ''
         episode.musicFile = file;
         episode.musicVolume = 0.75;
       } catch (e) {
-        console.error('Musique OptiLED :', e.message);
+        console.error('Musique Kultiled :', e.message);
       }
     }
   } else {
@@ -1926,7 +1926,7 @@ export async function createOptiledAd(project, { format = 'calcul', culture = ''
     withName: true,
   };
   episode.topic = `${OPTILED_FORMATS[fmt].split(' — ')[0]} — ${c.nom}`;
-  episode.cta = String(raw.cta || 'Calculez votre éclairage gratuitement sur optiled.fr').slice(0, 80);
+  episode.cta = String(raw.cta || 'Calculez votre éclairage gratuitement sur kultiled.com').slice(0, 80);
   project.episodes.push(episode);
   project.episodes.sort((a, b) => a.number - b.number);
   project.episodeCount = project.episodes.length;

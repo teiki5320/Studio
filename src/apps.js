@@ -9,7 +9,7 @@ export const APP_LOOKS = {
   tama: { name: 'Tama TV', icon: '📺' },
   palabre: { name: 'Palabre', icon: '🃏' },
   'd-sign': { name: 'D-Sign', icon: '🎮' },
-  optiled: { name: 'OptiLED', icon: '💡' },
+  optiled: { name: 'Kultiled', icon: '💡' },
   keurdeco: { name: 'Keur Déco', icon: '🛋️' },
   keurbook: { name: 'Keurbook', icon: '📚' },
   solelis: { name: 'Solelis', icon: '🧭' },

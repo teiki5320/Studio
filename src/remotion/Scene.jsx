@@ -108,7 +108,7 @@ const Sticker = ({ src, size = 0.62, y = 0 }) => {
   );
 };
 
-// Pub « chiffres » (OptiLED) : un vrai chiffre du site, en très grand, qui
+// Pub « chiffres » (Kultiled) : un vrai chiffre du site, en très grand, qui
 // compte jusqu'à sa valeur (« 25 W »), et ce qu'il veut dire dessous.
 const StatOverlay = ({ valeur, label }) => {
   const frame = useCurrentFrame();

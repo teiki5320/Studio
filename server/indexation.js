@@ -30,6 +30,7 @@ const DEPOTS = {
   'keurbook.com': 'Keurbook',
   'keurdeco.com': 'keurdeco',
   'optiled.fr': 'optiled',
+  'kultiled.com': 'optiled',
 };
 const DEV = path.join(os.homedir(), 'Dev/apps');
 

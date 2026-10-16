@@ -274,7 +274,7 @@ function KeurbookAdControls({ projectId, onQueued }) {
   );
 }
 
-// OptiLED : le calcul en 30 s (vrais chiffres du site) ou le time-lapse.
+// Kultiled : le calcul en 30 s (vrais chiffres du site) ou le time-lapse.
 function OptiledAdControls({ projectId, onQueued }) {
   const [plan, setPlan] = useState(null);
   const [format, setFormat] = useState('calcul');
@@ -294,7 +294,7 @@ function OptiledAdControls({ projectId, onQueued }) {
   const choisie = (plan?.cultures || []).find((c) => c.id === culture);
   return (
     <div className="clay-block">
-      <h3>💡 Nouvelle pub OptiLED</h3>
+      <h3>💡 Nouvelle pub Kultiled</h3>
       {!plan && !error && <p className="clay-muted small">Chargement des cultures…</p>}
       {plan && (
         <>
