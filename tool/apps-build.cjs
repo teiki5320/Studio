@@ -637,7 +637,8 @@ function loadApps() {
       emoji: manifest.emoji || '📱',
       // Le vrai logo de l'app, quand il a été déposé dans assets/logos/ (une
       // image de 160 px tirée du dépôt de l'app). Sinon l'emoji fait l'affaire.
-      logo: fs.existsSync(path.join(LOGOS_DIR, id + '.webp')) ? 'logos/' + id + '.webp' : null,
+      // ?v= : quand un logo change (OptiLED → Kultiled), le navigateur le recharge.
+      logo: fs.existsSync(path.join(LOGOS_DIR, id + '.webp')) ? 'logos/' + id + '.webp?v=' + Math.round(fs.statSync(path.join(LOGOS_DIR, id + '.webp')).mtimeMs) : null,
       tagline: manifest.tagline || '',
       repo: manifest.repo || '',
       platforms: manifest.platforms || [],

@@ -23,7 +23,8 @@ export const LOGOS = {
   solelis: 'logos/solelis.webp',
   palabre: 'logos/palabre.webp',
   keurcook: 'logos/alohash.webp',
-  optiled: 'logos/optiled.webp',
+  optiled: 'logos/optiled.webp?v=kultiled',
+  kultiled: 'logos/optiled.webp?v=kultiled',
   keurdeco: 'logos/keurdeco.webp',
   keurbook: 'logos/keurbook.webp',
 };
