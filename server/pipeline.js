@@ -1364,7 +1364,9 @@ function structureRecipeEpisode(episode, recipe, opts = {}) {
   if (!hook) {
     titre.onScreen = '';
   }
-  episode.scenes = [titre, ingredients, ...etapes, final].map((sc, i) => ({ ...sc, id: `s${i + 1}` }));
+  // « Plan continu » : pas de carton titre, la vidéo s'ouvre sur les ingrédients.
+  const ouverture = opts.ouverture === 'aucune' ? [] : [titre];
+  episode.scenes = [...ouverture, ingredients, ...etapes, final].map((sc, i) => ({ ...sc, id: `s${i + 1}` }));
   episode.hook = '';
 }
 

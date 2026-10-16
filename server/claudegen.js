@@ -1065,12 +1065,12 @@ export const RECIPE_IMAGE_STYLES = {
   },
 };
 
+// Style de script = la FAÇON DE MONTRER la recette (toujours complète :
+// ingrédients, quantités, étapes).
 export const RECIPE_SCRIPT_STYLES = {
-  pedagogique: { label: 'Pédagogique (voix calme, étapes numérotées)', seconds: 60, ouverture: 'titre', parle: true },
-  rapide: { label: 'Rapide sans parole (textes et bruits de cuisine)', seconds: 30, ouverture: 'titre', parle: false },
-  platdabord: { label: "Le plat d'abord (le plat fini, puis la recette)", seconds: 45, ouverture: 'hook', parle: true },
-  devine: { label: 'Devine le pays (la recette, le pays dit à la fin)', seconds: 45, ouverture: 'hook', parle: true },
-  parlent: { label: 'Les ingrédients qui parlent (la recette racontée par eux)', seconds: 50, ouverture: 'titre', parle: true },
+  pedagogique: { label: 'Étape par étape (toutes les étapes numérotées)', seconds: 60, ouverture: 'titre', parle: true },
+  rapide: { label: 'Gestes clés en accéléré (textes et bruits de cuisine)', seconds: 30, ouverture: 'titre', parle: false },
+  continu: { label: 'Plan continu (les ingrédients, puis la cuisson sans coupure)', seconds: 45, ouverture: 'aucune', parle: true },
 };
 
 function consignesScript(id, seconds) {
@@ -1079,34 +1079,20 @@ function consignesScript(id, seconds) {
     `DE ${min} À ${max} plans "etape" — les étapes de la recette, dans l'ordre (REGROUPE les petites étapes voisines, sans rien oublier d'important). Chaque plan "etape" porte un numéro (stepNumber) : 1, 2, 3… qui se suivent, jamais deux fois le même. ${quoi} Le texte à l'écran (onScreen) reprend l'essentiel chiffré en ${mots} mots au plus (ex. « 200 g de feuilles · 30 min »).`;
   switch (id) {
     case 'rapide':
-      return `LE TON : AUCUNE voix. Tout passe par le texte à l'écran, la musique et les bruits de cuisine. Rythme rapide, plans courts.
+      return `LE TON : AUCUNE voix. Tout passe par le texte à l'écran, la musique et les bruits de cuisine. LA FAÇON DE MONTRER : seulement les GESTES CLÉS, en accéléré, plans courts.
 STRUCTURE OBLIGATOIRE :
 1. UN plan "titre" — le plat fini, appétissant. "lines": [].
 2. UN plan "ingredients" — la liste COMPLÈTE avec quantités (12 lignes au plus). "lines": [].
 3. ${etapes(5, 7, 5, '"lines": [] (aucune narration).')}
 4. UN plan "final" — le plat servi. onScreen : « Bon appétit ». "lines": [].
 Pour CHAQUE plan, "sfx" : le bruit de cuisine de ce plan, EN ANGLAIS, 8 mots au plus (ex. « onions sizzling in hot oil », « knife chopping on wooden board »).`;
-    case 'platdabord':
-      return `LE TON : énergique et gourmand, tutoiement, phrases courtes qui claquent. Total des narrations ≈ ${words} mots.
+    case 'continu':
+      return `LE TON : une voix calme qui VOUVOIE ; les QUANTITÉS et les TEMPS sont dits à voix haute. Total des narrations ≈ ${words} mots.
+LA FAÇON DE MONTRER : d'abord tous les ingrédients, puis TOUTE LA CUISSON EN UN SEUL PLAN CONTINU — la caméra ne bouge jamais, toujours le MÊME cadrage sur la MÊME marmite posée au MÊME endroit ; d'un plan à l'autre, seul ce qu'il y a dans la marmite change (on y ajoute, ça mijote, ça épaissit). Chaque imagePrompt redit ce cadrage fixe et la même marmite, mot pour mot.
 STRUCTURE OBLIGATOIRE :
-1. UN plan "hook" — le plat fini en très gros plan, au moment le plus appétissant (la sauce qui coule, la vapeur). Narration : UNE phrase vraie qui présente le plat (ex. « Le ndolé, le plat de fête du Cameroun. Voici comment le faire. »), sans exagération ni ton publicitaire. onScreen : 6 mots au plus.
-2. UN plan "ingredients" — la liste COMPLÈTE avec quantités. Narration : « Il te faut ça. »
-3. ${etapes(5, 7, 6, 'Narration rapide avec les quantités et les temps, 15 mots au plus.')}
-4. UN plan "final" — le plat servi. Narration courte qui donne envie. onScreen : « Bon appétit ».`;
-    case 'devine':
-      return `LE TON : un jeu, tutoiement, complice. Le NOM du plat et son PAYS restent SECRETS jusqu'au dernier plan : ni la narration ni le texte à l'écran ne les disent avant. Total des narrations ≈ ${words} mots.
-STRUCTURE OBLIGATOIRE :
-1. UN plan "hook" — le plat fini, appétissant. Narration : « De quel pays vient ce plat ? Reste jusqu'à la fin. » onScreen : « De quel pays vient ce plat ? ».
-2. UN plan "ingredients" — la liste COMPLÈTE avec quantités. Narration : un premier indice vrai (sans nommer le pays).
-3. ${etapes(5, 7, 6, "Narration : l'étape avec ses quantités, et de temps en temps un nouvel indice vrai (20 mots au plus).")}
-4. UN plan "final" — le plat servi. Narration : la réponse (« C'était le … du … ! Bon appétit. »). onScreen : le nom du plat · le pays.`;
-    case 'parlent':
-      return `LE TON : comédie légère. Ce sont LES INGRÉDIENTS qui parlent, à la première personne, chacun son tour, avec humour et tendresse (« Moi, c'est l'oignon : je fais pleurer, mais sans moi, rien n'a de goût. »). Toujours une seule voix. Les quantités et les temps sont dits ou écrits. Total des narrations ≈ ${words} mots.
-STRUCTURE OBLIGATOIRE :
-1. UN plan "titre" — le plat fini. Narration : le plat se présente lui-même (nom, pays).
-2. UN plan "ingredients" — la liste COMPLÈTE avec quantités. Narration : « On est la bande du … ! »
-3. ${etapes(5, 7, 6, "Narration : l'ingrédient principal de l'étape raconte ce qui lui arrive, avec la quantité ou le temps, 22 mots au plus.")}
-4. UN plan "final" — le plat servi. Narration : le plat dit « Bon appétit ! ». onScreen : « Bon appétit ».`;
+1. UN plan "ingredients" — tous les ingrédients disposés à côté de la marmite vide. Liste COMPLÈTE avec quantités. Narration : le nom du plat, son pays, pour combien de personnes, puis « Voici les ingrédients. »
+2. ${etapes(5, 7, 6, "Narration : l'étape avec ses quantités et ses temps, 22 mots au plus. Si une étape se fait hors de la marmite (couper, mixer), montre ce qui arrive DANS la marmite au même cadrage.")}
+3. UN plan "final" — même cadrage : la marmite avec le plat prêt, fumant. Narration : « Bon appétit ! ». onScreen : « Bon appétit ».`;
     default:
       return `LE TON : une voix calme et pédagogique, qui VOUVOIE (« Faites tremper… », « Ajoutez… »). Les QUANTITÉS et les TEMPS sont dits à voix haute. Total des narrations ≈ ${words} mots.
 STRUCTURE OBLIGATOIRE :
@@ -1144,7 +1130,7 @@ Réponds UNIQUEMENT avec un objet JSON valide (aucun texte autour) :
     "steps": [les étapes du texte, une phrase chacune]
   },
   "scenes": [{
-    "kind": "${scr.ouverture} | ingredients | etape | final",
+    "kind": "${scr.ouverture === 'aucune' ? '' : `${scr.ouverture} | `}ingredients | etape | final",
     "gesture": "LE GESTE de ce plan, 6 mots maximum",
     "onScreen": "texte à l'écran (voir la structure)",
     "stepNumber": numéro d'étape pour kind=etape (1, 2, 3…), null sinon,
