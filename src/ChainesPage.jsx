@@ -329,7 +329,7 @@ function MarqueAppli({ cle }) {
   return <BrandCard studio={studio} onChange={charger} appli={cle} />;
 }
 
-export function AppliPubPage({ repo, projects, onCreerPub }) {
+export function AppliPubPage({ repo, onCreerPub }) {
   const { data, charger } = useChaines();
   const { data: applis } = useApplis();
   const [relier, setRelier] = useState(false);
@@ -344,7 +344,6 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
       .modifierCompteReseau(c.id, { applis: c.applis.includes(cle) ? c.applis.filter((x) => x !== cle) : [...c.applis, cle] })
       .then(charger)
       .catch((e) => alert(e.message));
-  const recettes = cle === 'keurcook' ? projects.find((p) => p.mode === 'recette') : null;
   return (
     <div className="clay-content ch">
       <div className="ch-tete">
@@ -354,11 +353,6 @@ export function AppliPubPage({ repo, projects, onCreerPub }) {
           {app.tagline ? <span>{app.tagline}</span> : null}
         </div>
         <div className="ch-actions">
-          {recettes ? (
-            <a className="clay-btn" href="#/recettes">
-              🍲 Recettes
-            </a>
-          ) : null}
           <button type="button" className="clay-btn" onClick={onCreerPub}>
             ＋ Créer une pub
           </button>

@@ -633,7 +633,7 @@ export function Shell() {
   } else {
     const back =
       route.page === 'recettes' || route.page === 'keurcook'
-        ? () => go(route.page === 'recettes' ? 'keurcook' : 'pub')
+        ? () => go(route.page === 'recettes' ? 'keurcook' : 'appli/keurcook')
         : route.page === 'applis' && route.arg
           ? () => go('applis')
           : route.page === 'appli'
@@ -667,7 +667,10 @@ export function Shell() {
             key={route.arg}
             repo={route.arg}
             projects={projects}
-            onCreerPub={() => openRepo(`teiki5320/${route.arg}`)}
+            // Keur Cook : « Créer une pub » ouvre le choix Recettes / Publicité.
+            onCreerPub={() =>
+              `teiki5320/${route.arg}`.toLowerCase() === KEURCOOK_REPO ? go('keurcook') : openRepo(`teiki5320/${route.arg}`)
+            }
           />
         ) : route.page === 'indexation' ? (
           <IndexationPage />
