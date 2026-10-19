@@ -1,6 +1,6 @@
 # MARKETING — plan marketing & rémunération
 
-Mis à jour le 16 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
+Mis à jour le 19 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
 publications réelles, ou routine qui publie).
 
 ## Positionnement
@@ -14,7 +14,7 @@ publications réelles, ou routine qui publie).
 
 ## Rémunération par phases
 
-- [fait] **Aujourd'hui** : affiliation Amazon Partenaires (tag `keurbook-21`) et publicité AdSense depuis le 12 octobre ; le site ne vend rien.
+- [fait] **Aujourd'hui** : affiliation Amazon Partenaires (tag `keurbookfr-21`) et publicité AdSense depuis le 12 octobre ; le site ne vend rien.
 - [en cours] **Validation AdSense** : Google examine le site avant d'y mettre des annonces ; état à vérifier dans la console.
 - **Liens Amazon directs** : remplacer les recherches par des fiches produit vérifiées (ASIN), qui convertissent mieux.
 - **Partenariats** : mises en avant payées par des éditeurs ou libraires, une fois l'audience mesurée.

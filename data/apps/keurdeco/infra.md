@@ -1,6 +1,6 @@
 # INFRA — fiche technique
 
-Mis à jour le 16 octobre 2026 d'après le dépôt et le site en ligne. Cette fiche, avec MARKETING.md et PUBLICATION.md, est désormais la source : le Studio la recopie.
+Mis à jour le 19 octobre 2026 d'après le dépôt et le site en ligne. Cette fiche, avec MARKETING.md et PUBLICATION.md, est désormais la source : le Studio la recopie.
 
 ## En bref
 
@@ -14,8 +14,8 @@ Mis à jour le 16 octobre 2026 d'après le dépôt et le site en ligne. Cette fi
 ## Parcours
 
 - 🌐 **Web** : 🐙 GitHub — main · pages.yml au vert [ok] → 📄 Hébergement web — GitHub Pages, HTTPS imposé [ok] → 🌍 Nom de domaine — keurdeco.com chez Cloudflare [ok] → 🔎 Google et Bing — indexation en cours [à faire]
-- 🛒 **Affiliation** : 📝 Articles — 21 en ligne, 16 programmés [ok] → 🛍️ Affiliation — Amazon Partenaires, tag keurdeco-21 [ok] → 💶 Commissions — à vérifier dans la console [pas encore]
-- 📌 **Contenu** : 🖼️ Épingles — générées au build [ok] → 📥 Import CSV — lot jusqu'au 1er novembre [ok] → 🤖 API Pinterest — tourne à blanc, sans secrets [bloquant]
+- 🛒 **Affiliation** : 📝 Articles — 21 en ligne, 16 programmés [ok] → 🛍️ Affiliation — Amazon Partenaires, tag keurdecofr-21 [ok] → 💶 Commissions — à vérifier dans la console [pas encore]
+- 📌 **Contenu** : 🖼️ Épingles — générées au build [ok] → 📥 Import CSV — lot jusqu'au 1er novembre [ok] → 🤖 API Pinterest — secrets posés, accès standard attendu [bloquant]
 - 📰 **Publicité** : 📄 Pages de lecture — emplacements In-Article [ok] → 📰 AdSense (publicité web) — validation à vérifier [à faire]
 
 ## Vue d'ensemble
@@ -31,7 +31,7 @@ Mis à jour le 16 octobre 2026 d'après le dépôt et le site en ligne. Cette fi
 - **Rôle** : code et deux workflows. `pages.yml` : tests, build (épingles comprises), test de bout en bout, déploiement, puis, hors push, signalement des pages à Bing par IndexNow (`scripts/indexnow.mjs`). Le test de bout en bout refuse tout script externe sauf ceux de `pagead2.googlesyndication.com` (AdSense). `pinterest.yml` : chaque jour à 7 h 17 UTC, publication des épingles par l'API Pinterest — sans les secrets, il tourne à blanc (constaté sur les exécutions du 5 au 12 octobre 2026 : « Mode à blanc »).
 - **Console** : https://github.com/teiki5320/Keurdeco
 - **Identifiants publics** : compte `teiki5320`, dépôt public, branche `main` (pas d'autre branche).
-- **Secrets** : secrets Actions attendus `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`, `PINTEREST_REFRESH_TOKEN` (pas encore définis). Variables sans secret : `SITE_URL`, `CLOUDFLARE_WEB_ANALYTICS`, `PINTEREST_VERIFY`, `GOOGLE_VERIFY`, et facultatives `PINTEREST_SANDBOX`, `PINTEREST_MAX`.
+- **Secrets** : secrets Actions attendus `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`, `PINTEREST_REFRESH_TOKEN` (définis le 19 octobre 2026). Variables sans secret : `SITE_URL`, `CLOUDFLARE_WEB_ANALYTICS`, `PINTEREST_VERIFY`, `GOOGLE_VERIFY`, et facultatives `PINTEREST_SANDBOX`, `PINTEREST_MAX`.
 - **Coût** : gratuit.
 
 ## Hébergement web (GitHub Pages / Cloudflare Pages)
@@ -61,9 +61,9 @@ Mis à jour le 16 octobre 2026 d'après le dépôt et le site en ligne. Cette fi
 
 ## Affiliation (Amazon Partenaires)
 
-- **Rôle** : rémunération du site — liens `https://www.amazon.fr/dp/<ASIN>?tag=keurdeco-21`, tag défini dans `src/amazon.ts` et nulle part ailleurs. 163 produits relevés à la main sur Amazon.fr (`src/data/produits.json`), sans API : jamais d'ASIN, de note, d'avis ni de prix inventés, aucune photo Amazon, mention Partenaires près des liens, en pied de page et dans les mentions légales. `npm run verifier-produits` contrôle la disponibilité ; après les passages des 13, 14 et 15 octobre 2026 et le remplacement de `bannette-courrier-jonc` le 16 octobre, 158 produits actifs et 5 indisponibles (`jarre-terre-cuite-toscane`, `plaid-tricot-chenille`, `lampadaire-rotin-boheme`, `sphere-terre-cuite-etoiles` et `suspension-paille-parasol`, retirés de l'affichage, à remplacer).
+- **Rôle** : rémunération du site — liens `https://www.amazon.fr/dp/<ASIN>?tag=keurdecofr-21`, tag défini dans `src/amazon.ts` et nulle part ailleurs. 163 produits relevés à la main sur Amazon.fr (`src/data/produits.json`), sans API : jamais d'ASIN, de note, d'avis ni de prix inventés, aucune photo Amazon, mention Partenaires près des liens, en pied de page et dans les mentions légales. `npm run verifier-produits` contrôle la disponibilité ; après les passages des 13, 14 et 15 octobre 2026 et le remplacement de `bannette-courrier-jonc` le 16 octobre, 158 produits actifs et 5 indisponibles (`jarre-terre-cuite-toscane`, `plaid-tricot-chenille`, `lampadaire-rotin-boheme`, `sphere-terre-cuite-etoiles` et `suspension-paille-parasol`, retirés de l'affichage, à remplacer).
 - **Console** : https://partenaires.amazon.fr (compte Amazon Partenaires de Jean ; keurdeco.com fait partie des sites déclarés).
-- **Identifiants publics** : tag `keurdeco-21`.
+- **Identifiants publics** : tag `keurdecofr-21`.
 - **Secrets** : aucun dans le dépôt.
 - **Coût** : gratuit — commissions sur les achats.
 
@@ -71,7 +71,7 @@ Mis à jour le 16 octobre 2026 d'après le dépôt et le site en ligne. Cette fi
 
 - **Rôle** : canal de trafic principal. Le build génère les épingles 1000 × 1500 (une par titre d'article, 4 gabarits, manifeste `epingles.json`, 174 épingles au 11 octobre). Tant que l'accès API n'est pas accordé, elles s'importent à la main par lots de 30 jours : `npm run pinterest:lot` prépare le CSV, `npm run pinterest:lot -- --confirmer` les note dans `data/pinterest-etat.json`. Rich Pins par Open Graph et données structurées, bouton « Épingler » sans script externe, balise `p:domain_verify` en ligne.
 - **Console** : https://www.pinterest.fr (compte professionnel « Keur Déco », keurdeco@toakeur.com) ; application sur developers.pinterest.com ; parcours OAuth local par `npm run pinterest:auth` (voir `docs/pinterest.md`).
-- **Identifiants publics** : balise `p:domain_verify` (variable `PINTEREST_VERIFY`) ; tableaux dans `config/tableaux-pinterest.json` (`board_id` encore vides).
+- **Identifiants publics** : balise `p:domain_verify` (variable `PINTEREST_VERIFY`) ; tableaux dans `config/tableaux-pinterest.json` (`board_id` des 20 tableaux renseignés le 16 octobre 2026).
 - **Secrets** : voir GitHub (secrets Actions Pinterest).
 - **Coût** : gratuit.
 
