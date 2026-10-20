@@ -3,8 +3,9 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-19T09:17:09Z",
-    "url": "https://github.com/teiki5320/keurcook/actions/runs/39228679299"
+    "updatedAt": "2026-10-20T04:17:34Z",
+    "url": "https://github.com/teiki5320/keurcook/actions/runs/39368626124",
+    "enCours": true
   },
-  "fetchedAt": "2026-10-19T09:17:49.064Z"
+  "fetchedAt": "2026-10-20T07:26:41.887Z"
 }
