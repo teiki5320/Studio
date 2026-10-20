@@ -29,9 +29,12 @@ const DEPOTS = {
   'keurcook.com': 'keurcook',
   'keurbook.com': 'Keurbook',
   'keurdeco.com': 'keurdeco',
-  'optiled.fr': 'optiled',
   'kultiled.com': 'optiled',
 };
+// Anciennes adresses encore enregistrées dans Search Console mais abandonnées : le Studio ne les suit plus
+// (optiled.fr, remplacé par kultiled.com le 16/10/2026, ne sert plus qu'à rediriger).
+const DOMAINES_ABANDONNES = new Set(['optiled.fr']);
+const abandonne = (propriete) => DOMAINES_ABANDONNES.has(propriete.replace(/^sc-domain:|^https?:\/\/|\/$/g, '').replace(/^www\./, ''));
 const DEV = path.join(os.homedir(), 'Dev/apps');
 
 const lireJson = (f, defaut) => {
@@ -46,7 +49,11 @@ const ecrireJson = (f, d, mode) => {
   fs.writeFileSync(tmp, JSON.stringify(d, null, 2), mode ? { mode } : undefined);
   fs.renameSync(tmp, f);
 };
-const lireEtat = () => lireJson(ETAT, { sites: {} });
+const lireEtat = () => {
+  const etat = lireJson(ETAT, { sites: {} });
+  for (const p of Object.keys(etat.sites || {})) if (abandonne(p)) delete etat.sites[p];
+  return etat;
+};
 
 // ---------- Connexion Google ----------
 const enCours = new Map();
@@ -220,7 +227,7 @@ function aVerifier(pages) {
 
 export async function passage(update = () => {}) {
   const liste = await google(`${WM}/sites`);
-  const proprietes = (liste.siteEntry || []).filter((s) => s.permissionLevel !== 'siteUnverifiedUser').map((s) => s.siteUrl);
+  const proprietes = (liste.siteEntry || []).filter((s) => s.permissionLevel !== 'siteUnverifiedUser' && !abandonne(s.siteUrl)).map((s) => s.siteUrl);
   if (!proprietes.length) {
     throw new Error('Aucun site dans Search Console pour ce compte Google.');
   }
