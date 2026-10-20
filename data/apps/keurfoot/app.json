@@ -1,0 +1,17 @@
+{
+  "name": "Keur Foot",
+  "emoji": "⚽",
+  "visible": true,
+  "order": 12,
+  "repo": "teiki5320/keurfoot",
+  "platforms": [
+    "Web"
+  ],
+  "tagline": "Football africain : sélections, joueurs, maillots et équipement.",
+  "services": [
+    "github",
+    "hebergement-web",
+    "nom-de-domaine",
+    "affiliation"
+  ]
+}

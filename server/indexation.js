@@ -30,6 +30,8 @@ const DEPOTS = {
   'keurbook.com': 'Keurbook',
   'keurdeco.com': 'keurdeco',
   'kultiled.com': 'optiled',
+  'keurfoot.com': 'Keurfoot',
+  'keurkado.com': 'keurkado',
 };
 // Anciennes adresses encore enregistrées dans Search Console mais abandonnées : le Studio ne les suit plus
 // (optiled.fr, remplacé par kultiled.com le 16/10/2026, ne sert plus qu'à rediriger).

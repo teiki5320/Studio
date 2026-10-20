@@ -12,6 +12,8 @@ export const APP_LOOKS = {
   optiled: { name: 'Kultiled', icon: '💡' },
   keurdeco: { name: 'Keur Déco', icon: '🛋️' },
   keurbook: { name: 'Keurbook', icon: '📚' },
+  keurfoot: { name: 'Keur Foot', icon: '⚽' },
+  keurkado: { name: 'Keur Kado', icon: '🎁' },
   solelis: { name: 'Solelis', icon: '🧭' },
   survival: { name: 'Survival', icon: '🏕️' },
 };
@@ -27,6 +29,8 @@ export const LOGOS = {
   kultiled: 'logos/optiled.webp?v=kultiled',
   keurdeco: 'logos/keurdeco.webp',
   keurbook: 'logos/keurbook.webp',
+  keurfoot: 'logos/keurfoot.webp',
+  keurkado: 'logos/keurkado.webp',
 };
 const simple = (t) =>
   String(t || '')

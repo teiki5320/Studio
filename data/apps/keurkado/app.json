@@ -1,0 +1,17 @@
+{
+  "name": "Keur Kado",
+  "emoji": "🎁",
+  "visible": true,
+  "order": 13,
+  "repo": "teiki5320/keurkado",
+  "platforms": [
+    "Web"
+  ],
+  "tagline": "Idées cadeaux africains pour la diaspora.",
+  "services": [
+    "github",
+    "hebergement-web",
+    "nom-de-domaine",
+    "affiliation"
+  ]
+}
