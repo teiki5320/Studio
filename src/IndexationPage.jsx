@@ -156,13 +156,8 @@ export function IndexationPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [suivi, setSuivi] = useState(false);
-  const [site, setSite] = useState(() => {
-    try {
-      return localStorage.getItem('indexation-site') || '';
-    } catch {
-      return '';
-    }
-  });
+  // '' = tous les sites : en arrivant, on voit tout ce qu'il reste à corriger.
+  const [site, setSite] = useState('');
   const [perf, setPerf] = useState(null);
   useEffect(() => {
     api
@@ -222,13 +217,10 @@ export function IndexationPage() {
   const ouverts = (site) => site.problemes.filter((p) => !p.corrige || p.corrige.statut === 'echec');
   const tous = data.sites.flatMap(ouverts);
   const chezClaude = data.sites.flatMap((x) => x.problemes).filter((p) => p.envoi?.statut === 'envoye').length;
-  const choisi = data.sites.find((x) => x.propriete === site) || data.sites.find((x) => ouverts(x).length) || data.sites[0];
-  const choisir = (x) => {
-    setSite(x.propriete);
-    try {
-      localStorage.setItem('indexation-site', x.propriete);
-    } catch {}
-  };
+  const choisi = data.sites.find((x) => x.propriete === site) || null;
+  // Un clic sur un site le filtre ; un second clic revient à tous les sites.
+  const choisir = (x) => setSite(x.propriete === site ? '' : x.propriete);
+  const aCorriger = data.sites.filter((x) => ouverts(x).length);
   const pct = (n, t) => (t ? Math.round((100 * n) / t) : 0);
 
   return (
@@ -314,8 +306,31 @@ export function IndexationPage() {
           );
         })}
       </div>
-      {choisi ? (
+      {!choisi ? (
+        <div className="ix-detail" key="tous" data-sans-ressort>
+          <h3>
+            Tous les sites
+            <small>{tous.length ? `${tous.length} chose${tous.length > 1 ? 's' : ''} à corriger` : 'rien à corriger'}</small>
+          </h3>
+          {aCorriger.map((x) => (
+            <div key={x.propriete} className="ix-groupe">
+              <button type="button" className="ix-groupe-t" onClick={() => choisir(x)}>
+                <LogoAppli de={x.domaine} taille={20} />
+                {x.domaine}
+                <small>voir ce site seul →</small>
+              </button>
+              {ouverts(x).map((p) => (
+                <Probleme key={p.id} p={p} onFait={load} setError={setError} />
+              ))}
+            </div>
+          ))}
+          {!tous.length ? <p className="ix-explication">✓ Rien à corriger sur tes sites. Touche un site pour voir son détail.</p> : null}
+        </div>
+      ) : (
         <div className="ix-detail" key={choisi.propriete} data-sans-ressort>
+          <button type="button" className="clay-btn ghost small ix-tous" onClick={() => setSite('')}>
+            ← Tous les sites
+          </button>
           <h3>
             <LogoAppli de={choisi.domaine} taille={26} />
             {choisi.domaine}
@@ -350,7 +365,7 @@ export function IndexationPage() {
             <Probleme key={p.id} p={p} onFait={load} setError={setError} />
           ))}
         </div>
-      ) : null}
+      )}
       {error && <p className="error small">{error}</p>}
     </div>
   );
