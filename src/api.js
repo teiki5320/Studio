@@ -105,6 +105,7 @@ export const api = {
   youtubeDeconnecter: () => request('/api/youtube/deconnecter', { method: 'POST' }),
   publierYoutube: (id) => request(`/api/planning/${id}/youtube`, { method: 'POST' }),
   planning: () => request('/api/planning'),
+  planningSites: () => request('/api/planning/sites'),
   placerPlanning: (body) => request('/api/planning', { method: 'POST', body: JSON.stringify(body) }),
   modifierPlanning: (id, body) => request(`/api/planning/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
   retirerPlanning: (id) => request(`/api/planning/${id}`, { method: 'DELETE' }),

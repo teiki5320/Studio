@@ -92,6 +92,89 @@ function filtrer(d, cle) {
 }
 
 // `appli` (clé du dépôt) : planning réduit à cette appli (écran Publicité).
+// Les sites : une ligne par site, ce qui sort chaque jour (articles datés,
+// épingles Pinterest prévues). Lu dans les dépôts, rien ne se déplace ici.
+function LignesSites({ sites, appli, jours, aujourdhui, caseSite, setCaseSite }) {
+  const liste = (sites?.sites || []).filter((s) => !appli || s.cle === appli);
+  if (!liste.length) return null;
+  return (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 2px 2px', color: 'var(--c-muted)', fontSize: 12 }}>
+        <span style={{ width: 12 }}>▾</span>
+        <span style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--texte)' }}>Sites</span>
+        <span>articles programmés et épingles Pinterest prévues</span>
+      </div>
+      {liste.map((s) => (
+        <div key={s.cle} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '6px 10px', background: 'var(--side)', borderRadius: 12, minHeight: 52, boxSizing: 'border-box' }}>
+            <b style={{ fontSize: 13, display: 'flex', alignItems: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+              <LogoAppli de={s.domaine} taille={18} />
+              {s.nom}
+            </b>
+            <span className="clay-muted" style={{ fontSize: 11 }}>{s.domaine}</span>
+          </div>
+          {jours.map((d) => {
+            const j = iso(d);
+            const ici = s.jours[j] || [];
+            const a = ici.filter((e) => e.type === 'article').length;
+            const p = ici.filter((e) => e.type === 'epingle').length;
+            const k = `${s.cle}|${j}`;
+            return (
+              <button
+                key={j}
+                type="button"
+                disabled={!ici.length}
+                onClick={() => setCaseSite(caseSite === k ? null : k)}
+                style={{ background: j === aujourdhui ? 'var(--carte-2)' : 'var(--carte)', border: 'none', borderRadius: 12, minHeight: 52, padding: 5, display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start', justifyContent: 'center', cursor: ici.length ? 'pointer' : 'default', color: 'var(--texte)', outline: caseSite === k ? '2px solid var(--accent)' : 'none', fontSize: 12, fontWeight: 800 }}
+              >
+                {a ? <span>📝 {pluriel(a, 'article')}</span> : null}
+                {p ? <span>📌 {pluriel(p, 'épingle')}</span> : null}
+              </button>
+            );
+          })}
+        </div>
+      ))}
+    </>
+  );
+}
+
+function DetailSite({ sites, caseSite, fermer }) {
+  if (!caseSite || !sites) return null;
+  const [cle, j] = caseSite.split('|');
+  const s = sites.sites.find((x) => x.cle === cle);
+  const ici = s?.jours[j] || [];
+  if (!ici.length) return null;
+  const jour = depuisIso(j).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  return (
+    <div className="clay-block" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <LogoAppli de={s.domaine} taille={22} />
+        <b style={{ flex: 1 }}>
+          {s.nom} · {jour}
+        </b>
+        <button className="clay-btn ghost small" onClick={fermer}>
+          Fermer
+        </button>
+      </div>
+      {ici.map((e, i) => (
+        <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 13 }}>
+          <span>{e.type === 'article' ? '📝' : '📌'}</span>
+          <span style={{ flex: 1 }}>
+            {e.lien ? (
+              <a href={e.lien} target="_blank" rel="noreferrer">
+                {e.titre}
+              </a>
+            ) : (
+              e.titre
+            )}
+            {e.type === 'epingle' ? <span className="clay-muted small"> · Pinterest{e.prevision ? ' (prévision)' : ' (déjà programmée)'}</span> : <span className="clay-muted small"> · article, en ligne ce jour-là</span>}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function PlanningPage({ appli } = {}) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
@@ -101,6 +184,8 @@ export function PlanningPage({ appli } = {}) {
   const [over, setOver] = useState(null); // case survolée pendant un glisser
   const [rangement, setRangement] = useState(lireRangement);
   const [envoi, setEnvoi] = useState(null);
+  const [sites, setSites] = useState(null); // ce qui sort sur chaque site (lecture seule)
+  const [caseSite, setCaseSite] = useState(null); // « cle|jour » ouverte dans le détail
   const drag = useRef(null);
   const glisse = useRef(false); // vrai juste après un glisser (le clic qui suit est ignoré)
 
@@ -117,6 +202,12 @@ export function PlanningPage({ appli } = {}) {
     const t = setInterval(load, 15000);
     return () => clearInterval(t);
   }, [appli]);
+  useEffect(() => {
+    api
+      .planningSites()
+      .then(setSites)
+      .catch(() => setSites({ sites: [] }));
+  }, []);
   useEffect(() => {
     try {
       localStorage.setItem(RANGEMENT, JSON.stringify(rangement));
@@ -604,9 +695,11 @@ export function PlanningPage({ appli } = {}) {
                     </React.Fragment>
                   );
                 })}
+                <LignesSites sites={sites} appli={appli} jours={jours} aujourdhui={aujourdhui} caseSite={caseSite} setCaseSite={setCaseSite} />
               </div>
             </div>
           )}
+          <DetailSite sites={sites} caseSite={caseSite} fermer={() => setCaseSite(null)} />
           {ficheJsx}
         </div>
 

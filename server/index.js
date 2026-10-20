@@ -94,6 +94,7 @@ import { listRepos, fetchRepoBrief, githubUser } from './github.js';
 import { fetchSiteBrief } from './sitebrief.js';
 import { publicHosts, verifyAccessToken } from './cfaccess.js';
 import { listQueue, addToQueue, removeFromQueue, startQueue } from './queue.js';
+import { planningSites } from './planningSites.js';
 import { planning, placer, modifier as modifierPlanning, retirer as retirerPlanning, retirerVideo as retirerVideoPlanning, publicationsDuCompte, entree as entreePlanning, noterPublication } from './planning.js';
 import { listeComptes, ajouterCompte, modifierCompte, retirerCompte } from './reseaux.js';
 import {
@@ -1315,6 +1316,15 @@ app.delete('/api/projects/:id/episodes/:n', (req, res) => {
 });
 
 // ---------- Planning des réseaux sociaux ----------
+// Ce qui sortira sur chaque site (articles datés, épingles Pinterest prévues).
+app.get('/api/planning/sites', (req, res) => {
+  try {
+    res.json(planningSites());
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/planning', (req, res) => {
   try {
     res.json({ ...planning(), youtube: etatYoutube().chaine });
