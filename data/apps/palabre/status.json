@@ -3,8 +3,9 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-20T07:55:10Z",
-    "url": "https://github.com/teiki5320/palabre/actions/runs/39389083500"
+    "updatedAt": "2026-10-21T08:14:31Z",
+    "url": "https://github.com/teiki5320/palabre/actions/runs/39567685877",
+    "enCours": true
   },
-  "fetchedAt": "2026-10-20T08:26:34.072Z"
+  "fetchedAt": "2026-10-21T08:15:30.489Z"
 }

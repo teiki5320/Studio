@@ -2,9 +2,9 @@
   "release": null,
   "ci": {
     "status": "completed",
-    "conclusion": "success",
-    "updatedAt": "2026-10-20T07:26:16Z",
-    "url": "https://github.com/teiki5320/Solelis/actions/runs/39385951866"
+    "conclusion": "failure",
+    "updatedAt": "2026-10-21T08:08:53Z",
+    "url": "https://github.com/teiki5320/Solelis/actions/runs/39566583949"
   },
-  "fetchedAt": "2026-10-20T07:26:53.854Z"
+  "fetchedAt": "2026-10-21T08:15:32.173Z"
 }

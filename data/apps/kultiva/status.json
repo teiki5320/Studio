@@ -4,7 +4,8 @@
     "status": "completed",
     "conclusion": "failure",
     "updatedAt": "2026-10-20T07:53:27Z",
-    "url": "https://github.com/teiki5320/Kultiva/actions/runs/39389495310"
+    "url": "https://github.com/teiki5320/Kultiva/actions/runs/39389495310",
+    "enCours": true
   },
-  "fetchedAt": "2026-10-20T08:26:31.162Z"
+  "fetchedAt": "2026-10-21T08:15:26.728Z"
 }
