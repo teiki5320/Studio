@@ -30,7 +30,7 @@ Mis à jour le 21 octobre 2026 d'après le dépôt, la base Supabase et le site 
 - **Site** : <https://kultiva.toakeur.com> (présentation + confidentialité), en ligne depuis le 7 octobre 2026
 - **Marchés** : bi-marché France + 8 pays francophones d'Afrique de l'Ouest, détection du pays et de la sous-zone climatique
 - **Particularités** : météo Open-Meteo sans clé d'API, notifications locales uniquement, tutos et contenu 100 % hors ligne
-- **Monétisation** : aucune. Les liens Amazon du catalogue ont été retirés le 20 octobre 2026 ; le bouton « Acheter » reste dans le code (`amazonUrl`) mais ne s'affiche plus, faute de lien. La page `landing/index.html` porte encore la mention « Partenaire Amazon ».
+- **Monétisation** : aucune. Les liens Amazon du catalogue ont été retirés le 20 octobre 2026 ; le bouton « Acheter » reste dans le code (`amazonUrl`) mais ne s'affiche plus, faute de lien. La mention « Partenaire Amazon » a été ôtée de `landing/index.html` le 21 octobre 2026.
 
 ## Services externes
 

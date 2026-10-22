@@ -29,7 +29,7 @@
 | Construction | [ok] Xcode Cloud (`ci_post_clone.sh`, Flutter 3.41.6) | [ok] App Bundle construit par la CI GitHub Actions |
 | Signature | [ok] gérée par Xcode Cloud, équipe `K597U7X3FZ` | [ok] keystore local, valable jusqu'en 2053 |
 | Classification | [à faire] 4+ attendu, questionnaire prêt à reporter | [à faire] questionnaire de contenu à remplir |
-| Cible | [ok] iOS 13.0 et plus, iPhone et iPad, portrait | [ok] `minSdk 24`, `targetSdk 36` |
+| Cible | [ok] iOS 13.0 et plus, iPhone et iPad, portrait | [ok] valeurs par défaut de Flutter, rien de figé dans le dépôt |
 | Permissions | [ok] caméra, photos, localisation (textes en français) | [ok] localisation, notifications, alarmes exactes |
 | Poids | [pas encore] à mesurer au premier envoi (35 Mo d'assets) | [pas encore] à mesurer au premier envoi (35 Mo d'assets) |
 
@@ -114,7 +114,7 @@ contrat *Contenu payant* si la distribution doit couvrir tous les pays.
 | Version en cours | App Bundle `1.0.0` (`versionCode 5`) — construit et vérifié localement le 23 août 2026, jamais téléversé |
 | Distribution | App Bundle signé localement via `android/key.properties` (non commité, ignoré par git) |
 | Signature | certificat RSA 2048 / SHA384 au nom de l'organisation `Kultiva`, créé le 21 avril 2026, valable jusqu'au **6 septembre 2053** |
-| Niveaux d'API | `minSdk 24`, `targetSdk 36`, `compileSdk 36` |
+| Niveaux d'API | valeurs par défaut de Flutter (`flutter.minSdkVersion`, `flutter.targetSdkVersion`, `flutter.compileSdkVersion` dans `android/app/build.gradle.kts`) — aucun chiffre figé dans le dépôt |
 | Poids | 35 Mo d'assets ; la CI produit aussi des APK `--split-per-abi` |
 
 **Ce qui est prêt.** Le build release fonctionne : il était cassé et a été
@@ -122,8 +122,9 @@ réparé le 23 août 2026 (Kotlin 2.1.20), puis vérifié par un
 `flutter build appbundle --release` complet qui passe. Le *core library
 desugaring* est actif, nécessaire à `flutter_local_notifications`. La CI
 GitHub Actions construit l'App Bundle et les APK découpés par
-architecture à chaque passage. Le `targetSdk 36` dépasse le minimum
-qu'exige Play pour les nouvelles applications.
+architecture à chaque passage. Le `targetSdk` suit la version de
+Flutter : à vérifier au premier envoi qu'il atteint le minimum exigé
+par Play pour les nouvelles applications.
 
 **Les textes existent déjà.** `docs/store-listings.md` contient la
 description longue, la description courte (78/80 caractères) et des
@@ -203,7 +204,7 @@ Google « Se connecter » ont été laissées à supprimer le 9 octobre 2026 :
 7. ✅ **Liens Amazon retirés** : les 159 liens au tag du compte fermé ont été ôtés du catalogue le 20 octobre 2026.
 8. **Soumettre iOS** : depuis `docs/FICHE_APP_STORE.md`.
 9. **Créer la fiche Google Play** : puis lancer le test fermé sans attendre, ses quatorze jours courent en arrière-plan.
-10. **Relier les boutons « Télécharger »** : remplacer les `href="#"` du site par les liens des boutiques, et ôter la mention « Partenaire Amazon » restée sur la page.
+10. **Relier les boutons « Télécharger »** : remplacer les `href="#"` du site par les liens des boutiques (la mention « Partenaire Amazon » a été ôtée le 21 octobre 2026).
 
 ---
 
@@ -217,6 +218,8 @@ Google « Se connecter » ont été laissées à supprimer le 9 octobre 2026 :
 - **Liens Amazon retirés** (20 octobre) — le tag `kultiva-21` dépendait
   du compte Amazon Partenaires fermé le 18 octobre : les 159 liens
   « Acheter » ont été ôtés du catalogue, le bouton ne s'affiche plus.
+- **Mention « Partenaire Amazon » ôtée du site** (21 octobre) — dernière
+  trace de l'affiliation, dans le pied de page de `landing/index.html`.
 
 ## Ce qui a été réglé fin août 2026
 
@@ -238,7 +241,8 @@ Google « Se connecter » ont été laissées à supprimer le 9 octobre 2026 :
 - **Build Android réparé** (23 août) — Kotlin 2.1.20 ; vérifié par un
   `flutter build appbundle --release` complet.
 - **Décision DSA** (24 août) — les liens d'affiliation sont conservés,
-  donc statut **trader**.
+  donc statut **trader**. Ces liens ont été retirés le 20 octobre 2026 :
+  décision à revoir.
 - **Chiffres marketing corrigés** (24 août) — une passe antérieure avait
   gonflé défis et badges de 50 à 51 dans toutes les fiches. Le catalogue
   en contient bien 50 et 50. Le chiffre de 33 tutoriels, lui, était
