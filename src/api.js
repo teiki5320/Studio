@@ -90,6 +90,7 @@ export const api = {
   routines: () => request('/api/routines'),
   performancesGoogle: () => request('/api/indexation/performances'),
   historiqueGoogle: () => request('/api/indexation/historique'),
+  occasionsGoogle: (site) => request(`/api/indexation/occasions?site=${encodeURIComponent(site)}`),
   envoyerAClaude: (id) => request('/api/indexation/envoyer', { method: 'POST', body: JSON.stringify({ id }) }),
   noterCorrige: (id) => request('/api/indexation/corrige', { method: 'POST', body: JSON.stringify({ id }) }),
   deconnecterIndexation: () => request('/api/indexation/deconnecter', { method: 'POST' }),

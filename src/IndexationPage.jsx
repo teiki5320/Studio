@@ -152,6 +152,51 @@ function Courbe() {
   );
 }
 
+// Place moyenne de tous les sites, pondérée par les apparitions.
+const placeMoyenne = (perf) => {
+  const s = Object.values(perf.sites).filter((x) => x.position && x.vues);
+  const vues = s.reduce((t, x) => t + x.vues, 0);
+  return vues ? place(s.reduce((t, x) => t + x.position * x.vues, 0) / vues) : '';
+};
+
+// Place moyenne dans Google (1 à 10 = première page), arrondie : « 14e place ».
+const place = (pos) => (pos ? `${Math.max(1, Math.round(pos))}${Math.round(pos) <= 1 ? 're' : 'e'} place` : '');
+
+// Les pages que Google montre déjà, mais pas encore en haut (place 4 à 20) : les plus faciles à faire monter.
+function PresquePremierePage({ domaine }) {
+  const [occ, setOcc] = useState(null);
+  useEffect(() => {
+    setOcc(null);
+    api
+      .occasionsGoogle(domaine)
+      .then(setOcc)
+      .catch(() => setOcc({ pages: [] }));
+  }, [domaine]);
+  if (!occ?.pages?.length) return null;
+  return (
+    <div className="ix-probleme ix-requetes">
+      <div className="ix-probleme-h">
+        <b>🎯 Pages presque en première page</b>
+        <span className="ix-nb">
+          · {occ.pages.length} page{occ.pages.length > 1 ? 's' : ''} entre la 4e et la 20e place · du {date(occ.debut)} au {date(occ.fin)}
+        </span>
+      </div>
+      {occ.pages.map((p) => (
+        <div key={p.page} className="ix-requete">
+          <span>
+            <a href={p.page} target="_blank" rel="noreferrer">
+              {p.page.replace(/^https?:\/\/[^/]+/, '') || '/'}
+            </a>
+            {p.requetes[0] ? <small> · « {p.requetes[0].texte} »</small> : null}
+          </span>
+          <b>{place(p.position)}</b>
+          <small>{nb(p.vues)} apparitions</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function IndexationPage() {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
@@ -248,6 +293,11 @@ export function IndexationPage() {
           <span className="sub">{perf ? `${nb(Object.values(perf.sites).reduce((t, x) => t + (x.vues || 0), 0))} apparitions dans les résultats` : 'chiffres de Google'}</span>
         </div>
         <div className="ix-kpi">
+          <span className="lab">Place moyenne dans Google · 7 j</span>
+          <b>{perf ? placeMoyenne(perf) || '—' : '…'}</b>
+          <span className="sub">1 à 10 = première page</span>
+        </div>
+        <div className="ix-kpi">
           <span className="lab">Chez Claude</span>
           <b>{chezClaude}</b>
           <span className="sub">routine chaque matin à 6 h</span>
@@ -293,7 +343,8 @@ export function IndexationPage() {
               </span>
               {perf?.sites[x.propriete] && !perf.sites[x.propriete].erreur ? (
                 <span className="ix-perf">
-                  <b>{nb(perf.sites[x.propriete].clics)}</b> clics · {nb(perf.sites[x.propriete].vues)} apparitions · 7 j
+                  <b>{nb(perf.sites[x.propriete].clics)}</b> clics · {nb(perf.sites[x.propriete].vues)} apparitions
+                  {perf.sites[x.propriete].position ? <> · <b>{place(perf.sites[x.propriete].position)}</b></> : null} · 7 j
                 </span>
               ) : null}
               <span className="ix-barre" title={parts.filter(([, v]) => v).map(([, v, l]) => `${v} ${l}`).join(' · ')}>
@@ -361,6 +412,7 @@ export function IndexationPage() {
               ))}
             </div>
           ) : null}
+          <PresquePremierePage domaine={choisi.domaine} />
           {choisi.problemes.map((p) => (
             <Probleme key={p.id} p={p} onFait={load} setError={setError} />
           ))}

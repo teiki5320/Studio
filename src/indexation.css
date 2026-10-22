@@ -88,3 +88,12 @@ html[data-theme='clair'] .ix-jauge.on { background: var(--peach); }
 @keyframes ix-monte { from { transform: scaleY(0); } }
 .ix-courbe-l .n { text-align: right; font-variant-numeric: tabular-nums; }
 .ix-courbe-l .n small { color: var(--c-muted); }
+
+/* Pages presque en première page : adresse lisible sur fond sombre. */
+.ix-requete a {
+  color: inherit;
+  text-decoration: none;
+}
+.ix-requete a:hover {
+  text-decoration: underline;
+}

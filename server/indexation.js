@@ -716,9 +716,8 @@ export async function occasions(domaine) {
       position: Math.round((somme / p.vues) * 10) / 10,
       requetes: p.requetes.sort((a, b) => b.vues - a.vues).slice(0, 5),
     }))
-    .filter((p) => p.position >= 4 && p.position <= 20 && p.vues >= 5)
-    .sort((a, b) => b.vues - a.vues)
-    .slice(0, 15);
+    .filter((p) => p.position >= 4 && p.position <= 20 && p.vues >= 3)
+    .sort((a, b) => b.vues - a.vues);
   return { domaine, debut: jour(30), fin: jour(2), pages: liste };
 }
 
