@@ -331,9 +331,9 @@ export function IndexationPage() {
                   <b>{p100}%</b>
                 </span>
                 <span className="t">
-                  <b>
+                  <b title={x.domaine}>
                     <LogoAppli de={x.domaine} taille={22} />
-                    {x.domaine}
+                    {x.domaine.replace(/\.(com|fr)$/, '')}
                   </b>
                   <small>
                     <strong>{nb(x.indexees)}</strong> sur Google, sur {nb(x.total)}
