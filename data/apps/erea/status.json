@@ -3,9 +3,21 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-22T09:50:44Z",
-    "url": "https://github.com/teiki5320/erea/actions/runs/39758488545",
-    "enCours": true
+    "updatedAt": "2026-10-22T13:04:32Z",
+    "url": "https://github.com/teiki5320/erea/actions/runs/39783617995"
   },
-  "fetchedAt": "2026-10-22T13:04:09.231Z"
+  "fetchedAt": "2026-10-22T13:06:22.422Z",
+  "boutiques": {
+    "appStore": {
+      "version": "1.0.5",
+      "depuis": "2026-10-21T15:44:21Z",
+      "note": null,
+      "avis": 0,
+      "url": "https://apps.apple.com/fr/app/erea-quiz-dhistoire-frise/id6794918301"
+    },
+    "googlePlay": {
+      "version": "1.0.6",
+      "url": "https://play.google.com/store/apps/details?id=com.teiki.erea&hl=fr&gl=FR"
+    }
+  }
 }

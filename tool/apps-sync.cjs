@@ -146,11 +146,46 @@ async function fetchStatus(repo, precedent) {
   };
 }
 
+// Versions réellement en ligne, lues directement dans les boutiques (pas dans les
+// fiches, qui peuvent être en retard). app.json → "boutiques": { "appStore":
+// "<bundle id>", "googlePlay": "<package>" }. null = pas (encore) dans la boutique ;
+// en cas d'échec réseau, on garde ce qu'on savait.
+async function fetchBoutiques(cfg, ancien) {
+  if (!cfg) return undefined;
+  const out = {};
+  if (cfg.appStore) {
+    try {
+      const r = await fetch(`https://itunes.apple.com/lookup?bundleId=${encodeURIComponent(cfg.appStore)}&country=fr`, { signal: AbortSignal.timeout(15000) });
+      const app = (await r.json()).results?.[0];
+      out.appStore = app
+        ? { version: app.version, depuis: app.currentVersionReleaseDate || null, note: app.userRatingCount ? app.averageUserRating : null, avis: app.userRatingCount || 0, url: app.trackViewUrl?.split('?')[0] || null }
+        : null;
+    } catch {
+      out.appStore = ancien?.appStore ?? null;
+    }
+  }
+  if (cfg.googlePlay) {
+    try {
+      const url = `https://play.google.com/store/apps/details?id=${encodeURIComponent(cfg.googlePlay)}&hl=fr&gl=FR`;
+      const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(20000) });
+      if (r.status === 404) out.googlePlay = null;
+      else {
+        const html = await r.text();
+        const version = html.match(/\[\[\["(\d+(?:\.\d+){1,3})"\]\]/)?.[1];
+        out.googlePlay = version ? { version, url } : (ancien?.googlePlay ?? null);
+      }
+    } catch {
+      out.googlePlay = ancien?.googlePlay ?? null;
+    }
+  }
+  return out;
+}
+
 // Compare deux statuts en ignorant fetchedAt : évite un commit quotidien pour
 // un simple horodatage quand rien n'a réellement changé côté release/CI.
 function statusEqual(a, b) {
   if (!a || !b) return a === b;
-  const strip = (s) => JSON.stringify({ release: s.release, ci: s.ci });
+  const strip = (s) => JSON.stringify({ release: s.release, ci: s.ci, boutiques: s.boutiques });
   return strip(a) === strip(b);
 }
 
@@ -233,6 +268,8 @@ async function main() {
       const statusPath = path.join(APPS_DIR, id, 'status.json');
       const avantStatus = fs.existsSync(statusPath) ? JSON.parse(fs.readFileSync(statusPath, 'utf8')) : null;
       const { conserve, ...status } = await fetchStatus(manifest.repo, avantStatus);
+      const boutiques = await fetchBoutiques(manifest.boutiques, avantStatus?.boutiques);
+      if (boutiques) status.boutiques = boutiques;
       if (conserve) {
         console.warn(`   ⚠️  status.json : GitHub a refusé de répondre — anciennes valeurs conservées`);
       }

@@ -23,5 +23,9 @@
     "play-console",
     "android-keystore",
     "in-app-review"
-  ]
+  ],
+  "boutiques": {
+    "appStore": "com.teiki.erea",
+    "googlePlay": "com.teiki.erea"
+  }
 }

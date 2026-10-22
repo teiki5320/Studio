@@ -20,5 +20,9 @@
     "nom-de-domaine",
     "api-ia",
     "visuels-store"
-  ]
+  ],
+  "boutiques": {
+    "appStore": "sn.palabre.app",
+    "googlePlay": "sn.palabre.app"
+  }
 }

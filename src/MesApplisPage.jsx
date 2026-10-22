@@ -469,6 +469,55 @@ function Boutiques({ b }) {
   );
 }
 
+// Versions réellement en ligne, lues par le Studio dans l'App Store et Google Play
+// à chaque synchro (toutes les 6 h) : elles ne dépendent pas des fiches.
+function EnLigne({ app }) {
+  const b = app.status?.boutiques;
+  if (!b) return null;
+  const ligne = (nom, x) =>
+    x === undefined ? null : (
+      <tr key={nom}>
+        <th>{nom}</th>
+        <td>
+          {x ? (
+            <>
+              <i className="fa-pt ok" />
+              {x.url ? (
+                <a href={x.url} target="_blank" rel="noreferrer">
+                  {x.version}
+                </a>
+              ) : (
+                x.version
+              )}
+              {x.depuis ? ` · depuis le ${fmtDate(x.depuis)}` : ''}
+              {x.note ? ` · ★ ${String(Math.round(x.note * 10) / 10).replace('.', ',')} (${x.avis} avis)` : ''}
+            </>
+          ) : (
+            <>
+              <i className="fa-pt off" />
+              pas encore dans la boutique
+            </>
+          )}
+        </td>
+      </tr>
+    );
+  return (
+    <div className="fa-carte fa-boutiques">
+      <table>
+        <thead>
+          <tr>
+            <th colSpan={2}>En ligne maintenant · lu dans les boutiques le {fmtDate(app.status.fetchedAt, true)}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ligne('App Store', b.appStore)}
+          {ligne('Google Play', b.googlePlay)}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function Poids({ liste }) {
   return (liste || []).map((p, i) => {
     const r = p.max ? p.valeur / p.max : 0;
@@ -539,6 +588,7 @@ function FicheApp({ app, data, volet, famTint, ouvrir }) {
         <div className="fa-deux">
           <Reste liste={b.reste} />
           <div className="fa-pile">
+            <EnLigne app={app} />
             {b.boutiques ? <Boutiques b={b.boutiques} /> : <AnciennesBoutiques app={app} />}
             <Poids liste={b.poids} />
             {b.enBref?.length ? (
