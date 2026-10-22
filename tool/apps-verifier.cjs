@@ -9,7 +9,10 @@
 //      recrée l'ancien nom) ;
 //   2. chaque adresse citée dans les fiches répond ;
 //   3. chaque service déclaré est documenté par une section de infra.md, et
-//      aucune section de service n'est oubliée dans la liste.
+//      aucune section de service n'est oubliée dans la liste ;
+//   4. une version annoncée « en ligne » dans les fiches est bien celle que
+//      l'App Store et Google Play servent (status.json → boutiques, lu par
+//      apps-sync dans les boutiques elles-mêmes).
 //
 // Usage :  node tool/verifier-fiches.js          (tout)
 //          node tool/verifier-fiches.js kultiva  (une seule app)
@@ -31,7 +34,7 @@ const { SERVICES } = require(path.join(RACINE, 'data', 'catalog', 'services.cjs'
 // faut donc pas reprocher à app.json de ne pas les déclarer.
 const TITRES_HORS_SERVICE = [
   // Sections d'organisation de la fiche
-  /^(vue d ensemble|sommaire|services?( externes?)?|notes?|recapitulatif|valeurs publiques|checklist|a faire|a verifier|en attente|annexes?|couts?)/,
+  /^(en bref|parcours|prevu mais pas branche|vue d ensemble|sommaire|services?( externes?)?|notes?|recapitulatif|valeurs publiques|checklist|a faire|a verifier|en attente|annexes?|couts?)/,
   /^(ou vit chaque secret|reprise du projet|format .*source des donnees|routine )/,
   // Dépendances techniques sans compte : registres de paquets, polices web
   /^(registres? de paquets|google fonts|polices)/,
@@ -160,12 +163,48 @@ async function verifieApp(id) {
     const r = await teste(u);
     if (r.ok) { console.log(`   ✔ ${u}`); continue; }
     // 401 et 403 : la page existe, elle refuse juste un visiteur anonyme.
-    if (r.status === 401 || r.status === 403) {
-      console.log(`   · ${u} → ${r.status}, protégé (non vérifiable)`);
+    // 429 : le site limite les visites répétées (Apple le fait) ; ce n'est pas une panne.
+    if (r.status === 401 || r.status === 403 || r.status === 429) {
+      console.log(`   · ${u} → ${r.status}, protégé ou limité (non vérifiable)`);
       continue;
     }
     problemes.push(`${id} : ${u} ne répond pas (${r.status || r.erreur})`);
     console.log(`   ✖ ${u} → ${r.status || r.erreur}`);
+  }
+
+  // 4. Versions « en ligne » ↔ versions réellement servies par les boutiques
+  const boutiques = JSON.parse(lire(path.join(dossier, 'status.json')) || '{}').boutiques;
+  if (boutiques) {
+    const magasins = [
+      ['App Store', boutiques.appStore, /app store|ios|🍎/i],
+      ['Google Play', boutiques.googlePlay, /google play|android|🤖/i],
+    ];
+    for (const [nomB, b, motif] of magasins) {
+      if (!b?.version) continue;
+      const fausses = [];
+      // Un ÉTAT présent (« en ligne depuis… », « est en ligne »), pas un événement passé
+      // (« a été mise en ligne le 15 octobre »), qui reste vrai dans l'historique.
+      const etat = /(en ligne|en production) depuis|(est|sont) (en ligne|en production)|\[ok\][^|→]*en ligne/i;
+      for (const ligne of `${infra || ''}\n${publication || ''}`.split('\n')) {
+        if (!etat.test(ligne) || !motif.test(ligne)) continue;
+        // Étape déjà faite d'une liste (« 3. ✅ … ») : c'est de l'historique daté.
+        if (/^\s*(\d+\.|[-*])\s*✅/.test(ligne)) continue;
+        // Une ligne qui cite la bonne version (même avec l'historique) est juste.
+        if (ligne.includes(b.version)) continue;
+        // Cellule ou étape propre à cette boutique : on ne regarde que ce segment.
+        const segments = ligne.split(/→|\||;/).filter((s) => motif.test(s) && etat.test(s));
+        for (const s of segments) {
+          const v = s.match(/\b\d+\.\d+\.\d+\b/);
+          if (v && v[0] !== b.version) fausses.push(`${v[0]} (« ${s.trim().slice(0, 70)} »)`);
+        }
+      }
+      if (fausses.length) {
+        problemes.push(`${id} : ${nomB} sert la ${b.version}, les fiches annoncent ${[...new Set(fausses)].join(' ; ')}`);
+        console.log(`   ✖ ${nomB} : ${b.version} en ligne, fiches en retard`);
+      } else {
+        console.log(`   ✔ ${nomB} : ${b.version} en ligne, fiches à jour`);
+      }
+    }
   }
 
   // 3. Services déclarés ↔ sections documentées
