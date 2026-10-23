@@ -1,8 +1,9 @@
 // Indexation des sites sur Google : chaque site, combien de pages Google a
 // gardées, et la liste des problèmes en français avec leur solution. Le
-// Studio vérifie tout seul chaque matin ; on peut aussi relancer à la main.
-// « Envoyer à Claude » met un problème dans la file de la routine Claude
-// « Sites · Référencement du jour » (chaque matin à 6 h).
+// Studio vérifie tout seul chaque matin (dès 4 h 30) ; on peut aussi relancer
+// à la main. C'est une page d'information : ce qui reste à régler est sur
+// l'Accueil (colonne À faire), d'où on l'envoie à Claude (« Sites du jour »,
+// chaque matin à 5 h 05). Une page déjà corrigée est « en attente de Google ».
 import React, { useEffect, useState } from 'react';
 import { LogoAppli } from './LogoAppli.jsx';
 import { api, followJob } from './api.js';
@@ -22,77 +23,55 @@ function Suivi({ c }) {
     return <span className="ix-etat ko">⚠️ Toujours pas réglé après revérification{pages}</span>;
   }
   if (c.statut === 'pasRepasse') {
-    return <span className="ix-etat run">⏳ Revérifié : Google n’est pas encore repassé sur ces pages{pages}</span>;
+    return <span className="ix-etat ok">✓ Corrigé — en attente de Google, pas encore repassé sur ces pages{pages}</span>;
   }
   return <span className="ix-etat ok">✓ Corrigé le {date(c.le)} — revérification vers le {date(new Date(new Date(c.le).getTime() + 3 * 86400000))}</span>;
 }
 
-function Probleme({ p, onFait, setError }) {
+// Un problème, en lecture seule : Indexation est une page d'information.
+// Ce qui reste à régler se règle depuis l'Accueil (colonne À faire) ; ce qui
+// est corrigé attend simplement que Google repasse.
+function Probleme({ p }) {
   const [ouvert, setOuvert] = useState(false);
-  const [envoi, setEnvoi] = useState(false);
-  const [envoiEnCours, setEnvoiEnCours] = useState(false);
-  const plan = () => {
-    setEnvoi(true);
-    api
-      .renvoyerPlan(p.id)
-      .then(({ jobId }) => followJob(jobId))
-      .then(onFait)
-      .catch((e) => setError(e.message))
-      .finally(() => setEnvoi(false));
-  };
-  const envoyer = () => {
-    setEnvoiEnCours(true);
-    api
-      .envoyerAClaude(p.id)
-      .then(onFait)
-      .catch((e) => setError(e.message))
-      .finally(() => setEnvoiEnCours(false));
-  };
+  const corrige = Boolean(p.corrige) && p.corrige.statut !== 'echec';
   const envoye = p.envoi?.statut === 'envoye';
   return (
-    <div className="ix-probleme">
+    <div className={`ix-probleme${corrige ? ' corrige' : ''}`}>
       <div className="ix-probleme-h">
-        <i className={`ix-point ${TEINTE[p.gravite] || 'run'}`} />
+        <i className={`ix-point ${corrige ? 'bleu' : TEINTE[p.gravite] || 'run'}`} />
         <b>{p.titre}</b>
         {p.urls.length ? <span className="ix-nb">· {p.urls.length} page{p.urls.length > 1 ? 's' : ''}</span> : null}
         <Suivi c={p.corrige} />
       </div>
-      {p.corrige?.compteRendu && p.action === 'plan' ? (
-        <div className="small" style={{ marginTop: 4, whiteSpace: 'pre-line' }}>{p.corrige.compteRendu}</div>
+      {corrige && p.corrige.compteRendu ? (
+        <div className="small" style={{ marginTop: 4, whiteSpace: 'pre-line' }}>
+          {p.corrige.compteRendu}
+        </div>
       ) : null}
-      <p className="ix-explication">{p.explication}</p>
-      <p className="ix-solution">
-        <b>Solution :</b> {p.solution}
-      </p>
+      {corrige ? null : (
+        <>
+          <p className="ix-explication">{p.explication}</p>
+          <p className="ix-solution">
+            <b>Solution :</b> {p.solution}
+          </p>
+        </>
+      )}
       <div className="ix-actions">
-        {p.action === 'plan' ? (
-          <button className="clay-btn small" disabled={envoi} onClick={plan}>
-            {envoi ? '⏳ Envoi…' : '✓ Renvoyer le plan à Google'}
-          </button>
-        ) : (
-          <>
-            <button className="clay-btn small" disabled={envoye || envoiEnCours} onClick={envoyer}>
-              {envoye ? `📤 Envoyé le ${date(p.envoi.le)}` : '📤 Envoyer à Claude'}
-            </button>
-            <button className="clay-btn ghost small" onClick={() => api.noterCorrige(p.id).then(onFait).catch((e) => setError(e.message))}>
-              ✓ C’est corrigé
-            </button>
-          </>
-        )}
+        {!corrige ? (
+          <a className="clay-btn small" href="#/accueil">
+            {envoye ? `⏳ Chez Claude depuis le ${date(p.envoi.le)}` : '→ À régler depuis l’Accueil'}
+          </a>
+        ) : null}
         {p.urls.length ? (
           <button className="clay-btn ghost small" onClick={() => setOuvert(!ouvert)}>
             {ouvert ? 'Masquer les pages' : 'Voir les pages'}
           </button>
         ) : null}
       </div>
-      {envoye ? <p className="clay-muted small">Claude s’en occupe demain matin à 6 h.</p> : null}
       {p.envoi?.statut === 'bloque' ? (
         <p className="error small" style={{ whiteSpace: 'pre-line' }}>
           ⚠️ Claude n’a pas pu corriger : {p.envoi.message}
         </p>
-      ) : null}
-      {p.corrige?.compteRendu && p.action !== 'plan' && /^Corrigé par Claude/.test(p.corrige.compteRendu) ? (
-        <div className="small" style={{ marginTop: 4, whiteSpace: 'pre-line' }}>{p.corrige.compteRendu}</div>
       ) : null}
       {ouvert && (
         <div style={{ marginTop: 8 }}>
@@ -271,7 +250,7 @@ export function IndexationPage() {
   return (
     <div className="clay-content ix">
       <div className="ix-haut">
-        <span className="ix-date">Dernière vérification : {heure(data.dernierPassage)} · tous les matins à partir de 7 h</span>
+        <span className="ix-date">Dernière vérification : {heure(data.dernierPassage)} · tous les matins à partir de 4 h 30</span>
         <button className="clay-btn" disabled={Boolean(data.passageId)} onClick={verifier}>
           {data.passageId ? '⏳ Vérification en cours…' : '🔄 Vérifier maintenant'}
         </button>
@@ -300,7 +279,7 @@ export function IndexationPage() {
         <div className="ix-kpi">
           <span className="lab">Chez Claude</span>
           <b>{chezClaude}</b>
-          <span className="sub">routine chaque matin à 6 h</span>
+          <span className="sub">routine chaque matin à 5 h 05</span>
         </div>
       </div>
       <Courbe />
@@ -312,11 +291,14 @@ export function IndexationPage() {
       <div className="ix-jauges">
         {data.sites.map((x) => {
           const n = ouverts(x).length;
-          const urls = (g) => x.problemes.filter((p) => p.gravite === g).reduce((t, p) => t + p.urls.length, 0);
+          // Une page corrigée n'est plus « cassée » ni « refusée » : elle attend Google (bleu).
+          const ouvertsIci = ouverts(x);
+          const urls = (g) => ouvertsIci.filter((p) => p.gravite === g).reduce((t, p) => t + p.urls.length, 0);
+          const enAttente = x.problemes.filter((p) => !ouvertsIci.includes(p) || p.gravite === 1).reduce((t, p) => t + p.urls.length, 0);
           const p100 = pct(x.indexees, x.total);
           const parts = [
             ['ok', x.indexees, 'sur Google'],
-            ['bleu', urls(1), 'en attente de Google'],
+            ['bleu', enAttente, 'en attente de Google'],
             ['run', urls(2), 'refusées par Google'],
             ['ko', urls(3), 'cassées'],
           ];
@@ -351,7 +333,7 @@ export function IndexationPage() {
                 {parts.map(([c, v]) => (v ? <span key={c} className={c} style={{ width: `${(100 * v) / Math.max(1, x.total)}%` }} /> : null))}
               </span>
               <span className={`ix-etat ${x.erreur ? 'ko' : n ? 'run' : 'ok'}`}>
-                {x.erreur ? '⚠️ vérification ratée' : n ? `${n} problème${n > 1 ? 's' : ''}` : '✓ Rien à corriger'}
+                {x.erreur ? '⚠️ vérification ratée' : n ? `${n} à régler (Accueil)` : x.problemes.length ? '✓ Corrigé, Google repassera' : '✓ Rien à corriger'}
               </span>
             </button>
           );
@@ -361,21 +343,16 @@ export function IndexationPage() {
         <div className="ix-detail" key="tous" data-sans-ressort>
           <h3>
             Tous les sites
-            <small>{tous.length ? `${tous.length} chose${tous.length > 1 ? 's' : ''} à corriger` : 'rien à corriger'}</small>
+            <small>{tous.length ? `${tous.length} chose${tous.length > 1 ? 's' : ''} à régler` : 'rien à régler'}</small>
           </h3>
-          {aCorriger.map((x) => (
-            <div key={x.propriete} className="ix-groupe">
-              <button type="button" className="ix-groupe-t" onClick={() => choisir(x)}>
-                <LogoAppli de={x.domaine} taille={20} />
-                {x.domaine}
-                <small>voir ce site seul →</small>
-              </button>
-              {ouverts(x).map((p) => (
-                <Probleme key={p.id} p={p} onFait={load} setError={setError} />
-              ))}
-            </div>
-          ))}
-          {!tous.length ? <p className="ix-explication">✓ Rien à corriger sur tes sites. Touche un site pour voir son détail.</p> : null}
+          {tous.length ? (
+            <p className="ix-explication">
+              {aCorriger.map((x) => `${x.domaine} (${ouverts(x).length})`).join(' · ')} : à régler depuis l’Accueil, colonne À faire.{' '}
+              <a href="#/accueil">Ouvrir l’Accueil →</a>
+            </p>
+          ) : (
+            <p className="ix-explication">✓ Rien à régler sur tes sites : les pages corrigées attendent que Google repasse. Touche un site pour voir son détail.</p>
+          )}
         </div>
       ) : (
         <div className="ix-detail" key={choisi.propriete} data-sans-ressort>
@@ -414,7 +391,7 @@ export function IndexationPage() {
           ) : null}
           <PresquePremierePage domaine={choisi.domaine} />
           {choisi.problemes.map((p) => (
-            <Probleme key={p.id} p={p} onFait={load} setError={setError} />
+            <Probleme key={p.id} p={p} />
           ))}
         </div>
       )}

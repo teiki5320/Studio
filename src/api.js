@@ -95,8 +95,6 @@ export const api = {
   envoyerAfaire: (id, choix = 'oui') => request('/api/afaire/envoyer', { method: 'POST', body: JSON.stringify({ id, choix }) }),
   corbeillePoint: (groupes) => request('/api/point/corbeille', { method: 'POST', body: JSON.stringify({ groupes }) }),
   occasionsGoogle: (site) => request(`/api/indexation/occasions?site=${encodeURIComponent(site)}`),
-  envoyerAClaude: (id) => request('/api/indexation/envoyer', { method: 'POST', body: JSON.stringify({ id }) }),
-  noterCorrige: (id) => request('/api/indexation/corrige', { method: 'POST', body: JSON.stringify({ id }) }),
   deconnecterIndexation: () => request('/api/indexation/deconnecter', { method: 'POST' }),
   audience: (jours) => request(`/api/audience?jours=${jours}`),
   cloudflare: () => request('/api/cloudflare'),

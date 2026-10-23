@@ -1,5 +1,8 @@
 // File d'attente de production : ce qui est en cours, en attente ou prêt.
 // projectId : n'afficher que les vidéos d'un projet (page d'une appli).
+// Sans projectId (page En cours) : seulement ce qui tourne, attend ou a
+// échoué ; les vidéos prêtes sont dans Publicité (page de leur appli) et se
+// déplient ici d'un clic.
 import React, { useEffect, useState } from 'react';
 import { api } from './api.js';
 import { lienVideo, surLeMac } from './VideoSave.jsx';
@@ -14,6 +17,7 @@ const STATES = {
 export function QueuePanel({ projectId = null, refreshKey = 0, onDone = null }) {
   const [items, setItems] = useState(null);
   const [error, setError] = useState('');
+  const [voirFinies, setVoirFinies] = useState(false);
 
   // Travaux lancés hors de la file (Retoucher : montage, image, clip, voix).
   const [travaux, setTravaux] = useState([]);
@@ -45,7 +49,9 @@ export function QueuePanel({ projectId = null, refreshKey = 0, onDone = null }) 
     return () => clearInterval(t);
   }, [refreshKey]);
 
-  const shown = (items || []).filter((it) => !projectId || it.projectId === projectId);
+  const duProjet = (items || []).filter((it) => !projectId || it.projectId === projectId);
+  const finies = projectId ? [] : duProjet.filter((it) => it.status === 'done');
+  const shown = projectId || voirFinies ? duProjet : duProjet.filter((it) => it.status !== 'done');
   const liesALaFile = new Set((items || []).map((it) => it.jobId).filter(Boolean));
   const horsFile = travaux.filter((j) => !liesALaFile.has(j.id) && (!projectId || j.projectId === projectId));
 
@@ -66,9 +72,14 @@ export function QueuePanel({ projectId = null, refreshKey = 0, onDone = null }) 
       ))}
       {items && shown.length === 0 && horsFile.length === 0 && (
         <p className="clay-muted small">
-          Rien en attente.
+          {projectId ? 'Rien en attente.' : 'Rien en cours.'}
         </p>
       )}
+      {finies.length ? (
+        <button type="button" className="clay-btn ghost small" onClick={() => setVoirFinies(!voirFinies)}>
+          {voirFinies ? 'Cacher les vidéos prêtes' : `${finies.length} vidéo${finies.length > 1 ? 's' : ''} prête${finies.length > 1 ? 's' : ''} (dans Publicité) · voir`}
+        </button>
+      ) : null}
       {[...shown].reverse().map((it) => {
         const st = STATES[it.status] || STATES.waiting;
         return (

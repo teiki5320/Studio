@@ -40,6 +40,16 @@ export function ficheAge(iso) {
   const d = new Date(`${iso}T12:00:00`);
   return Number.isNaN(d.getTime()) ? null : Math.floor((Date.now() - d.getTime()) / 86400000);
 }
+// « relues ce matin », « relues hier », « relues le 21 oct. » : la date du
+// dernier passage du vérificateur des fiches (6 h 30), même si rien n'a changé.
+export function relues(iso) {
+  if (!iso) return 'jamais relues';
+  const d = new Date(iso);
+  const jours = Math.round((new Date().setHours(0, 0, 0, 0) - new Date(iso).setHours(0, 0, 0, 0)) / 86400000);
+  if (jours <= 0) return d.getHours() < 12 ? 'relues ce matin' : "relues aujourd'hui";
+  if (jours === 1) return 'relues hier';
+  return `relues le ${fmtDate(iso)}`;
+}
 export function ageFiches(a) {
   const ages = [ficheAge(a.fiches?.infra), ficheAge(a.fiches?.marketing)].filter((x) => x !== null);
   return ages.length ? Math.min(...ages) : null;
@@ -121,16 +131,25 @@ function Grille({ data, onSynchro, synchro }) {
     ['Sites', data.apps.filter(estSite)],
   ];
   const s = data.synchro || {};
+  const derniereModif = data.apps
+    .flatMap((a) => Object.values(a.fiches || {}).filter(Boolean))
+    .sort()
+    .pop();
   return (
     <div className="clay-content">
       <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <span className="clay-muted small">
-          Fiches à jour du {fmtDate(s.le || data.generatedAt, true) || '—'}
+        <span className="clay-muted small" title={s.le ? `Dernière synchro avec GitHub : ${fmtDate(s.le, true)}` : ''}>
+          Fiches {relues(data.verification?.le)}
+          {derniereModif ? ` · dernière vraie modification le ${fmtDate(derniereModif)}` : ''}
           {s.ok === false ? ' · ⚠️ dernière synchro en échec' : ''}
         </span>
         <button className="clay-btn small ghost" disabled={synchro} onClick={onSynchro}>
           {synchro ? '⏳ Synchro…' : '🔄 Synchroniser'}
         </button>
+        {/* Le Lexique n'est plus dans le menu : on l'ouvre d'ici. */}
+        <a className="clay-btn small ghost" href="#/lexique">
+          ▤ Lexique des services
+        </a>
       </div>
       {groupes.map(([titre, liste]) =>
         liste.length ? (
@@ -696,8 +715,8 @@ function FicheApp({ app, data, volet, famTint, ouvrir }) {
         </div>
         {plusRecente ? (
           <span className="fa-age">
-            Fiches à jour du {fmtDate(plusRecente)}
-            {age !== null ? ` · ${age === 0 ? "aujourd'hui" : age === 1 ? 'il y a 1 jour' : `il y a ${age} jours`}` : ''}
+            Fiches {relues(data.verification?.le)} · modifiées le {fmtDate(plusRecente)}
+            {age !== null && age > 1 ? ` (il y a ${age} jours)` : ''}
           </span>
         ) : null}
       </div>

@@ -16,6 +16,9 @@ import { STUDIO_DIR } from './studio.js';
 
 const DONNEES = path.join(ROOT, 'data', 'applis.json');
 const ETAT = path.join(STUDIO_DIR, 'applis-sync.json');
+// Le dernier passage du vérificateur des fiches (tâche « Fiches des applis », 6 h 30) :
+// c'est la date à laquelle les fiches ont été relues, même si rien n'a changé.
+const VERIFICATION = path.join(STUDIO_DIR, 'verification.json');
 const TOUTES_LES = 6 * 3600 * 1000;
 
 const lireJson = (f, defaut) => {
@@ -46,7 +49,8 @@ export function applis() {
   if (!fs.existsSync(DONNEES)) {
     return null;
   }
-  return { ...lireJson(DONNEES, {}), synchro: lireJson(ETAT, {}) };
+  const v = lireJson(VERIFICATION, {});
+  return { ...lireJson(DONNEES, {}), synchro: lireJson(ETAT, {}), verification: { le: v.le || null } };
 }
 
 export async function construireApplis() {

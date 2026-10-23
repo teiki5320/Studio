@@ -240,6 +240,9 @@ export function PlanningPage({ appli } = {}) {
   });
   const [premier, dernier] = [iso(jours[0]), iso(jours[6])];
   const dansSemaine = (p) => p.date >= premier && p.date <= dernier;
+  // Planning général sans aucune vidéo programmée : on ne montre que ce qui
+  // sort vraiment sur les sites (les lignes TikTok, YouTube… seraient vides).
+  const sansVideos = !appli && !publications.length;
   const semaine = (n) => {
     const d = new Date(debut);
     d.setDate(d.getDate() + 7 * n);
@@ -603,7 +606,12 @@ export function PlanningPage({ appli } = {}) {
                     );
                   })}
                 </div>
-                {comptes.length === 0 && (
+                {sansVideos ? (
+                  <p className="clay-muted small" style={{ margin: '6px 2px' }}>
+                    Aucune vidéo programmée sur les réseaux : seules les sorties des sites sont affichées.
+                  </p>
+                ) : null}
+                {comptes.length === 0 && !sansVideos && (
                   <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, marginTop: 8 }}>
                     <div className="clay-muted" style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', background: 'var(--side)', borderRadius: 12, minHeight: 60, fontSize: 13, fontWeight: 700 }}>
                       Aucune chaîne
@@ -615,7 +623,7 @@ export function PlanningPage({ appli } = {}) {
                 )}
                 {RESEAUX.map(([r, nom]) => {
                   const tous = comptes.filter((c) => c.reseau === r);
-                  if (!tous.length) {
+                  if (!tous.length || sansVideos) {
                     return null;
                   }
                   const replie = Boolean(rangement.replies?.[r]);
