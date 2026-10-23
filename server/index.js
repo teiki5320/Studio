@@ -122,6 +122,7 @@ import {
 import { applis, construireApplis, synchroniserApplis, synchroDue } from './applis.js';
 import { pointDuMatin, deposerPoint, repondre, demanderCorbeille, fileActions, retourAction } from './point.js';
 import { accueil } from './accueil.js';
+import { listeAfaire, deposer as deposerAfaire, envoyer as envoyerAfaire, fileAfaire, retourAfaire } from './afaire.js';
 import { routines } from './routines.js';
 import { audience, etatCloudflare, enregistrerCle as enregistrerCleCloudflare, oublierCle as oublierCleCloudflare } from './audience.js';
 import { comptes, changerEtat as changerEtatCompte } from './comptes.js';
@@ -1517,6 +1518,12 @@ app.post('/api/indexation/corrige', (req, res) => {
     res.status(400).json({ error: e.message });
   }
 });
+// À faire (Accueil) : tout ce qu'il reste à faire, une file commune pour Claude.
+app.get('/api/afaire', (req, res) => res.json(listeAfaire()));
+app.post('/api/afaire', reponse((req) => deposerAfaire(req.body)));
+app.post('/api/afaire/envoyer', reponse((req) => envoyerAfaire(String(req.body?.id || ''), String(req.body?.choix || 'oui'))));
+app.get('/api/afaire/file', (req, res) => res.json(fileAfaire()));
+app.post('/api/afaire/retour', reponse((req) => retourAfaire(String(req.body?.id || ''), req.body?.reussi !== false, req.body?.compteRendu)));
 setInterval(() => {
   try {
     if (passageDuJour() && getJob(passageId)?.status !== 'running') lancerPassage();

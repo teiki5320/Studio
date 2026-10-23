@@ -1,7 +1,8 @@
-// Point du matin (Accueil) : ce que la routine de 7 h a préparé. Dans l'ordre :
-// à décider, problèmes, agenda et mails, puis une ligne par site et appli.
-// Les réponses partent dans une file que la routine « actions » applique
-// (toutes les 15 minutes) ; on relit le point tant qu'une réponse attend.
+// Point du matin (Accueil) : ce que la routine de 7 h a préparé — agenda et
+// mails, puis une ligne par site et appli. Ses décisions et problèmes
+// s'affichent juste en dessous, dans le bloc « À faire » (AFaire.jsx), avec
+// tout le reste. Les mails cochés partent dans la file commune, que la routine
+// du matin (6 h) applique.
 import React, { useEffect, useState } from 'react';
 import { api } from './api.js';
 import './point.css';
@@ -9,38 +10,6 @@ import './point.css';
 const heure = (iso) => (iso ? new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '');
 const jourLong = (d) => new Date(`${d}T12:00:00`).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
 const aujourdhui = () => new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(new Date());
-
-function Etat({ x }) {
-  if (x.etat === 'demande') return <span className="pm-etat run">⏳ envoyé à Claude · traité dans les 15 min</span>;
-  if (x.etat === 'fait') return <span className="pm-etat ok">✅ {x.compteRendu || 'fait'}</span>;
-  if (x.etat === 'bloque') return <span className="pm-etat ko">❌ {x.compteRendu || 'bloqué'}</span>;
-  return null;
-}
-
-function Ligne({ x, onRepondre, ouiSeul }) {
-  return (
-    <div className="pm-ligne">
-      <div className="pm-texte">
-        {x.site ? <b>{x.site} · </b> : null}
-        {x.texte}
-        {x.detail ? <small>{x.detail}</small> : null}
-        <Etat x={x} />
-      </div>
-      {!x.etat ? (
-        <div className="pm-boutons">
-          <button className="clay-btn small" onClick={() => onRepondre(x.id, 'oui')}>
-            {ouiSeul ? 'Régler' : 'Oui'}
-          </button>
-          {ouiSeul ? null : (
-            <button className="clay-btn ghost small" onClick={() => onRepondre(x.id, 'non')}>
-              Non
-            </button>
-          )}
-        </div>
-      ) : null}
-    </div>
-  );
-}
 
 function Mails({ mails, onCorbeille }) {
   const [coches, setCoches] = useState([]);
@@ -58,7 +27,7 @@ function Mails({ mails, onCorbeille }) {
           <span>
             {g.nom} — {g.nombre}
             {g.objet ? <small> · {g.objet}</small> : null}
-            {g.etat === 'demande' ? <small> · ⏳ corbeille demandée</small> : g.etat === 'fait' ? <small> · ✅ à la corbeille</small> : g.etat === 'bloque' ? <small> · ❌ échec</small> : null}
+            {g.etat === 'demande' ? <small> · ⏳ à la corbeille demain matin</small> : g.etat === 'fait' ? <small> · ✅ à la corbeille</small> : g.etat === 'bloque' ? <small> · ❌ échec</small> : null}
           </span>
         </label>
       ))}
@@ -92,14 +61,6 @@ export function PointDuMatin() {
   useEffect(() => {
     charger();
   }, []);
-  // Tant qu'une réponse attend la routine, on relit toutes les 30 s.
-  const attente = p && [...(p.decisions || []), ...(p.problemes || []), ...(p.corbeille || [])].some((x) => x.etat === 'demande');
-  useEffect(() => {
-    if (!attente) return undefined;
-    const t = setInterval(charger, 30000);
-    return () => clearInterval(t);
-  }, [attente]);
-
   const agir = (promesse) => promesse.then(setP).catch((e) => setError(e.message));
   if (p === undefined) return null;
   if (!p) return <div className="pm anim"><h3>☀️ Point du matin</h3><p className="pm-vide">Le premier point arrivera demain à 7 h.</p></div>;
@@ -112,30 +73,7 @@ export function PointDuMatin() {
         <h3>☀️ Point du matin · {jourLong(p.date)}</h3>
         <span>{ancien ? '⚠️ point d’un jour précédent' : `prêt à ${heure(p.pretLe)}`}</span>
       </div>
-      <div className="pm-compteurs">
-        <span className="run"><b>{p.decisions.filter((x) => !x.etat).length}</b> à décider</span>
-        <span className="ko"><b>{p.problemes.filter((x) => x.etat !== 'fait').length}</b> problème{p.problemes.length > 1 ? 's' : ''}</span>
-        <span className="ok"><b>{nbOk}</b> sans souci</span>
-      </div>
       {error ? <p className="error small">{error}</p> : null}
-
-      {p.decisions.length ? (
-        <div className="pm-carte">
-          <h4>❓ À décider</h4>
-          {p.decisions.map((x) => (
-            <Ligne key={x.id} x={x} onRepondre={(id, c) => agir(api.repondrePoint(id, c))} />
-          ))}
-        </div>
-      ) : null}
-
-      {p.problemes.length ? (
-        <div className="pm-carte">
-          <h4 className="ko">❌ Problèmes</h4>
-          {p.problemes.map((x) => (
-            <Ligne key={x.id} x={x} ouiSeul onRepondre={(id, c) => agir(api.repondrePoint(id, c))} />
-          ))}
-        </div>
-      ) : null}
 
       <div className="pm-deux">
         <div className="pm-carte">
@@ -157,7 +95,7 @@ export function PointDuMatin() {
       </div>
 
       <div className="pm-carte">
-        <h4>🌐 Sites et applis</h4>
+        <h4>🌐 Sites et applis{p.sites.length ? ` · ${nbOk} sans souci` : ''}</h4>
         <div className="pm-sites">
           {p.sites.map((s) => (
             <div key={s.cle || s.nom} className={`pm-site ${s.etat || ''}`}>

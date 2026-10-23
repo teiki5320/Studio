@@ -91,6 +91,8 @@ export const api = {
   performancesGoogle: () => request('/api/indexation/performances'),
   historiqueGoogle: () => request('/api/indexation/historique'),
   point: () => request('/api/point'),
+  afaire: () => request('/api/afaire'),
+  envoyerAfaire: (id, choix = 'oui') => request('/api/afaire/envoyer', { method: 'POST', body: JSON.stringify({ id, choix }) }),
   repondrePoint: (id, choix) => request('/api/point/repondre', { method: 'POST', body: JSON.stringify({ id, choix }) }),
   corbeillePoint: (groupes) => request('/api/point/corbeille', { method: 'POST', body: JSON.stringify({ groupes }) }),
   occasionsGoogle: (site) => request(`/api/indexation/occasions?site=${encodeURIComponent(site)}`),

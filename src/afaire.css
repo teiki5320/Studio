@@ -1,0 +1,45 @@
+/* À faire (Accueil) — mêmes jetons que le Point du matin (point.css, clay.css). */
+.af { padding: 22px 24px; border-radius: 28px; background: var(--carte); box-shadow: var(--clay); display: grid; gap: 14px; }
+.af h3 { margin: 0; font-size: 22px; font-weight: 800; }
+.af-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.af-tete > span, .af-vide { color: var(--c-muted); font-size: 13px; margin: 4px 0; }
+.af-compteurs { display: flex; gap: 10px; flex-wrap: wrap; }
+.af-compteurs span { padding: 8px 14px; border-radius: 14px; font-size: 14px; }
+.af-compteurs b { font-size: 20px; margin-right: 4px; }
+.af-compteurs .run { background: var(--run-tint); color: var(--run); }
+.af-compteurs .ko { background: var(--ko-tint); color: var(--ko); }
+.af-compteurs .ok { background: var(--ok-tint); color: var(--ok); }
+.af-compteurs .neutre { background: var(--none-tint); color: var(--texte); }
+
+.af-filtres { display: flex; gap: 8px; flex-wrap: wrap; }
+.af-filtre { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 7px 12px; border-radius: 999px;
+  font-size: 14px; font-weight: 700; background: var(--carte-2); box-shadow: var(--clay-sm); transition: transform .18s var(--bounce, ease); }
+.af-filtre small { font-weight: 800; color: var(--c-muted); margin-left: 2px; }
+.af-filtre:hover { transform: translateY(-2px); }
+.af-filtre.on { background: var(--accent); color: var(--accent-ink); }
+.af-filtre.on small { color: inherit; }
+.af-filtre:focus-visible, .af-groupe-t:focus-visible, .af-plus:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.af-groupe { background: var(--carte-2); border-radius: 18px; padding: 10px 16px 6px; box-shadow: var(--clay-sm); }
+.af-groupe-t { all: unset; cursor: pointer; display: flex; align-items: center; gap: 4px; font-size: 16px; font-weight: 800; padding: 2px 0 6px; }
+.af-groupe-t small { font-size: 12px; font-weight: 700; color: var(--c-muted); margin-left: 6px; }
+.af-groupe-t:hover small { color: inherit; }
+
+.af-ligne { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-top: 1px solid var(--ligne); }
+.af-ic { flex: none; width: 20px; text-align: center; font-size: 15px; line-height: 1.45; }
+.af-ligne.grave .af-ic { color: var(--ko); }
+.af-ligne.fait .af-t { color: var(--c-muted); }
+.af-texte { flex: 1; min-width: 0; font-size: 14.5px; line-height: 1.45; display: flex; flex-direction: column; gap: 1px; }
+.af-t { overflow-wrap: anywhere; }
+.af-ligne.grave .af-t { font-weight: 700; }
+.af-src { display: flex; gap: 10px; align-items: baseline; font-size: 12px; font-weight: 700; color: var(--c-muted); }
+.af-src a { color: inherit; }
+.af-plus { all: unset; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.af-detail { color: var(--c-muted); font-size: 13px; white-space: pre-line; overflow-wrap: anywhere; margin-top: 2px; }
+.af-etat { font-size: 13px; margin-top: 3px; white-space: pre-line; overflow-wrap: anywhere; }
+.af-etat.ok { color: var(--ok); } .af-etat.ko { color: var(--ko); } .af-etat.run { color: var(--run); }
+.af-boutons { display: flex; gap: 6px; flex: none; flex-wrap: wrap; justify-content: flex-end; max-width: 46%; }
+@media (max-width: 640px) {
+  .af-ligne { flex-wrap: wrap; }
+  .af-boutons { max-width: none; width: 100%; justify-content: flex-start; padding-left: 30px; }
+}

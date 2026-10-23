@@ -7,6 +7,7 @@ import { api } from './api.js';
 import { useApplis, estSite, ciInfo, ageFiches, FICHE_PERIMEE_JOURS, Logo } from './MesApplisPage.jsx';
 import './accueil.css';
 import { PointDuMatin } from './PointDuMatin.jsx';
+import { AFaire } from './AFaire.jsx';
 
 const nb = (n) => Number(n || 0).toLocaleString('fr-FR');
 const COULEUR = { ok: 'var(--ok)', run: 'var(--run)', ko: 'var(--ko)', none: 'var(--none)' };
@@ -297,6 +298,8 @@ export function AccueilPage() {
       </div>
 
       <PointDuMatin />
+
+      <AFaire />
 
       <div className="ac-general anim" style={{ animationDelay: '.05s' }}>
         <Anneau ok={ok} ko={ko} jamais={apps.length - ok - ko} />

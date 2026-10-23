@@ -1,9 +1,12 @@
 // ---------- Point du matin ----------
 // La routine « Point du matin » (7 h, sur le Mac) dépose ici le point du jour :
 // décisions, problèmes, agenda, mails, état de chaque site et appli. Jean le lit
-// dans l'Accueil ; ses réponses (Oui / Non, mails à mettre à la corbeille) vont
-// dans une file que la routine « Point du matin · actions » (toutes les 15 min)
-// applique, puis elle rend compte ici. Le Studio ne lance jamais Claude lui-même.
+// dans l'Accueil ; décisions et problèmes s'affichent dans le bloc « À faire »
+// (afaire.js). Ses réponses (Oui / Non, mails à mettre à la corbeille) passent
+// par la file commune (GET /api/afaire/file), que la routine « Référencement du
+// jour » (6 h) applique, puis elle rend compte (POST /api/afaire/retour, qui
+// revient ici par retourAction). /api/point/actions et /api/point/retour restent
+// pour compatibilité. Le Studio ne lance jamais Claude lui-même.
 // Données personnelles (agenda, mails) : dans studio/, jamais dans le dépôt public.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -82,7 +85,7 @@ export function demanderCorbeille(groupes) {
   return p;
 }
 
-// Ce que la routine « actions » doit faire maintenant.
+// Ce qui attend Claude (repris dans la file commune d'afaire.js).
 export function fileActions() {
   const p = lire();
   if (!p) return [];
@@ -98,7 +101,7 @@ export function fileActions() {
   return actions;
 }
 
-// Compte rendu de la routine « actions ».
+// Compte rendu de la routine (via /api/afaire/retour ou /api/point/retour).
 export function retourAction(id, reussi, compteRendu) {
   const p = lire();
   if (!p) throw new Error('Aucun point du matin');
