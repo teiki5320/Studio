@@ -1,13 +1,18 @@
-// Accueil du Studio — maquette validée (artifact 8oFkNdUgqU7DzvfMQFjHfC) :
-// sans prose. Un bandeau général animé (l'anneau du code, quatre chiffres
-// qui montent : fiches, canaux, pages sur Google, vues), une rangée de raccourcis (un par entrée du rail), puis un
-// encart par app avec trois témoins creusés : Code, Fiche, En ligne / Store.
+// Accueil du Studio — maquette « Trois mini-cartes » (n° 11, validée le 23/10,
+// artifact GhbQgaord7pgJWkq3Qb19x). En haut, discrets : trois mini-cartes
+// Agenda, Mails et État ; un clic déplie le détail juste dessous (un seul à
+// la fois). En dessous, deux colonnes : « À décider » (Oui / Non) et
+// « À faire » (graves d'abord), réglables d'ici comme dans le bloc À faire.
+// Agenda et mails viennent du Point du matin (7 h) ; l'état, des fiches des
+// applis (trois témoins : Code, Fiche, En ligne / Store).
 import React, { useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
 import { useApplis, estSite, ciInfo, ageFiches, FICHE_PERIMEE_JOURS, Logo } from './MesApplisPage.jsx';
+import { LogoAppli } from './LogoAppli.jsx';
+import { Ligne, ouvert as estOuvert } from './AFaire.jsx';
 import './accueil.css';
-import { PointDuMatin } from './PointDuMatin.jsx';
-import { AFaire } from './AFaire.jsx';
+import './afaire.css';
+import './point.css';
 
 const nb = (n) => Number(n || 0).toLocaleString('fr-FR');
 const COULEUR = { ok: 'var(--ok)', run: 'var(--run)', ko: 'var(--ko)', none: 'var(--none)' };
@@ -31,51 +36,6 @@ function Compte({ n, delai = 0 }) {
     return () => cancelAnimationFrame(raf);
   }, [n]);
   return nb(v);
-}
-
-function Anneau({ ok, ko, jamais }) {
-  const total = ok + ko + jamais || 1;
-  const parts = [
-    [ok, 'var(--ok)'],
-    [ko, 'var(--ko)'],
-    [jamais, 'var(--none)'],
-  ];
-  const [pret, setPret] = useState(false);
-  useEffect(() => {
-    const r = requestAnimationFrame(() => setPret(true));
-    return () => cancelAnimationFrame(r);
-  }, []);
-  let depart = 0;
-  return (
-    <div className="ac-anneau">
-      <svg viewBox="0 0 120 120" aria-hidden="true">
-        <circle className="piste" cx="60" cy="60" r="50" />
-        {parts.map(([n, c], i) => {
-          const pct = (100 * n) / total;
-          const el = n ? (
-            <circle
-              key={i}
-              className="part"
-              cx="60"
-              cy="60"
-              r="50"
-              stroke={c}
-              transform={`rotate(${(depart * 360) / 100} 60 60)`}
-              style={{ strokeDashoffset: pret ? 314 - (314 * pct) / 100 : 314, transitionDelay: `${0.3 + i * 0.3}s` }}
-            />
-          ) : null;
-          depart += pct;
-          return el;
-        })}
-      </svg>
-      <div className="mid">
-        <b>
-          <Compte n={ok} />
-        </b>
-        <span>sur {ok + ko + jamais} au vert</span>
-      </div>
-    </div>
-  );
 }
 
 function Courbe({ jours }) {
@@ -250,88 +210,184 @@ function LiensMenus() {
   );
 }
 
-export function AccueilPage() {
-  const { data, error } = useApplis();
-  const [ext, setExt] = useState(null);
-  const deja = useRef(false);
-  useEffect(() => {
-    if (deja.current) return;
-    deja.current = true;
-    api
-      .accueil()
-      .then(setExt)
-      .catch(() => setExt({}));
-  }, []);
-  if (!data) return <div className="clay-content clay-muted">{error || 'Chargement…'}</div>;
+// ---------- Mini-cartes Agenda · Mails · État ----------
 
-  const apps = data.apps;
-  const ks = apps.map((a) => ciInfo(a).k);
-  const ok = ks.filter((k) => k === 'ok').length;
-  const ko = ks.filter((k) => k === 'ko').length;
+// « 14:00 », « 14h », « 9 h 30 » → minutes depuis minuit (null si illisible).
+const minutes = (h) => {
+  const m = String(h || '').match(/(\d{1,2})\s*[h:.]\s*(\d{2})?/i);
+  return m ? Number(m[1]) * 60 + Number(m[2] || 0) : null;
+};
+const minutesMaintenant = () => {
+  const d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
+};
+const dans = (min) => (min < 60 ? `dans ${min} min` : `dans ${Math.floor(min / 60)} h${min % 60 ? ` ${String(min % 60).padStart(2, '0')}` : ''}`);
+const aujourdhui = () => new Intl.DateTimeFormat('fr-CA', { timeZone: 'Europe/Paris' }).format(new Date());
+const nombre = (g) => Number.parseInt(g.nombre, 10) || 0;
+
+const ICONES = {
+  agenda: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="16" rx="3" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </svg>
+  ),
+  mails: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <path d="M4 7l8 6 8-6" />
+    </svg>
+  ),
+  etat: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M5 12l4 4 10-10" />
+    </svg>
+  ),
+};
+
+function Mini({ id, ouvert, onBasculer, valeur, sous }) {
+  const actif = ouvert === id;
+  return (
+    <button type="button" className={`ac-mini ${id}${actif ? ' on' : ''}`} aria-expanded={actif} onClick={() => onBasculer(actif ? null : id)}>
+      <span className="ic">{ICONES[id]}</span>
+      <span className="t">
+        <b>{valeur}</b>
+        <small>{sous}</small>
+      </span>
+      <span className="fl" aria-hidden="true">
+        ▾
+      </span>
+    </button>
+  );
+}
+
+function PanneauAgenda({ agenda, maintenant, ancien }) {
+  if (!agenda) return <p className="pm-vide">Pas encore d’agenda : il arrive avec le Point du matin, à 7 h.</p>;
+  const lignes = agenda.lignes || [];
+  return (
+    <div className="ac-pan-liste">
+      {ancien ? <p className="pm-vide">⚠️ Agenda d’un jour précédent (le point du jour n’est pas encore arrivé).</p> : null}
+      {agenda.erreur ? <p className="pm-vide">{agenda.erreur}</p> : null}
+      {lignes.length ? (
+        lignes.map((l, i) => {
+          const m = minutes(l.heure);
+          const passe = !ancien && m !== null && m < maintenant;
+          return (
+            <div key={i} className={`ac-rdv${passe ? ' passe' : ''}`}>
+              <b>{l.heure}</b>
+              <span>
+                {l.titre}
+                {l.lieu ? <small> · {l.lieu}</small> : null}
+              </span>
+            </div>
+          );
+        })
+      ) : (
+        <p className="pm-vide">Aucun rendez-vous aujourd’hui.</p>
+      )}
+      {agenda.demain ? (
+        <div className="ac-rdv demain">
+          <b>Demain</b>
+          <span>{agenda.demain}</span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+// Les mails cochés partent dans la file commune ; la routine du matin (6 h)
+// les met à la corbeille (récupérables 30 jours).
+function PanneauMails({ mails, onCorbeille }) {
+  const [coches, setCoches] = useState([]);
+  if (!mails) return <p className="pm-vide">Pas encore de tri des mails : il arrive avec le Point du matin, à 7 h.</p>;
+  const groupes = (mails.groupes || []).filter((g) => !g.protege);
+  const proteges = (mails.groupes || []).filter((g) => g.protege);
+  const basculer = (id) => setCoches((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
+  const total = groupes.filter((g) => coches.includes(g.id)).reduce((t, g) => t + nombre(g), 0);
+  return (
+    <div className="ac-pan-liste">
+      {mails.erreur ? <p className="pm-vide">{mails.erreur}</p> : null}
+      {!groupes.length ? <p className="pm-vide">Rien à trier : {mails.total ?? 0} mails en boîte.</p> : null}
+      {groupes.map((g) => (
+        <label key={g.id} className={`ac-mail${g.etat ? ` ${g.etat}` : ''}`}>
+          <input type="checkbox" disabled={Boolean(g.etat)} checked={coches.includes(g.id) || Boolean(g.etat)} onChange={() => basculer(g.id)} />
+          <span className="nom">
+            {g.nom}
+            {g.objet ? <small> · {g.objet}</small> : null}
+            {g.etat === 'demande' ? <small> · ⏳ à la corbeille demain matin</small> : g.etat === 'fait' ? <small> · ✅ à la corbeille</small> : g.etat === 'bloque' ? <small> · ❌ échec</small> : null}
+          </span>
+          <b>{g.nombre}</b>
+        </label>
+      ))}
+      <div className="ac-pan-pied">
+        {groupes.some((g) => !g.etat) ? (
+          <button
+            type="button"
+            className="clay-btn small"
+            disabled={!coches.length}
+            onClick={() => {
+              onCorbeille(coches);
+              setCoches([]);
+            }}
+          >
+            🗑️ Corbeille{coches.length ? ` (${total || coches.length})` : ''}
+          </button>
+        ) : null}
+        {proteges.length ? <small>À garder : {proteges.map((g) => `${g.nom} ${g.nombre}`).join(' · ')}</small> : null}
+        <small>{mails.total ?? '…'} en boîte · rien n’est supprimé pour de bon.</small>
+      </div>
+    </div>
+  );
+}
+
+// Le pire des trois témoins d'une app.
+const pire = (app, site) => {
+  const ks = temoins(app, site).map(([, k]) => k);
+  return ks.includes('ko') ? 'ko' : ks.includes('run') ? 'run' : ks.includes('none') ? 'none' : 'ok';
+};
+
+function PanneauEtat({ apps, ext }) {
+  const c = ext?.compteurs || {};
   const perimees = apps.filter((a) => (ageFiches(a) ?? 0) > FICHE_PERIMEE_JOURS).length;
   const ouverts = apps.reduce((t, a) => t + (a.marketingSummary?.done || 0), 0);
   const canaux = ouverts + apps.reduce((t, a) => t + (a.marketingSummary?.todo || 0), 0);
-  const c = ext?.compteurs || {};
   const envoi = (a) => ext?.envois?.[String(a.repo || '').toLowerCase()];
   const groupes = [
     ['Applis', apps.filter((a) => !estSite(a))],
     ['Sites', apps.filter(estSite)],
   ];
-  const jour = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
   const raccourcis = [
-    ['#/pub', '📣', c.videosHier, 'prêtes'],
-    ['#/indexation', '🔎', c.indexation, c.indexationEnvoyes ? `à régler · ${c.indexationEnvoyes} chez Claude` : 'à régler'],
-    ['#/audience', '📈', ext?.vues?.total, 'visiteurs 7 j'],
+    ['#/pub', '📣', c.videosHier, 'vidéos prêtes'],
+    ['#/indexation', '🔎', c.indexation, 'à régler sur Google'],
     ['#/planning', '🗓️', c.programmees, 'programmées'],
     ['#/encours', '🏭', c.enCours, 'en cours'],
-    ['#/reglages/routines', '⏰', c.routinesDuJour, c.routinesBloquees ? `aujourd'hui · ${c.routinesBloquees} bloquée${c.routinesBloquees > 1 ? 's' : ''}` : "aujourd'hui"],
+    ['#/reglages/routines', '⏰', c.routinesDuJour, c.routinesBloquees ? `tâches · ${c.routinesBloquees} bloquée${c.routinesBloquees > 1 ? 's' : ''}` : 'tâches aujourd’hui'],
   ];
-
   return (
-    <div className="clay-content accueil">
-      <div className="ac-haut">
-        <div className="ac-salut anim">
-          <div className="jour">{jour}</div>
-          <h3>Bonjour Jean</h3>
-        </div>
-        <LiensMenus />
+    <div className="ac-etat">
+      <div className="ac-chiffres">
+        <a className="gc" href="#/applis">
+          <span className="lab">Fiches</span>
+          <b>{nb(perimees)}</b>
+          <span className={`var${perimees ? ' chaud' : ''}`}>à rafraîchir</span>
+        </a>
+        <a className="gc" href="#/applis">
+          <span className="lab">Canaux</span>
+          <b>{nb(ouverts)}</b>
+          <span className="var">ouverts sur {canaux}</span>
+        </a>
+        <a className="gc" href="#/indexation">
+          <span className="lab">Google</span>
+          <b>{ext?.compteurs ? nb(c.pagesGoogle) : '—'}</b>
+          <span className="var">pages sur {nb(c.pagesTotal)}</span>
+        </a>
+        <a className="gc cb" href="#/audience">
+          <span className="lab">Visiteurs 7 j</span>
+          <b>{ext?.vues ? nb(ext.vues.total) : '—'}</b>
+          <Courbe jours={ext?.vues?.jours} />
+        </a>
       </div>
-
-      <PointDuMatin />
-
-      <AFaire />
-
-      <div className="ac-general anim" style={{ animationDelay: '.05s' }}>
-        <Anneau ok={ok} ko={ko} jamais={apps.length - ok - ko} />
-        <div className="ac-chiffres">
-          <a className="gc" href="#/applis">
-            <span className="lab">Fiches</span>
-            <b>
-              <Compte n={perimees} />
-            </b>
-            <span className={`var${perimees ? ' chaud' : ''}`}>à rafraîchir</span>
-          </a>
-          <a className="gc" href="#/applis">
-            <span className="lab">Canaux</span>
-            <b>
-              <Compte n={ouverts} delai={50} />
-            </b>
-            <span className="var">ouverts sur {canaux}</span>
-          </a>
-          <a className="gc" href="#/indexation">
-            <span className="lab">Google</span>
-            <b>{ext?.compteurs ? <Compte n={c.pagesGoogle || 0} delai={100} /> : '—'}</b>
-            <span className="var">pages sur {nb(c.pagesTotal)}</span>
-          </a>
-          <a className="gc cb" href="#/audience">
-            <span className="lab">Visiteurs 7 j</span>
-            <b>{ext?.vues ? <Compte n={ext.vues.total} delai={150} /> : '—'}</b>
-            <Courbe jours={ext?.vues?.jours} />
-          </a>
-        </div>
-      </div>
-
-      <div className="ac-raccourcis anim" style={{ animationDelay: '.08s' }}>
+      <div className="ac-raccourcis">
         {raccourcis.map(([href, ic, n, lab]) => (
           <a key={href} className="rc" href={href}>
             <span className="ic">{ic}</span>
@@ -340,23 +396,20 @@ export function AccueilPage() {
           </a>
         ))}
       </div>
-
-      <Fraicheur liste={ext?.fraicheur} />
-
-      {groupes.map(([titre, liste], g) =>
+      {groupes.map(([titre, liste]) =>
         liste.length ? (
           <React.Fragment key={titre}>
             <span className="ac-sstitre">{titre}</span>
             <div className="ac-encarts">
-              {liste.map((a, i) => (
-                <Encart key={a.id} app={a} site={ext?.sites?.[a.id]} envoi={envoi(a)} delai={0.1 + (g * 3 + i) * 0.03} />
+              {liste.map((a) => (
+                <Encart key={a.id} app={a} site={ext?.sites?.[a.id]} envoi={envoi(a)} delai={0} />
               ))}
             </div>
           </React.Fragment>
         ) : null,
       )}
-
-      <div className="ac-legende anim">
+      <Fraicheur liste={ext?.fraicheur} />
+      <div className="ac-legende">
         <span>
           <i style={{ background: 'var(--ok)' }} />
           tout va
@@ -372,6 +425,197 @@ export function AccueilPage() {
           <i style={{ background: 'var(--none)' }} />
           rien encore
         </span>
+      </div>
+    </div>
+  );
+}
+
+// ---------- Deux colonnes : À décider · À faire ----------
+
+const RANG_TACHE = (e) => (e.etat === 'bloque' ? 0 : e.grave ? 1 : e.etat === 'envoye' ? 3 : 2);
+const MAX_TACHES = 8;
+
+function Tache({ e, onAgir }) {
+  return (
+    <div className="ac-tache">
+      <span className="ac-logo">
+        <LogoAppli de={e.site} taille={28} seul />
+      </span>
+      <Ligne e={e} onAgir={onAgir} avecSite />
+    </div>
+  );
+}
+
+export function AccueilPage() {
+  const { data, error } = useApplis();
+  const [ext, setExt] = useState(null);
+  const [point, setPoint] = useState(undefined);
+  const [af, setAf] = useState(null);
+  const [erreur, setErreur] = useState('');
+  const [ouvert, setOuvert] = useState(null);
+  const [toutVoir, setToutVoir] = useState(false);
+  const [maintenant, setMaintenant] = useState(minutesMaintenant);
+  const deja = useRef(false);
+  const chargerAf = () =>
+    api
+      .afaire()
+      .then((d) => {
+        setAf(d);
+        setErreur('');
+      })
+      .catch((e) => setErreur(e.message));
+  useEffect(() => {
+    if (deja.current) return;
+    deja.current = true;
+    api
+      .accueil()
+      .then(setExt)
+      .catch(() => setExt({}));
+    api
+      .point()
+      .then(setPoint)
+      .catch(() => setPoint(null));
+    chargerAf();
+  }, []);
+  useEffect(() => {
+    const t = setInterval(() => setMaintenant(minutesMaintenant()), 60000);
+    return () => clearInterval(t);
+  }, []);
+  if (!data) return <div className="clay-content clay-muted">{error || 'Chargement…'}</div>;
+
+  const apps = data.apps;
+  const jour = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const ancien = Boolean(point) && point.date !== aujourdhui();
+
+  // Agenda
+  const lignes = point?.agenda?.lignes || [];
+  const aVenir = ancien ? [] : lignes.filter((l) => (minutes(l.heure) ?? -1) >= maintenant);
+  const prochain = aVenir[0];
+  const agendaV = point === undefined ? '…' : prochain ? prochain.heure : lignes.length && !ancien ? 'Journée finie' : 'Libre';
+  const agendaS =
+    point === undefined
+      ? 'chargement'
+      : !point?.agenda
+        ? 'point du matin à 7 h'
+        : ancien
+          ? 'agenda d’un jour précédent'
+          : prochain
+            ? `${prochain.titre} · ${dans(minutes(prochain.heure) - maintenant)}${aVenir.length > 1 ? ` · +${aVenir.length - 1}` : ''}`
+            : lignes.length
+              ? `${lignes.length} rendez-vous passé${lignes.length > 1 ? 's' : ''}`
+              : 'aucun rendez-vous aujourd’hui';
+
+  // Mails
+  const gm = point?.mails?.groupes || [];
+  const aTrier = gm.filter((g) => !g.protege && !g.etat);
+  const enFile = gm.filter((g) => g.etat === 'demande');
+  const nMails = aTrier.reduce((t, g) => t + nombre(g), 0);
+  const mailsV = point === undefined ? '…' : aTrier.length ? (nMails ? `${nb(nMails)} mails` : `${aTrier.length} groupes`) : 'Rien à trier';
+  const mailsS = !point?.mails
+    ? 'point du matin à 7 h'
+    : aTrier.length
+      ? `${aTrier.length} expéditeur${aTrier.length > 1 ? 's' : ''} à trier${enFile.length ? ` · ${enFile.length} en file` : ''}`
+      : enFile.length
+        ? `⏳ ${enFile.length} groupe${enFile.length > 1 ? 's' : ''} à la corbeille demain`
+        : `${point.mails.total ?? '—'} en boîte`;
+
+  // État
+  const pires = apps.map((a) => [a, pire(a, ext?.sites?.[a.id])]);
+  // « Au vert » : rien de rouge ni d'orange (un témoin gris = rien encore, pas un souci).
+  const aVoir = pires.filter(([, k]) => k === 'ko' || k === 'run');
+  const vert = apps.length - aVoir.length;
+  const etatS = aVoir.length
+    ? `${aVoir
+        .slice(0, 3)
+        .map(([a]) => a.name)
+        .join(' · ')}${aVoir.length > 3 ? ` +${aVoir.length - 3}` : ''} à voir`
+    : 'tout va';
+
+  // À décider · À faire
+  const elements = af?.elements || [];
+  const decisions = elements.filter((e) => e.type === 'decision' && e.etat !== 'fait');
+  const taches = elements.filter((e) => e.type !== 'decision' && e.etat !== 'fait').sort((a, b) => RANG_TACHE(a) - RANG_TACHE(b));
+  const faits = elements.filter((e) => e.etat === 'fait').length;
+  const visibles = toutVoir ? taches : taches.slice(0, MAX_TACHES);
+  const onAgir = (f) =>
+    f()
+      .catch((e) => setErreur(e.message))
+      .then(chargerAf);
+
+  return (
+    <div className="clay-content accueil">
+      <div className="ac-haut">
+        <div className="ac-salut anim">
+          <div className="jour">
+            {jour}
+            {point?.pretLe && !ancien ? ` · point prêt à ${new Date(point.pretLe).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}` : ''}
+          </div>
+          <h3>Bonjour Jean</h3>
+        </div>
+        <LiensMenus />
+      </div>
+
+      <div className="ac-minis">
+        <Mini id="agenda" ouvert={ouvert} onBasculer={setOuvert} valeur={agendaV} sous={agendaS} />
+        <Mini id="mails" ouvert={ouvert} onBasculer={setOuvert} valeur={mailsV} sous={mailsS} />
+        <Mini id="etat" ouvert={ouvert} onBasculer={setOuvert} valeur={`${vert}/${apps.length} au vert`} sous={etatS} />
+      </div>
+
+      {ouvert ? (
+        <div className={`ac-panneau ${ouvert}`}>
+          {ouvert === 'agenda' ? <PanneauAgenda agenda={point?.agenda} maintenant={maintenant} ancien={ancien} /> : null}
+          {ouvert === 'mails' ? (
+            <PanneauMails
+              mails={point?.mails}
+              onCorbeille={(g) =>
+                api
+                  .corbeillePoint(g)
+                  .then(setPoint)
+                  .catch((e) => setErreur(e.message))
+              }
+            />
+          ) : null}
+          {ouvert === 'etat' ? <PanneauEtat apps={apps} ext={ext} /> : null}
+        </div>
+      ) : null}
+
+      {erreur ? <p className="error small">{erreur}</p> : null}
+
+      <div className="ac-cols">
+        <section className="ac-col decider">
+          <div className="ac-col-t">
+            <h3>
+              À décider <span>· {decisions.filter(estOuvert).length}</span>
+            </h3>
+            <small>Oui / Non · Claude applique à 6 h</small>
+          </div>
+          {!af ? <p className="af-vide">Chargement…</p> : null}
+          {af && !decisions.length ? <p className="af-vide">✓ Aucune décision en attente.</p> : null}
+          {decisions.map((e) => (
+            <Tache key={e.id} e={e} onAgir={onAgir} />
+          ))}
+        </section>
+
+        <section className="ac-col faire">
+          <div className="ac-col-t">
+            <h3>
+              À faire <span>· {taches.filter(estOuvert).length}</span>
+            </h3>
+            <small>
+              grave d’abord{af?.compteurs?.envoyes ? ` · ${af.compteurs.envoyes} chez Claude` : ''}
+              {faits ? ` · ${faits} fait${faits > 1 ? 's' : ''} récemment` : ''}
+            </small>
+          </div>
+          {af && !taches.length ? <p className="af-vide">✓ Rien à faire pour l’instant : tout roule.</p> : null}
+          {visibles.map((e) => (
+            <Tache key={e.id} e={e} onAgir={onAgir} />
+          ))}
+          {taches.length > MAX_TACHES ? (
+            <button type="button" className="ac-plus" onClick={() => setToutVoir(!toutVoir)}>
+              {toutVoir ? 'Voir moins ▴' : `Voir les ${taches.length - MAX_TACHES} autres ▾`}
+            </button>
+          ) : null}
+        </section>
       </div>
     </div>
   );

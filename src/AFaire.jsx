@@ -19,8 +19,8 @@ const SOURCES = {
   point: 'Point du matin',
 };
 const GENERAL = 'Général';
-const ouvert = (e) => e.etat === 'a-faire' || e.etat === 'bloque';
-const rang = (e) => (e.etat === 'fait' ? 9 : e.type === 'decision' ? 0 : e.grave ? 1 : 2);
+export const ouvert = (e) => e.etat === 'a-faire' || e.etat === 'bloque';
+export const rang = (e) => (e.etat === 'fait' ? 9 : e.type === 'decision' ? 0 : e.grave ? 1 : 2);
 
 function Etat({ e }) {
   if (e.etat === 'envoye') return <span className="af-etat run">⏳ Chez Claude · réglé demain matin</span>;
@@ -35,7 +35,7 @@ function Etat({ e }) {
   return null;
 }
 
-function Ligne({ e, onAgir }) {
+export function Ligne({ e, onAgir, avecSite = false }) {
   const [plus, setPlus] = useState(false);
   const [occupe, setOccupe] = useState(false);
   const agir = (f) => {
@@ -51,6 +51,7 @@ function Ligne({ e, onAgir }) {
       <div className="af-texte">
         <span className="af-t">{e.texte}</span>
         <span className="af-src">
+          {avecSite && e.site ? <b className="af-site">{e.site}</b> : null}
           {SOURCES[e.source] || e.source}
           {e.detail ? (
             <button type="button" className="af-plus" onClick={() => setPlus(!plus)}>
