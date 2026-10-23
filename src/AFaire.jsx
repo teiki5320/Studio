@@ -14,11 +14,16 @@ const SOURCES = {
   tests: 'Tests GitHub',
   fiches: 'Fiche',
   point: 'Point du matin',
+  comptes: 'Comptes & adresses',
+  'produits-amazon': 'Amazon',
+  pause: 'Appli en pause',
+  planning: 'Planning',
 };
 export const ouvert = (e) => e.etat === 'a-faire' || e.etat === 'bloque';
 
 function Etat({ e }) {
-  if (e.etat === 'envoye') return <span className="af-etat run">⏳ Chez Claude · réglé demain matin</span>;
+  if (e.etat === 'envoye') return <span className="af-etat run">⏳ Chez Claude · réglé demain matin (5 h 05)</span>;
+  if (e.etat === 'attente') return <span className="af-etat run">⏳ En attente · rien à faire pour l’instant</span>;
   if (e.etat === 'fait') return <span className="af-etat ok">✅ {e.compteRendu || 'Fait'}</span>;
   if (e.etat === 'bloque')
     return (
@@ -53,10 +58,14 @@ export function Ligne({ e, onAgir, avecSite = false }) {
               {plus ? 'moins' : 'détails'}
             </button>
           ) : null}
-          {e.lien ? (
-            <a href={e.lien} target="_blank" rel="noreferrer">
-              voir ↗
-            </a>
+          {e.lien && e.action !== 'planning' ? (
+            e.lien.startsWith('#') ? (
+              <a href={e.lien}>voir →</a>
+            ) : (
+              <a href={e.lien} target="_blank" rel="noreferrer">
+                voir ↗
+              </a>
+            )
           ) : null}
         </span>
         {plus && e.detail ? <small className="af-detail">{e.detail}</small> : null}
@@ -71,6 +80,24 @@ export function Ligne({ e, onAgir, avecSite = false }) {
               </button>
               <button className="clay-btn ghost small" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'non'))}>
                 Non
+              </button>
+            </>
+          ) : e.action === 'planning' ? (
+            <>
+              <a className="clay-btn small" href={e.lien}>
+                📅 Placer
+              </a>
+              <button className="clay-btn ghost small" disabled={occupe} onClick={() => agir(() => api.validateEpisode(e.projectId, e.number, false))}>
+                Retirer
+              </button>
+            </>
+          ) : e.action === 'comptes' ? (
+            <>
+              <button className="clay-btn small" disabled={occupe} onClick={() => agir(() => api.etatCompte(e.compte, 'fait'))}>
+                ✓ C’est fait
+              </button>
+              <button className="clay-btn ghost small" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'oui'))}>
+                {e.etat === 'bloque' ? '📤 Renvoyer à Claude' : '📤 Demander à Claude'}
               </button>
             </>
           ) : e.action === 'plan' ? (

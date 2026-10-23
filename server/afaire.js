@@ -2,29 +2,39 @@
 // Une seule liste, triée (à décider, puis problèmes graves, puis le reste),
 // assemblée à partir de ce que les autres modules savent déjà :
 //  - problèmes d'indexation ouverts (onglet Indexation, mêmes id, même file) ;
-//  - tâches planifiées bloquées (routines.js) ;
+//  - tâches planifiées bloquées, sans compte rendu, ou pas passées (routines.js) ;
 //  - tests GitHub en échec (data/apps/<id>/status.json) ;
-//  - données fausses du vérificateur de fiches (studio/verification.json) ;
+//  - données fausses et avertissements du vérificateur de fiches (studio/verification.json) ;
+//  - produits Amazon indisponibles (studio/amazon-verifs.json, tenu par « Sites du jour ») ;
+//  - lignes « à faire » de Comptes & adresses (studio/comptes.json) ;
+//  - applis en pause : décider si elles repartent (fiches des applis) ;
+//  - vidéos validées qui attendent d'être placées dans le planning ;
 //  - décisions et problèmes du Point du matin (studio/point-du-matin.json) ;
 //  - éléments déposés par les tâches (POST /api/afaire → studio/afaire.json).
 //
 // « Envoyer à Claude » (ou « Oui » pour une décision) met l'élément dans UNE
-// file commune (fileAfaire), que la routine « Référencement du jour » (6 h)
-// applique avant de rendre compte (retourAfaire). Le Studio ne lance jamais
-// Claude lui-même. Tout ce qui est personnel reste dans studio/, hors dépôt.
+// file commune (fileAfaire), que la routine « Sites du jour » (5 h 05, partie
+// référencement) applique avant de rendre compte (retourAfaire). Le Studio ne
+// lance jamais Claude lui-même. Tout ce qui est personnel reste dans studio/,
+// hors dépôt.
 
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { ROOT } from './config.js';
 import { STUDIO_DIR } from './studio.js';
 import { etatIndexation, envoyerAClaude, fileClaude, retourClaude, consigneClaude, depotDe } from './indexation.js';
-import { routines } from './routines.js';
+import { routines, passageManque } from './routines.js';
 import { pointDuMatin, repondre, fileActions, retourAction } from './point.js';
+import { comptes } from './comptes.js';
+import { applis } from './applis.js';
+import { planning } from './planning.js';
 
 const FICHIER = path.join(STUDIO_DIR, 'afaire.json');
 const VERIFICATION = path.join(STUDIO_DIR, 'verification.json');
+const AMAZON = path.join(STUDIO_DIR, 'amazon-verifs.json');
 const APPS = path.join(ROOT, 'data', 'apps');
 const DEV = path.join(os.homedir(), 'Dev', 'apps');
 const JOUR = 86400000;
@@ -144,11 +154,12 @@ function deRoutines() {
   } catch {
     return [];
   }
-  return liste
-    .filter((r) => r.active && r.statut === 'bloquee')
-    .map((r) => {
-      const site = siteDans(r.id, r.nom, r.detail, r.aFaire);
-      return {
+  const sortie = [];
+  for (const r of liste.filter((x) => x.active)) {
+    const site = siteDans(r.id, r.nom, r.detail, r.aFaire);
+    const manque = passageManque(r);
+    if (r.statut === 'bloquee') {
+      sortie.push({
         id: `routine:${r.id}`,
         source: 'routine',
         type: 'probleme',
@@ -162,8 +173,37 @@ Ce qu'elle demande : ${r.aFaire || '(rien de précis)'}
 Relis ses instructions dans ~/.claude/scheduled-tasks/${r.id}/SKILL.md, puis termine ce qui manque si c'est sans risque, en respectant ces instructions. Si cela demande une action de Jean (compte, paiement, réglage, message…), ne fais rien et explique-lui pas à pas ce qu'il doit faire.`,
         dossier: dossierDe(site),
         depuis: r.dernierPassage,
-      };
-    });
+      });
+    } else if (manque) {
+      // Elle aurait dû passer aujourd'hui (Mac éteint ou en veille, appli Claude fermée…).
+      sortie.push({
+        id: `routine-absente:${r.id}:${manque.slice(0, 10)}`,
+        source: 'routine',
+        type: 'probleme',
+        grave: true,
+        site,
+        texte: `La tâche « ${r.nom} » n'est pas passée ce matin (prévue ${r.horaire.replace(/^tous les jours /, '')}).`,
+        detail: `Dernier passage connu : ${r.dernierPassage ? new Date(r.dernierPassage).toLocaleString('fr-FR') : 'aucun'}. Souvent : le Mac était éteint ou en veille, ou l'appli Claude fermée. Pour la lancer tout de suite : appli Claude → Routines → la tâche → « Exécuter maintenant ».`,
+        consigne: `La tâche planifiée « ${r.nom} » (${r.id}) n'est pas passée aujourd'hui à l'heure prévue (${r.horaire}). Lis ses instructions dans ~/.claude/scheduled-tasks/${r.id}/SKILL.md et fais ce passage maintenant, en respectant ces instructions, puis rends compte en une ou deux phrases simples.`,
+        dossier: dossierDe(site),
+        depuis: manque,
+      });
+    } else if (r.statut === 'inconnu' && r.dernierPassage) {
+      sortie.push({
+        id: `routine-muette:${r.id}:${r.dernierPassage.slice(0, 10)}`,
+        source: 'routine',
+        type: 'probleme',
+        grave: false,
+        site,
+        texte: `La tâche « ${r.nom} » est passée le ${date(r.dernierPassage)} sans laisser de compte rendu.`,
+        detail: 'Elle a peut-être été interrompue (Mac en veille, appli fermée). Réglages → Routines montre son dernier passage.',
+        consigne: `La tâche planifiée « ${r.nom} » (${r.id}) est passée le ${date(r.dernierPassage)} sans laisser de compte rendu. Lis ses instructions dans ~/.claude/scheduled-tasks/${r.id}/SKILL.md, vérifie (sans rien casser) si son travail a bien été fait — dépôts, fichiers ou Studio qu'elle met à jour — et termine ce qui manque si c'est sans risque. Rends compte en une ou deux phrases simples ; si cela demande une action de Jean, explique-lui pas à pas.`,
+        dossier: dossierDe(site),
+        depuis: r.dernierPassage,
+      });
+    }
+  }
+  return sortie;
 }
 
 function infoApps() {
@@ -225,6 +265,220 @@ Les fiches viennent du dépôt ${app?.repo || site} : infra.md = docs/INFRA.md, 
     });
 }
 
+// Les avertissements du vérificateur qui demandent une vraie correction. Les
+// écarts d'un article Conseils (le sitemap a un article de plus que la fiche)
+// se rattrapent seuls à la tâche des fiches (6 h 30) : on ne les montre pas.
+function deAvertissements(apps) {
+  const v = lireJson(VERIFICATION, null);
+  if (!v || !Array.isArray(v.avertissements)) return [];
+  return v.avertissements
+    .filter((p) => p && p.texte && !/articles? conseils/i.test(p.texte))
+    .map((p) => {
+      const app = apps.find((a) => normal(a.id) === normal(p.app) || normal(a.nom) === normal(nomSite(p.app))) || null;
+      const site = app ? app.nom : nomSite(p.app);
+      const h = crypto.createHash('sha1').update(`${p.app}|${p.texte}`).digest('hex').slice(0, 10);
+      return {
+        id: `fiches-avert:${normal(p.app) || 'studio'}:${h}`,
+        source: 'fiches',
+        type: 'probleme',
+        grave: false,
+        site,
+        texte: `Fiche à compléter : ${court(p.texte, 300)}`,
+        detail: `Avertissement de la vérification des fiches${v.le ? ` du ${date(v.le)}` : ''}.`,
+        consigne: `La vérification des fiches du Studio signale, pour ${site} : « ${p.texte} ».
+Les fiches viennent du dépôt ${app?.repo || site} : infra.md = docs/INFRA.md, marketing.md = docs/MARKETING.md, publication.md = docs/PUBLICATION.md. Lis le CLAUDE.md du dépôt, git pull --ff-only, puis complète la fiche pour que la section et la liste des services déclarés concordent, avec des faits vérifiés à la source (code du dépôt, console du service) ; n'invente rien ; si un fait est introuvable, écris « à vérifier ». Commit en français sur main et push.`,
+        dossier: app?.dossier || dossierDe(site),
+        depuis: v.le || null,
+      };
+    });
+}
+
+// ---------- Produits Amazon indisponibles ----------
+// « Sites du jour » (partie Amazon) note chaque produit vérifié dans
+// studio/amazon-verifs.json ; une ligne par site, avec les produits à
+// remplacer. Un produit qui n'est plus cité dans le dépôt (déjà remplacé) ou
+// déjà déposé à part par la tâche (amazon:<dépôt>:<ASIN>) n'est pas recompté.
+// Produits masqués exprès, à remettre dès leur retour sur Amazon.fr (décision
+// de Jean du 19/10/2026 : guedj et café Touba de Keur Cook).
+const MASQUES = { keurcook: { B0DK3SVDJN: 'guedj', B0B52RYJS8: 'café Touba' } };
+const AMAZON_TAGS = { keurcook: 'keurcookfr-21', keurbook: 'keurbookfr-21', keurfoot: 'keurfootfr-21', keurkado: 'keurkadofr-21' };
+let citesCache = { at: 0, data: new Map() };
+// Les ASIN encore cités dans le dépôt (git grep : rapide, suit .gitignore).
+function encoreCites(dossier, asins) {
+  if (Date.now() - citesCache.at > 10 * 60 * 1000) citesCache = { at: Date.now(), data: new Map() };
+  const cle = `${dossier}|${asins.join(',')}`;
+  if (citesCache.data.has(cle)) return citesCache.data.get(cle);
+  let cites = null;
+  try {
+    const sortie = execFileSync('git', ['-C', dossier, 'grep', '-h', '-o', '-F', ...asins.flatMap((a) => ['-e', a])], { encoding: 'utf8', maxBuffer: 8 << 20, timeout: 10000 });
+    cites = new Set(sortie.split('\n').filter(Boolean));
+  } catch (e) {
+    // git grep sort en code 1 quand rien n'est trouvé ; une autre erreur = on ne sait pas.
+    cites = e.status === 1 ? new Set() : null;
+  }
+  citesCache.data.set(cle, cites);
+  return cites;
+}
+
+function deAmazon(d) {
+  const verifs = lireJson(AMAZON, null);
+  if (!verifs || typeof verifs !== 'object') return [];
+  const liste = [];
+  for (const [depot, produits] of Object.entries(verifs)) {
+    const masques = MASQUES[depot.toLowerCase()] || {};
+    const site = nomSite(depot);
+    const dossier = fs.existsSync(path.join(DEV, depot)) ? path.join(DEV, depot) : dossierDe(site);
+    const mauvais = Object.entries(produits || {}).filter(
+      ([asin, p]) => ['indisponible', 'introuvable'].includes(p?.etat) && !masques[asin] && !d.elements[`amazon:${depot}:${asin}`],
+    );
+    const cites = dossier && mauvais.length ? encoreCites(dossier, mauvais.map(([a]) => a)) : null;
+    const aRemplacer = cites ? mauvais.filter(([a]) => cites.has(a)) : mauvais;
+    if (aRemplacer.length) {
+      const n = aRemplacer.length;
+      const tag = AMAZON_TAGS[depot.toLowerCase()];
+      liste.push({
+        id: `amazon-lot:${depot}`,
+        source: 'produits-amazon',
+        type: 'probleme',
+        grave: false,
+        site,
+        texte: `${n} produit${n > 1 ? 's' : ''} Amazon plus disponible${n > 1 ? 's' : ''} à remplacer.`,
+        detail: aRemplacer.map(([a, p]) => `${a} : ${p.etat} (vu le ${p.le})`).join('\n'),
+        consigne: `Dans le dépôt ${dossier || site}, ces produits Amazon ne sont plus achetables (relevé de la vérification quotidienne) :
+${aRemplacer.map(([a, p]) => `- ${a} : ${p.etat} le ${p.le}`).join('\n')}
+Lis le CLAUDE.md du dépôt, git pull --ff-only, puis retrouve où chacun est cité (git grep). Pour chacun : vérifie d'abord sur amazon.fr avec le navigateur intégré qu'il est toujours indisponible (s'il est revenu, laisse-le) ; sinon remplace-le par un produit équivalent bien noté (même usage et même gamme de prix, au moins 4 étoiles et 50 avis, proposé à l'achat), en suivant les règles du site${tag ? ` et en gardant l'identifiant partenaire ${tag}` : ''} ; n'invente jamais un ASIN, une note, un avis ou un prix. Si aucun équivalent fiable n'existe, retire proprement le produit sans casser un top ni une liste. Mets à jour /Users/jeanperraudeau/Dev/apps/Studio/studio/amazon-verifs.json (état « ok » pour les nouveaux produits vérifiés). Tests et construction doivent passer avant le push sur main ; commit en français.`,
+        dossier,
+        depuis: aRemplacer.map(([, p]) => p.le).sort().pop(),
+      });
+    }
+    // Les produits masqués : en attente de leur retour, ou de retour (à remettre).
+    const vus = Object.entries(masques).map(([asin, nom]) => [asin, nom, produits?.[asin]]);
+    if (vus.length) {
+      const revenus = vus.filter(([, , p]) => p?.etat === 'ok' && p.le >= '2026-10-19');
+      const noms = (l) => l.map(([, nom]) => nom).join(' et ');
+      liste.push({
+        id: `amazon-masques:${depot}`,
+        source: 'produits-amazon',
+        type: 'probleme',
+        grave: false,
+        site,
+        texte: revenus.length
+          ? `De retour sur Amazon : ${noms(revenus)} — à remettre sur ${site}.`
+          : `${noms(vus).charAt(0).toUpperCase()}${noms(vus).slice(1)} masqués exprès le 19/10 : à remettre dès leur retour sur Amazon.`,
+        detail: vus.map(([a, nom, p]) => `${nom} (${a}) : ${p ? `${p.etat}, vu le ${p.le}` : 'pas encore revérifié'}`).join('\n'),
+        consigne: `Sur ${site} (dépôt ${dossier}), ${noms(vus)} ont été masqués le 19/10/2026 parce qu'ils n'étaient plus achetables sur Amazon.fr (commit 5db14fb). Vérifie sur amazon.fr avec le navigateur intégré (${vus.map(([a]) => a).join(', ')}) qu'ils sont de nouveau proposés à l'achat ; si oui, remets leur offre (guedj dans amazonOffers de src/lib/demo/catalog.ts, café Touba dans amazon de catalog-nouveautes.ts) et les liens /produit/guedj et /produit/cafe-touba dans les articles content/conseils retouchés par 5db14fb, avec l'identifiant partenaire ${AMAZON_TAGS[depot.toLowerCase()] || 'du site'}. Lis le CLAUDE.md du dépôt ; tests et construction avant le push sur main ; commit en français. S'ils sont toujours indisponibles, ne change rien et dis-le.`,
+        dossier,
+        // Tant qu'ils ne sont pas revenus, il n'y a rien à faire : la ligne attend.
+        attente: !revenus.length,
+        depuis: vus.map(([, , p]) => p?.le).filter(Boolean).sort().pop() || null,
+      });
+    }
+  }
+  return liste;
+}
+
+// ---------- Comptes & adresses : ce qu'il reste à faire ----------
+// Les lignes « à faire » du récapitulatif (Réglages → Comptes & adresses).
+// « C'est fait » les coche là-bas ; une date dépassée les rend graves.
+const dateDepassee = (txt) => {
+  const m = String(txt || '').match(/(\d{1,2})\/(\d{1,2})/);
+  if (!m) return false;
+  const d = new Date();
+  const ech = new Date(d.getFullYear(), Number(m[2]) - 1, Number(m[1]), 23, 59);
+  return ech < d && d - ech < 300 * JOUR;
+};
+function deComptes() {
+  let d;
+  try {
+    d = comptes();
+  } catch {
+    return [];
+  }
+  return d.sections
+    .flatMap((s) => s.lignes)
+    .filter((l) => l.etat === 'a_faire')
+    .map((l) => {
+      const site = siteDans(l.quoi);
+      return {
+        id: `comptes:${l.id}`,
+        source: 'comptes',
+        type: 'probleme',
+        grave: dateDepassee(l.quand),
+        site,
+        texte: `${l.quoi}${l.apres ? ` → ${l.apres}` : ''}`,
+        detail: [l.quand ? `Quand : ${l.quand}` : '', l.note || ''].filter(Boolean).join('\n'),
+        consigne: `Dans le récapitulatif « Comptes & adresses » du Studio de Jean, il reste à faire : « ${l.quoi} » (but : ${l.apres || '—'} ; quand : ${l.quand || '—'} ; note : ${l.note || '—'}).
+Regarde où en est cette chose, sans rien changer dans un compte (pas de connexion, pas de réglage, pas de paiement, pas de message). Si c'est déjà fait, dis-le simplement dans le compte rendu (Jean touchera « C'est fait » sur l'Accueil). Sinon, explique à Jean pas à pas ce qu'il doit faire lui-même, et où.`,
+        dossier: dossierDe(site),
+        action: 'comptes',
+        compte: l.id,
+      };
+    });
+}
+
+// ---------- Applis en pause : décider si elles repartent ----------
+// Une appli dont une boutique dit « en pause » est une décision, pas une panne.
+function dePause() {
+  let a;
+  try {
+    a = applis();
+  } catch {
+    return [];
+  }
+  return (a?.apps || [])
+    .map((app) => {
+      const etats = (app.publicationPlateformes || [])
+        .map((p) => [p.titre, p.faits?.find((f) => /^[ée]tat$/i.test(String(f.label).trim()))?.value || ''])
+        .filter(([, v]) => /en pause/i.test(v));
+      if (!etats.length) return null;
+      const priorite = (app.marketingSummary?.nextActions || [])[0] || `Décider si ${app.name} repart.`;
+      const nom = nomSite(app.name);
+      return {
+        id: `pause:${app.id}`,
+        source: 'pause',
+        type: 'decision',
+        grave: false,
+        site: nom,
+        texte: `${app.name} est en pause. ${court(priorite, 300)}`,
+        detail: etats.map(([t, v]) => `${t} : ${v}`).join('\n'),
+        consigne: `Jean a répondu Oui : ${app.name} repart. Première priorité de sa fiche : « ${priorite} »
+Lis le CLAUDE.md du dépôt ${app.repo || nom} et ses fiches (docs/INFRA.md, docs/MARKETING.md, docs/PUBLICATION.md). Fais dans le dépôt seulement ce qui est sans risque pour préparer la reprise (sans toucher à aucun compte, aucun service payant, aucune clé). Puis explique à Jean, pas à pas et en français simple, ce qu'il doit faire lui-même (par exemple rallumer un service en pause, recréer des clés de connexion), dans quel ordre et où.`,
+        dossier: dossierDe(nom),
+      };
+    })
+    .filter(Boolean);
+}
+
+// ---------- Vidéos validées qui attendent une place dans le planning ----------
+function dePlanning() {
+  let p;
+  let lignes = [];
+  try {
+    p = planning();
+    lignes = comptes().sections.flatMap((s) => s.lignes);
+  } catch {
+    return [];
+  }
+  return (p?.aPlacer || []).map((v) => {
+    // Le récapitulatif dit peut-être déjà ce qu'est devenue cette vidéo.
+    const mot = String(v.titre).split(/\s+/).find((m) => m.length >= 5);
+    const note = mot && lignes.find((l) => normal(l.quoi).includes(normal(mot)));
+    return {
+      id: `planning:${v.projectId}:${v.number}`,
+      source: 'planning',
+      type: 'probleme',
+      grave: false,
+      site: nomSite(v.depot === 'recettes' ? 'keurcook' : v.depot),
+      texte: `Vidéo à placer dans le planning : « ${court(v.titre, 120)} » (${v.appli}).`,
+      detail: `Validée, mais prévue sur aucun compte. « Placer » ouvre la page de l'appli ; « Retirer » la remet « à valider » (le fichier reste sur le Bureau).${note ? `\nComptes & adresses : ${note.quoi} — ${note.resultat || note.apres || ''}.` : ''}`,
+      lien: `#/appli/${v.depot === 'recettes' ? 'keurcook' : v.depot}`,
+      action: 'planning',
+      projectId: v.projectId,
+      number: v.number,
+    };
+  });
+}
+
 const etatPoint = (x) => (x.etat === 'demande' ? 'envoye' : x.etat === 'fait' ? 'fait' : x.etat === 'bloque' ? 'bloque' : 'a-faire');
 function dePoint() {
   const p = pointDuMatin();
@@ -258,21 +512,33 @@ function deposes(d) {
 // L'état d'un élément suivi ici, d'après studio/afaire.json.
 //  - si la source a changé après le compte rendu (nouveau passage en échec), c'est à refaire ;
 //  - un élément déposé de nouveau après avoir été fait est à refaire.
+//  - un élément « en attente » (rien à faire tant qu'un fait extérieur n'arrive pas) reste en attente.
 function appliquerSuivi(e, s) {
-  if (!s) return { ...e, etat: 'a-faire', compteRendu: '' };
+  const base = e.attente ? 'attente' : 'a-faire';
+  if (!s) return { ...e, etat: base, compteRendu: '' };
   const depuis = e.depuis || e.majLe;
-  if (s.statut !== 'envoye' && depuis && s.retour && new Date(depuis) > new Date(s.retour)) return { ...e, etat: 'a-faire', compteRendu: '' };
+  if (s.statut !== 'envoye' && depuis && s.retour && new Date(depuis) > new Date(s.retour)) return { ...e, etat: base, compteRendu: '' };
   if (s.statut === 'fait' && Date.now() - new Date(s.retour || s.le).getTime() > FAITS_VISIBLES) return null;
   return { ...e, etat: s.statut, compteRendu: s.compteRendu || '', le: s.le };
 }
 
-const ORDRE_ETAT = { 'a-faire': 0, bloque: 1, envoye: 2, fait: 3 };
+const ORDRE_ETAT = { 'a-faire': 0, bloque: 1, envoye: 2, attente: 2, fait: 3 };
 const rang = (e) => (e.etat === 'fait' ? 9 : e.type === 'decision' ? 0 : e.grave ? 1 : 2);
 
 export function listeAfaire() {
   const d = lire();
   const apps = infoApps();
-  const suivis = [...deRoutines(), ...deTests(apps), ...deVerification(apps), ...deposes(d)].map((e) => [e.id, appliquerSuivi(e, d.suivi[e.id])]);
+  const suivis = [
+    ...deRoutines(),
+    ...deTests(apps),
+    ...deVerification(apps),
+    ...deAvertissements(apps),
+    ...deAmazon(d),
+    ...deComptes(),
+    ...dePause(),
+    ...dePlanning(),
+    ...deposes(d),
+  ].map((e) => [e.id, appliquerSuivi(e, d.suivi[e.id])]);
   const presents = new Set(suivis.map(([id]) => id));
   const visibles = suivis.map(([, e]) => e).filter(Boolean);
   // Envoyés ou faits récemment, mais que la source ne signale plus : réglés.
@@ -285,7 +551,7 @@ export function listeAfaire() {
   }
   const tout = [...dePoint(), ...deIndexation(), ...visibles]
     // eslint-disable-next-line no-unused-vars
-    .map(({ depuis, majLe, ...e }) => ({ detail: '', consigne: '', dossier: '', compteRendu: '', ...e }))
+    .map(({ depuis, majLe, attente, ...e }) => ({ detail: '', consigne: '', dossier: '', compteRendu: '', ...e }))
     .sort((a, b) => rang(a) - rang(b) || ORDRE_ETAT[a.etat] - ORDRE_ETAT[b.etat] || a.site.localeCompare(b.site, 'fr'));
   const compte = (f) => tout.filter(f).length;
   return {
@@ -295,6 +561,7 @@ export function listeAfaire() {
       aDecider: compte((e) => e.type === 'decision' && e.etat === 'a-faire'),
       graves: compte((e) => e.grave && e.type !== 'decision' && (e.etat === 'a-faire' || e.etat === 'bloque')),
       envoyes: compte((e) => e.etat === 'envoye'),
+      enAttente: compte((e) => e.etat === 'attente'),
       bloques: compte((e) => e.etat === 'bloque'),
       faits: compte((e) => e.etat === 'fait'),
     },
@@ -324,7 +591,7 @@ export function deposer(b) {
   if (!b.texte || !String(b.texte).trim()) throw new Error('Il faut au moins un texte');
   const source = court(b.source || 'tache', 60);
   const id = court(b.id, 200) || `${source}:${crypto.createHash('sha1').update(`${b.site}|${b.texte}`).digest('hex').slice(0, 12)}`;
-  if (/\|/.test(id) || /^(point|routine|tests|fiches):/.test(id)) throw new Error('Cet identifiant est réservé');
+  if (/\|/.test(id) || /^(point|routine|routine-muette|routine-absente|tests|fiches|fiches-avert|comptes|pause|planning|amazon-lot|amazon-masques):/.test(id)) throw new Error('Cet identifiant est réservé');
   const ancien = d.elements[id];
   d.elements[id] = {
     id,
@@ -362,7 +629,7 @@ export function envoyer(id, choix = 'oui') {
     if (pointDuMatin()?.date !== p.date) throw new Error('Ce point du matin a été remplacé');
     repondre(p.id, choix);
   } else if (e.source === 'indexation') {
-    if (choix === 'non') throw new Error('Pour un problème Google, utilise « C’est corrigé » dans Indexation');
+    if (choix === 'non') throw new Error('Un problème Google ne se refuse pas : il disparaît quand Google voit la page réparée');
     envoyerAClaude(id);
   } else {
     const d = lire();

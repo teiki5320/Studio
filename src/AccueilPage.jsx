@@ -110,7 +110,8 @@ function temoins(app, site) {
     const etats = (app.publicationPlateformes || [])
       .filter((p) => !/^web/i.test(p.titre))
       .map((p) => [p.titre, p.faits.find((f) => /^[ée]tat$/i.test(f.label.trim()))?.value || '']);
-    const k = (v) => (/en ligne|publi[ée]e|disponible/i.test(v) ? 'ok' : /bloqu|rejet|refus/i.test(v) ? 'ko' : /test|en cours|revue|examen/i.test(v) ? 'run' : 'none');
+    // « en pause » : une décision en suspens (sur l'Accueil, À décider), pas une panne → gris.
+    const k = (v) => (/en pause/i.test(v) ? 'none' : /en ligne|publi[ée]e|disponible/i.test(v) ? 'ok' : /bloqu|rejet|refus/i.test(v) ? 'ko' : /test|en cours|revue|examen/i.test(v) ? 'run' : 'none');
     const ks = etats.map(([, v]) => k(v));
     const pire = ks.includes('ok') ? 'ok' : ks.includes('ko') ? 'ko' : ks.includes('run') ? 'run' : 'none';
     enLigne = [pire, etats.length ? etats.map(([t, v]) => `${t} : ${v || 'non renseigné'}`).join('\n') : 'Aucune boutique renseignée'];
@@ -295,8 +296,8 @@ function PanneauAgenda({ agenda, maintenant, ancien }) {
   );
 }
 
-// Les mails cochés partent dans la file commune ; la routine du matin (6 h)
-// les met à la corbeille (récupérables 30 jours).
+// Les mails cochés partent dans la file commune ; la routine « Sites du jour »
+// (5 h 05) les met à la corbeille (récupérables 30 jours).
 function PanneauMails({ mails, onCorbeille }) {
   const [coches, setCoches] = useState([]);
   if (!mails) return <p className="pm-vide">Pas encore de tri des mails : il arrive avec le Point du matin, à 7 h.</p>;
@@ -432,7 +433,7 @@ function PanneauEtat({ apps, ext }) {
 
 // ---------- Deux colonnes : À décider · À faire ----------
 
-const RANG_TACHE = (e) => (e.etat === 'bloque' ? 0 : e.grave ? 1 : e.etat === 'envoye' ? 3 : 2);
+const RANG_TACHE = (e) => (e.etat === 'bloque' ? 0 : e.grave ? 1 : e.etat === 'envoye' || e.etat === 'attente' ? 3 : 2);
 const MAX_TACHES = 8;
 
 function Tache({ e, onAgir }) {
@@ -454,6 +455,7 @@ export function AccueilPage() {
   const [erreur, setErreur] = useState('');
   const [ouvert, setOuvert] = useState(null);
   const [toutVoir, setToutVoir] = useState(false);
+  const [voirFaits, setVoirFaits] = useState(false);
   const [maintenant, setMaintenant] = useState(minutesMaintenant);
   const deja = useRef(false);
   const chargerAf = () =>
@@ -535,7 +537,8 @@ export function AccueilPage() {
   const elements = af?.elements || [];
   const decisions = elements.filter((e) => e.type === 'decision' && e.etat !== 'fait');
   const taches = elements.filter((e) => e.type !== 'decision' && e.etat !== 'fait').sort((a, b) => RANG_TACHE(a) - RANG_TACHE(b));
-  const faits = elements.filter((e) => e.etat === 'fait').length;
+  const listeFaits = elements.filter((e) => e.etat === 'fait');
+  const faits = listeFaits.length;
   const visibles = toutVoir ? taches : taches.slice(0, MAX_TACHES);
   const onAgir = (f) =>
     f()
@@ -587,7 +590,7 @@ export function AccueilPage() {
             <h3>
               À décider <span>· {decisions.filter(estOuvert).length}</span>
             </h3>
-            <small>Oui / Non · Claude applique à 6 h</small>
+            <small>Oui / Non · Claude applique à 5 h 05</small>
           </div>
           {!af ? <p className="af-vide">Chargement…</p> : null}
           {af && !decisions.length ? <p className="af-vide">✓ Aucune décision en attente.</p> : null}
@@ -603,13 +606,27 @@ export function AccueilPage() {
             </h3>
             <small>
               grave d’abord{af?.compteurs?.envoyes ? ` · ${af.compteurs.envoyes} chez Claude` : ''}
-              {faits ? ` · ${faits} fait${faits > 1 ? 's' : ''} récemment` : ''}
+              {faits ? (
+                <>
+                  {' · '}
+                  <button type="button" className="ac-plus ac-faits" onClick={() => setVoirFaits(!voirFaits)}>
+                    {voirFaits ? 'cacher les faits ▴' : `voir les ${faits} fait${faits > 1 ? 's' : ''} récemment ▾`}
+                  </button>
+                </>
+              ) : null}
             </small>
           </div>
           {af && !taches.length ? <p className="af-vide">✓ Rien à faire pour l’instant : tout roule.</p> : null}
           {visibles.map((e) => (
             <Tache key={e.id} e={e} onAgir={onAgir} />
           ))}
+          {voirFaits && faits ? (
+            <div className="ac-faits-liste">
+              {listeFaits.map((e) => (
+                <Tache key={e.id} e={e} onAgir={onAgir} />
+              ))}
+            </div>
+          ) : null}
           {taches.length > MAX_TACHES ? (
             <button type="button" className="ac-plus" onClick={() => setToutVoir(!toutVoir)}>
               {toutVoir ? 'Voir moins ▴' : `Voir les ${taches.length - MAX_TACHES} autres ▾`}

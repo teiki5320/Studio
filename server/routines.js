@@ -109,6 +109,8 @@ export function routines() {
         recurrente: Boolean(t.cronExpression),
         active: t.enabled !== false,
         prevue: t.fireAt || null,
+        cron: t.cronExpression || null,
+        creee: t.createdAt ? new Date(Number(t.createdAt)).toISOString() : null,
         dernierPassage: p ? new Date(p.debut).toISOString() : t.lastRunAt || null,
         statut,
         detail: p?.detail || '',
@@ -116,6 +118,24 @@ export function routines() {
       };
     })
     .sort((a, b) => Number(b.active) - Number(a.active) || Number(b.recurrente) - Number(a.recurrente) || a.nom.localeCompare(b.nom));
+}
+
+// Une routine de tous les jours (ou de la semaine) qui aurait dû passer
+// aujourd'hui et n'est pas passée : l'heure prévue est dépassée de plus de
+// 90 minutes (l'appli Claude décale de quelques minutes, et un passage dure)
+// et aucun passage n'a commencé depuis. Rend l'heure prévue, ou null.
+export function passageManque(r, maintenant = new Date()) {
+  if (!r.active || !r.cron) return null;
+  const c = r.cron.trim().split(/\s+/);
+  if (c.length !== 5 || !/^\d+$/.test(c[0]) || !/^\d+$/.test(c[1]) || c[2] !== '*' || c[3] !== '*') return null;
+  if (c[4] === '1-5' && [0, 6].includes(maintenant.getDay())) return null;
+  if (c[4] !== '*' && c[4] !== '1-5') return null;
+  const prevu = new Date(maintenant);
+  prevu.setHours(Number(c[1]), Number(c[0]), 0, 0);
+  if (maintenant - prevu < 90 * 60 * 1000) return null;
+  if (r.creee && new Date(r.creee) > prevu) return null;
+  if (r.dernierPassage && new Date(r.dernierPassage) >= new Date(prevu.getTime() - 15 * 60 * 1000)) return null;
+  return prevu.toISOString();
 }
 
 // Les routines qui tournent aujourd'hui (pour l'accueil).
