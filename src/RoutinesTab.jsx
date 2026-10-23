@@ -1,12 +1,11 @@
 // Réglages → Routines : ce que Claude fait tout seul, et où il en est.
 // Les routines tournent dans l'appli Claude (le Studio ne fait que les
 // montrer) : on les lance ou les modifie depuis la colonne « Routines » de
-// l'appli Claude. Réglages → Dépôts : les apps suivies et leur synchro.
+// l'appli Claude. (Les dépôts et leur synchro sont dans Mes applis.)
 import React, { useEffect, useState } from 'react';
 import { LogoAppli } from './LogoAppli.jsx';
-import { logoAppli } from './apps.js';
-import { api, followJob } from './api.js';
-import { useApplis, ciInfo, fmtDate } from './MesApplisPage.jsx';
+import { api } from './api.js';
+import { fmtDate } from './MesApplisPage.jsx';
 
 const STATUT = {
   ok: ['ok', '✓ Terminée'],
@@ -72,60 +71,5 @@ export function RoutinesTab() {
       <Tableau titre="📅 Rappels à venir" liste={actives.filter((r) => !r.recurrente)} />
       <Tableau titre="💤 Éteintes ou passées" liste={liste.filter((r) => !r.active)} />
     </>
-  );
-}
-
-// Les dépôts suivis par Mes applis : huit apps, la liste est décidée dans le
-// code (data/apps/<id>/app.json), pas ici.
-export function DepotsTab() {
-  const { data, error, recharger } = useApplis();
-  const [synchro, setSynchro] = useState(false);
-  const [err, setErr] = useState('');
-  if (!data) return <p className="clay-muted">{error || 'Chargement…'}</p>;
-  const lancer = () => {
-    setSynchro(true);
-    setErr('');
-    api
-      .synchroApplis()
-      .then(({ jobId }) => followJob(jobId))
-      .then(recharger)
-      .catch((e) => setErr(e.message))
-      .finally(() => setSynchro(false));
-  };
-  const s = data.synchro || {};
-  return (
-    <div className="rg-carte">
-      <div className="rg-carte-h">
-        <h3>📦 {data.apps.length} dépôts suivis</h3>
-        <small>
-          dernière synchro : {fmtDate(s.le, true) || '—'}
-          {s.ok === false ? ' · ⚠️ en échec' : ''} · toutes les 6 h
-        </small>
-        <span className="grow" />
-        <button className="clay-btn small" disabled={synchro} onClick={lancer}>
-          {synchro ? '⏳ Synchro…' : '🔄 Synchroniser'}
-        </button>
-      </div>
-      {s.ok === false && s.erreur ? <p className="error small">{s.erreur}</p> : null}
-      {err ? <p className="error small">{err}</p> : null}
-      <div className="rg-depots">
-        {data.apps.map((a) => {
-          const c = ciInfo(a);
-          return (
-            <a key={a.id} className="rg-depot" href={`https://github.com/${a.repo}`} target="_blank" rel="noopener noreferrer">
-              <span className="ic">{logoAppli(a.repo) ? <LogoAppli de={a.repo} taille={28} /> : a.emoji}</span>
-              <span className="t">
-                <b>{a.name}</b>
-                <small>{a.repo}</small>
-              </span>
-              <span className={`rg-etat-txt ${c.k}`} title={c.enCours ? 'revérification en cours' : ''}>
-                <i />
-                {c.label}
-              </span>
-            </a>
-          );
-        })}
-      </div>
-    </div>
   );
 }

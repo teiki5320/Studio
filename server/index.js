@@ -80,13 +80,6 @@ import {
   exportRootFor,
   projectExportDir,
 } from './exporter.js';
-import {
-  runLipsyncTest,
-  lipsyncTestStatus,
-  clearLipsyncTestResult,
-  directorTestKit,
-  prepareDirectorTest,
-} from './synctest.js';
 import { buildDirectorKit } from './director.js';
 import { keurcookRepo } from './keurcook.js';
 import { listRecipes, RECIPE_SITE } from './recipes.js';
@@ -112,15 +105,13 @@ import {
   renvoyerPlans,
   resumePlans,
   envoyerAClaude,
-  fileClaude,
-  retourClaude,
   consigneClaude,
   trouverProbleme,
   noterCorrection,
   depotDe,
 } from './indexation.js';
 import { applis, construireApplis, synchroniserApplis, synchroDue } from './applis.js';
-import { pointDuMatin, deposerPoint, repondre, demanderCorbeille, fileActions, retourAction } from './point.js';
+import { pointDuMatin, deposerPoint, demanderCorbeille } from './point.js';
 import { accueil } from './accueil.js';
 import { listeAfaire, deposer as deposerAfaire, envoyer as envoyerAfaire, fileAfaire, retourAfaire } from './afaire.js';
 import { routines } from './routines.js';
@@ -287,37 +278,6 @@ app.get('/studio/:file', (req, res) => {
     return;
   }
   res.sendFile(target);
-});
-
-// ---------- Test synchro : un mini-clip de bout en bout ----------
-app.get('/api/lipsync-test', (req, res) => {
-  res.json(lipsyncTestStatus());
-});
-
-app.delete('/api/lipsync-test', (req, res) => {
-  res.json(clearLipsyncTestResult());
-});
-
-app.post('/api/lipsync-test', (req, res) => {
-  const model = typeof req.body?.model === 'string' ? req.body.model.trim() : '';
-  if (model && !/^[\w./-]{1,80}$/.test(model)) {
-    res.status(400).json({ error: 'Nom de modèle fal.ai invalide.' });
-    return;
-  }
-  const job = startJob('Test de la production interne', (update) =>
-    runLipsyncTest({ fresh: Boolean(req.body && req.body.fresh), model }, update),
-  );
-  res.json({ jobId: job.id });
-});
-
-// ---------- Test OpenArt Director : portrait + consigne à coller ----------
-app.get('/api/lipsync-test/director', (req, res) => {
-  res.json(directorTestKit());
-});
-
-app.post('/api/lipsync-test/director', (req, res) => {
-  const job = startJob('Portrait du test Director', (update) => prepareDirectorTest(update));
-  res.json({ jobId: job.id });
 });
 
 // Toutes les productions en cours (panneau d'avancement de l'accueil).
@@ -1496,20 +1456,7 @@ const reponse = (f) => (req, res) => {
 };
 app.get('/api/point', (req, res) => res.json(pointDuMatin()));
 app.post('/api/point', reponse((req) => deposerPoint(req.body)));
-app.post('/api/point/repondre', reponse((req) => repondre(String(req.body?.id || ''), String(req.body?.choix || ''))));
 app.post('/api/point/corbeille', reponse((req) => demanderCorbeille(Array.isArray(req.body?.groupes) ? req.body.groupes.map(String) : [])));
-app.get('/api/point/actions', (req, res) => res.json(fileActions()));
-app.post('/api/point/retour', reponse((req) => retourAction(String(req.body?.id || ''), Boolean(req.body?.reussi), req.body?.compteRendu)));
-app.get('/api/indexation/file', (req, res) => res.json(fileClaude()));
-app.post('/api/indexation/retour', (req, res) => {
-  try {
-    const { id, compteRendu, reussi } = req.body || {};
-    retourClaude(String(id || ''), compteRendu, reussi !== false);
-    res.json({ ok: true });
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
 app.post('/api/indexation/corrige', (req, res) => {
   try {
     noterCorrection(String((req.body || {}).id || ''), 'Corrigé (noté à la main)');

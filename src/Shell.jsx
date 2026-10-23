@@ -1,5 +1,6 @@
 // Ossature du studio, aux couleurs du Dashboard : une barre latérale
-// (Publicité, Chaîne, En cours, Réglages) et une page par adresse (#/…).
+// (Accueil, Mes applis, Publicité, Indexation, Audience, Planning, En cours,
+// Réglages) et une page par adresse (#/…).
 // Les adresses servent aussi de liens depuis le Dashboard :
 //   #/pub            → les boutons des applis
 //   #/pub/erea       → la campagne d'Erea (préparée au premier clic)
@@ -25,7 +26,7 @@ import { PlansPage } from './PlansPage.jsx';
 import { AdPage } from './AdPage.jsx';
 import { AccueilPage } from './AccueilPage.jsx';
 import { MesApplisPage, LexiquePage, useApplis } from './MesApplisPage.jsx';
-import { RoutinesTab, DepotsTab } from './RoutinesTab.jsx';
+import { RoutinesTab } from './RoutinesTab.jsx';
 import { ChainesPage, ChaineDetail, NouvelleChaine, AppliPubPage } from './ChainesPage.jsx';
 import './clay.css';
 import './ressort.css';
@@ -80,22 +81,23 @@ function useTheme() {
 
 // Entrée de la barre latérale à allumer quand un projet est ouvert : les
 // campagnes et les recettes (Keur Cook) relèvent de Publicité.
-const sectionOfProject = (p) => (p && p.mode === 'chaine' && p.kind !== 'pub' ? 'chaine' : 'pub');
+// (Chaîne n'a plus d'entrée à elle : tout s'allume sous Publicité.)
+const sectionOfProject = () => 'pub';
 
 // Keur Cook a deux usages : ses recettes en vidéo, et sa pub.
 const KEURCOOK_REPO = 'teiki5320/keurcook';
 
+// Chaîne (dans Publicité, page de chaque appli) et Lexique (lien depuis Mes
+// applis) ne sont plus dans le menu ; leurs adresses marchent toujours.
 const NAV = [
   { id: 'accueil', icon: '⌂', label: 'Accueil', path: 'accueil' },
   { id: 'applis', icon: '📱', label: 'Mes applis', path: 'applis' },
   { id: 'pub', icon: '📣', label: 'Publicité', path: 'pub' },
-  { id: 'chaine', icon: '🎥', label: 'Chaîne', path: 'chaine' },
   { id: 'indexation', icon: '🔎', label: 'Indexation', path: 'indexation' },
   { id: 'audience', icon: '📈', label: 'Audience', path: 'audience' },
   { id: 'planning', icon: '🗓️', label: 'Planning', path: 'planning' },
   { id: 'sep' },
   { id: 'encours', icon: '🏭', label: 'En cours', path: 'encours' },
-  { id: 'lexique', icon: '▤', label: 'Lexique', path: 'lexique' },
   { id: 'reglages', icon: '⚙️', label: 'Réglages', path: 'reglages' },
 ];
 
@@ -242,6 +244,14 @@ function PubPage({ projects, onOpenRepo }) {
             <span className="clay-muted small">depuis une adresse de site</span>
           </button>
         )}
+        {/* Les chaînes vivent dans la page de chaque appli ; la vue d'ensemble reste ici. */}
+        {repos && (
+          <button className="clay-tile add" onClick={() => go('chaine')}>
+            <span className="clay-tile-ic">🎥</span>
+            <b>Toutes les chaînes</b>
+            <span className="clay-muted small">les comptes réseaux, toutes applis confondues</span>
+          </button>
+        )}
       </div>
     </div>
   );
@@ -371,14 +381,11 @@ function YoutubeCard() {
 const ONGLETS_REGLAGES = [
   ['marque', '🔌 Réseaux'],
   ['voix', '🎙️ Voix'],
-  ['depots', '📦 Dépôts'],
   ['routines', '⏰ Routines'],
   ['comptes', '🗂️ Comptes & adresses'],
-  ['reste', '📌 Reste à faire'],
 ];
 
 function ReglagesPage({ arg }) {
-  const [studio, setStudio] = useState(null);
   const [voices, setVoices] = useState(VOICES);
   const [onglet, setOnglet] = useState(() => {
     try {
@@ -394,34 +401,28 @@ function ReglagesPage({ arg }) {
       localStorage.setItem('reglages-onglet', id);
     } catch {}
   };
-  const refreshStudio = () => api.getStudio().then(setStudio).catch(() => {});
   const refreshVoices = () => api.voices().then(setVoices).catch(() => {});
   useEffect(() => {
-    refreshStudio();
     refreshVoices();
   }, []);
-  // Les pastilles des onglets : routines bloquées, choses qui restent à faire.
+  // La pastille de l'onglet Routines (routines bloquées), lue une fois à
+  // l'ouverture de Réglages, pas à chaque changement d'onglet. Ce qui reste à
+  // faire dans Comptes & adresses est sur l'Accueil (colonne À faire).
   const [pastilles, setPastilles] = useState({});
   useEffect(() => {
     api
       .routines()
-      .then((l) => setPastilles((p) => ({ ...p, routines: l.filter((r) => r.active && r.statut === 'bloquee').length })))
+      .then((l) => setPastilles({ routines: l.filter((r) => r.active && r.statut === 'bloquee').length }))
       .catch(() => {});
-    api
-      .comptes()
-      .then((d) => setPastilles((p) => ({ ...p, reste: d.sections.flatMap((x) => x.lignes).filter((l) => l.etat === 'a_faire').length })))
-      .catch(() => {});
-  }, [onglet]);
+  }, []);
   return (
     <div className="clay-content reglages">
       <OngletsReglages onglet={onglet} choisir={choisirOnglet} pastilles={pastilles} />
       <div key={onglet} className="rg-corps" data-sans-ressort>
-        {onglet === 'comptes' || onglet === 'reste' ? (
-          <ComptesTab resteSeulement={onglet === 'reste'} />
+        {onglet === 'comptes' ? (
+          <ComptesTab />
         ) : onglet === 'routines' ? (
           <RoutinesTab />
-        ) : onglet === 'depots' ? (
-          <DepotsTab />
         ) : onglet === 'voix' ? (
           <FrenchVoicesCard voices={voices} onChange={refreshVoices} />
         ) : (
@@ -574,9 +575,11 @@ export function Shell() {
   const active =
     route.page === 'projet' || route.page === 'avance'
       ? sectionOfProject(project)
-      : ['recettes', 'keurcook', 'appli'].includes(route.page)
+      : ['recettes', 'keurcook', 'appli', 'chaine'].includes(route.page)
         ? 'pub'
-        : route.page;
+        : route.page === 'lexique'
+          ? 'applis'
+          : route.page;
 
   let body;
   if (waiting) {
@@ -588,7 +591,7 @@ export function Shell() {
           error={waiting.error}
           onBack={() => {
             setWaiting(null);
-            go(active === 'chaine' ? 'chaine' : 'pub');
+            go('pub');
           }}
         />
       </>
@@ -640,7 +643,11 @@ export function Shell() {
             ? () => go('pub')
             : route.page === 'chaine' && route.arg
               ? () => window.history.back()
-              : null;
+              : route.page === 'chaine'
+                ? () => go('pub')
+                : route.page === 'lexique' && !route.arg
+                  ? () => go('applis')
+                  : null;
     body = (
       <>
         <TopBar title={TITLES[route.page] || 'Publicité'} onBack={back} theme={theme} onTheme={toggleTheme} />

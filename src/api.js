@@ -93,7 +93,6 @@ export const api = {
   point: () => request('/api/point'),
   afaire: () => request('/api/afaire'),
   envoyerAfaire: (id, choix = 'oui') => request('/api/afaire/envoyer', { method: 'POST', body: JSON.stringify({ id, choix }) }),
-  repondrePoint: (id, choix) => request('/api/point/repondre', { method: 'POST', body: JSON.stringify({ id, choix }) }),
   corbeillePoint: (groupes) => request('/api/point/corbeille', { method: 'POST', body: JSON.stringify({ groupes }) }),
   occasionsGoogle: (site) => request(`/api/indexation/occasions?site=${encodeURIComponent(site)}`),
   envoyerAClaude: (id) => request('/api/indexation/envoyer', { method: 'POST', body: JSON.stringify({ id }) }),
@@ -219,15 +218,6 @@ export const api = {
     request(`/api/studio/outro${appli ? `?appli=${appli}` : ''}`, { method: 'POST', body: JSON.stringify({ data: dataUrl }) }),
   deleteOutro: (appli) => request(`/api/studio/outro${appli ? `?appli=${appli}` : ''}`, { method: 'DELETE' }),
   getJob: (id) => request(`/api/jobs/${id}`),
-  lipsyncTest: () => request('/api/lipsync-test'),
-  clearLipsyncTest: () => request('/api/lipsync-test', { method: 'DELETE' }),
-  runLipsyncTest: (fresh, model) =>
-    request('/api/lipsync-test', {
-      method: 'POST',
-      body: JSON.stringify({ fresh: Boolean(fresh), model: model || undefined }),
-    }),
-  directorTest: () => request('/api/lipsync-test/director'),
-  prepareDirectorTest: () => request('/api/lipsync-test/director', { method: 'POST' }),
   directorKit: (id, n) => request(`/api/projects/${id}/episodes/${n}/director-kit`),
   prepareDirectorKit: (id, n) =>
     request(`/api/projects/${id}/episodes/${n}/director-kit`, { method: 'POST' }),

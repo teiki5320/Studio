@@ -94,7 +94,7 @@ function fraicheur(ix, toutes, vues) {
   const derniereVue = (vues?.jours || []).map((j) => j.date).sort().pop();
   const ixErreurs = ix.sites.filter((s) => s.erreur).length;
   return [
-    { cle: 'code', ic: '🐙', nom: 'Code (GitHub)', le: a?.synchro?.le, seuilH: 7, lien: '#/reglages/depots', erreur: a?.synchro?.ok === false ? a.synchro.erreur || 'synchro en échec' : null },
+    { cle: 'code', ic: '🐙', nom: 'Code (GitHub)', le: a?.synchro?.le, seuilH: 7, lien: '#/applis', erreur: a?.synchro?.ok === false ? a.synchro.erreur || 'synchro en échec' : null },
     { cle: 'fiches', ic: '📄', nom: 'Fiches des applis', le: plusVieilleFiche ? `${plusVieilleFiche}T12:00:00Z` : null, seuilH: 50, lien: '#/applis', detail: ficheRoutine?.dernierPassage ? 'la plus ancienne' : null },
     { cle: 'indexation', ic: '🔎', nom: 'Indexation Google', le: ix.dernierPassage, seuilH: 26, lien: '#/indexation', erreur: ixErreurs ? `${ixErreurs} site(s) en erreur` : null },
     { cle: 'sites', ic: '🌐', nom: 'Sites en ligne', le: cacheSites.at ? new Date(cacheSites.at).toISOString() : null, seuilH: 1, lien: '#/accueil' },

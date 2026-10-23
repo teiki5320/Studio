@@ -1,14 +1,14 @@
 #!/bin/bash
 # ──────────────────────────────────────────────
-#  🎬 Drama Studio — double-clique pour lancer
+#  🎬 Studio — double-clique pour lancer
 # ──────────────────────────────────────────────
 # Le studio se trouve tout seul : on part du dossier qui contient ce
-# fichier. Range-le où tu veux (~/bd, ~/apps/drama-studio, ailleurs…),
+# fichier. Range-le où tu veux (~/bd, ~/Dev/apps/Studio, ailleurs…),
 # tant que ce raccourci reste dedans, il retrouve son chemin.
 DIR="$(cd "$(dirname "$0")" && pwd -P)"
 
 if [ ! -f "$DIR/package.json" ]; then
-  echo "❌ Ce raccourci doit rester DANS le dossier de Drama Studio."
+  echo "❌ Ce raccourci doit rester DANS le dossier de Studio."
   echo "   Dossier lu : $DIR"
   echo "   (pour un raccourci sur le Bureau, fais un alias : glisse le fichier"
   echo "    en maintenant ⌘ + ⌥, ne le déplace pas.)"
@@ -18,7 +18,7 @@ fi
 
 cd "$DIR" || exit 1
 
-echo "🔄 Mise à jour de Drama Studio…"
+echo "🔄 Mise à jour de Studio…"
 git pull --ff-only 2>/dev/null || echo "   (mise à jour ignorée)"
 npm install --no-audit --no-fund >/dev/null 2>&1 || true
 

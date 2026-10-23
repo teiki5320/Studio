@@ -153,8 +153,9 @@ async function siteZone(z, debut) {
 }
 
 // Pas des sites publics : le Studio lui-même et les anciennes adresses qui
-// ne font plus que rediriger.
-const PRIVES = /^(studio|gestion)\.|^avelor\.toakeur\.com$/;
+// ne font plus que rediriger (optiled.fr, remplacé par kultiled.com le
+// 16/10/2026 et supprimé le 22/10).
+const PRIVES = /^(studio|gestion)\.|^avelor\.toakeur\.com$|^(www\.)?optiled\.fr$/;
 
 // Tous les sites, sur la période (en jours). Gardé 10 minutes en mémoire.
 const cache = new Map();
@@ -204,7 +205,7 @@ export async function audience(jours = 30) {
       erreurs.push(`${h} : ${e.message}`);
     }
   }));
-  await Promise.all((zones || []).filter((z) => !couverts.has(z.name)).map(async (z) => {
+  await Promise.all((zones || []).filter((z) => !couverts.has(z.name) && !PRIVES.test(z.name)).map(async (z) => {
     try {
       const site = await siteZone(z, debut);
       if (site.jours.length) sites.push(site);

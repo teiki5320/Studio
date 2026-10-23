@@ -3,10 +3,10 @@
 // décisions, problèmes, agenda, mails, état de chaque site et appli. Jean le lit
 // dans l'Accueil ; décisions et problèmes s'affichent dans le bloc « À faire »
 // (afaire.js). Ses réponses (Oui / Non, mails à mettre à la corbeille) passent
-// par la file commune (GET /api/afaire/file), que la routine « Référencement du
-// jour » (6 h) applique, puis elle rend compte (POST /api/afaire/retour, qui
-// revient ici par retourAction). /api/point/actions et /api/point/retour restent
-// pour compatibilité. Le Studio ne lance jamais Claude lui-même.
+// par la file commune (GET /api/afaire/file), que la routine « Sites du jour »
+// (5 h 05, partie référencement) applique, puis elle rend compte
+// (POST /api/afaire/retour, qui revient ici par retourAction). Le Studio ne
+// lance jamais Claude lui-même.
 // Données personnelles (agenda, mails) : dans studio/, jamais dans le dépôt public.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -101,7 +101,7 @@ export function fileActions() {
   return actions;
 }
 
-// Compte rendu de la routine (via /api/afaire/retour ou /api/point/retour).
+// Compte rendu de la routine (via /api/afaire/retour).
 export function retourAction(id, reussi, compteRendu) {
   const p = lire();
   if (!p) throw new Error('Aucun point du matin');
