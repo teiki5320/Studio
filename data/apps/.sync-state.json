@@ -1,7 +1,7 @@
 {
-  "solelis/infra.md": "96497c0b84d38870e3fbbe490d6a65292f51358e5f7d7a0443a6616226868d9b",
-  "solelis/marketing.md": "a7a50c51ab6b32dffca3b9f270c9fb62e0c637f5e53097d0fa5adee348e18206",
-  "solelis/publication.md": "ce9d6f533cbde7beee36a5850d035b457cea7193923548ad5793ea6b10a9f849",
+  "solelis/infra.md": "e20df50e4e6d4f642e4dca1e4712fc823a617fce76714eeda46b782857151ef9",
+  "solelis/marketing.md": "8b8a1287bef34a31bd79e7535c4b55f0fbf8c8b3f75ef564ec04acbc4d648e6b",
+  "solelis/publication.md": "08c2cb4c1582d76f7413a629e21729573ce7cc25b6b1831f44e246f3b3a6985e",
   "erea/infra.md": "d63c46f4bbb2987cf9332a436e1aaa4b102cdcec8b8bcc474cdd444ff155bdbe",
   "erea/marketing.md": "c856a65772eeff0345f9883813595d07bbb0ab44cab036e32820063984e9d195",
   "erea/publication.md": "234de9a091b7cf8f67c53b5de06783a32888ec193282be7fd3c000f46d4917c9",
@@ -28,5 +28,15 @@
   "keurfoot/publication.md": "9ab27487d936809c517d37db92de9446f454b5e2e3e098627dcfde6e2f42a39d",
   "keurkado/infra.md": "8a9a9f65b5106ea922cb6cedfc182ea547c9010f4505550ed46f31a66f6cdace",
   "keurkado/marketing.md": "de88525c8c0c7d3bf0582313aa1d9e307be02d62c18f71eb9c5bf68842f2cc3b",
-  "keurkado/publication.md": "ec995de1dd7a30ab2660a93b2521a8d9890246f27819d1c0e6a6fde507c3ad62"
+  "keurkado/publication.md": "ec995de1dd7a30ab2660a93b2521a8d9890246f27819d1c0e6a6fde507c3ad62",
+  "alohash/readme.md": "25191a2219317fcbe8b19a5acd0defbe03d2694b95fe76e3f8343d163a2a37ff",
+  "erea/readme.md": "9317555aaac93595bf5af6efef689ba2884cf3aae6aceb0738682f4561a77474",
+  "keurbook/readme.md": "157d9d67e8b718efd1e298b8d4378656dd1d2b3524796b5a7c24ad331c36d2e9",
+  "keurdeco/readme.md": "dacfcb2c419ff53062fcaca57a796219df89ce721ca84f0d285f968596afc58e",
+  "keurfoot/readme.md": "ebca5fbf7cb088bb2dd2f99aae824b818dae21bf06ecfb21f6ede289e786a6c0",
+  "keurkado/readme.md": "2ac4650fdcf9552b252223adf40876e1e47131ddcacb8219eaa012a98abbc31b",
+  "kultiva/readme.md": "37408881a1ecc74e0a4a3c854878bdad7c75e2dc6565aae2d160c06e8193d48a",
+  "optiled/readme.md": "6ce1f6a9b8fadea9d01e89378cf997db9f3498ea43b568f94cd92428b612461f",
+  "palabre/readme.md": "9285b8c921b73bfaf1194759387c508099903681ea98890ae125b5daddea163a",
+  "solelis/readme.md": "4c7981c37ccfeeb25552b4551452ff41221186cb7ce1d598e0af98191fab4f99"
 }

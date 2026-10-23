@@ -10,6 +10,9 @@
 //   docs/INFRA.md       → apps/<id>/infra.md
 //   docs/MARKETING.md   → apps/<id>/marketing.md
 //   docs/PUBLICATION.md → apps/<id>/publication.md   (facultative)
+//   README.md           → apps/<id>/readme.md        (facultatif : rapatrié
+//                         pour que tool/apps-verifier.cjs contrôle aussi ses
+//                         lignes factuelles ; il n'est pas affiché)
 // … et interroge l'API GitHub pour deux indicateurs vivants, écrits dans
 // apps/<id>/status.json (lu par tool/build.js, affiché par dash-module.js) :
 //   - dernière release (tag, date, lien)
@@ -65,6 +68,9 @@ const FILES = [
   // Facultative : une app sans fiche de publication reste parfaitement valide,
   // le volet correspondant ne s'affiche simplement pas.
   { distant: 'docs/PUBLICATION.md', local: 'publication.md', facultatif: true },
+  // Le README n'est pas affiché par le Studio : il est rapatrié pour être
+  // CONTRÔLÉ (codes Amazon, AdSense, hébergeur, versions) par apps-verifier.
+  { distant: 'README.md', local: 'readme.md', facultatif: true },
 ];
 
 async function fetchFile(repo, filePath) {
