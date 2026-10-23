@@ -9,6 +9,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { api, followJob } from './api.js';
 import './applis.css';
+import { Encart, LegendeTemoins } from './Temoins.jsx';
 
 const TINTS = ['mint', 'peach', 'sun', 'sky', 'lilac'];
 const BADGES = { requis: 'Requis', optionnel: 'Optionnel', gratuit: 'Gratuit' };
@@ -125,7 +126,16 @@ export function useApplis() {
 }
 
 // ---------- La grille ----------
+// Page d'entrée : une carte par appli ou site avec ses trois témoins (venues
+// du panneau État de l'Accueil, choix de Jean le 23/10).
 function Grille({ data, onSynchro, synchro }) {
+  const [ext, setExt] = useState(null);
+  useEffect(() => {
+    api
+      .accueil()
+      .then(setExt)
+      .catch(() => setExt({}));
+  }, []);
   const groupes = [
     ['Applis', data.apps.filter((a) => !estSite(a))],
     ['Sites', data.apps.filter(estSite)],
@@ -155,27 +165,15 @@ function Grille({ data, onSynchro, synchro }) {
         liste.length ? (
           <div key={titre}>
             <p className="clay-sub">{titre}</p>
-            <div className="clay-grid">
-              {liste.map((a) => {
-                const c = ciInfo(a);
-                const age = ageFiches(a);
-                const perimee = age !== null && age > FICHE_PERIMEE_JOURS;
-                return (
-                  <a key={a.id} className="clay-tile applis-tuile" href={`#/applis/${a.id}`}>
-                    {perimee ? <span className="applis-coin" title={`Fiches vieilles de ${age} jours`} /> : null}
-                    <span className="clay-tile-ic applis-logo">
-                      <Logo app={a} cls="applis-logo-in" />
-                    </span>
-                    <b>{a.name}</b>
-                    <span className="clay-muted small">{(a.platforms || []).join(' · ') || 'Aucune plateforme'}</span>
-                    <span className={`clay-state ${c.k === 'ok' ? 'ok' : c.k === 'ko' ? 'ko' : c.k === 'run' ? 'att' : ''}`}>{c.label}</span>
-                  </a>
-                );
-              })}
+            <div className="ac-encarts">
+              {liste.map((a) => (
+                <Encart key={a.id} app={a} site={ext?.sites?.[a.id]} envoi={ext?.envois?.[String(a.repo || '').toLowerCase()]} delai={0} />
+              ))}
             </div>
           </div>
         ) : null,
       )}
+      <LegendeTemoins />
     </div>
   );
 }

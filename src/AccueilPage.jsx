@@ -1,13 +1,14 @@
 // Accueil du Studio — maquette « Trois mini-cartes » (n° 11, validée le 23/10,
 // artifact GhbQgaord7pgJWkq3Qb19x). En haut, discrets : trois mini-cartes
-// Agenda, Mails et État ; un clic déplie le détail juste dessous (un seul à
-// la fois). En dessous, deux colonnes : « À décider » (Oui / Non) et
-// « À faire » (graves d'abord), réglables d'ici comme dans le bloc À faire.
-// Agenda et mails viennent du Point du matin (7 h) ; l'état, des fiches des
-// applis (trois témoins : Code, Fiche, En ligne / Store).
+// Agenda et Mails (un clic déplie le détail juste dessous) et État (« N/10 au
+// vert », un clic ouvre Mes applis et ses cartes à témoins). Puis les chiffres
+// et raccourcis, les deux colonnes « À décider » (Oui / Non) et « À faire »
+// (graves d'abord), et la Fraîcheur des infos tout en bas (ordre choisi par
+// Jean le 23/10). Agenda et mails viennent du Point du matin (7 h).
 import React, { useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
-import { useApplis, estSite, ciInfo, ageFiches, FICHE_PERIMEE_JOURS, Logo } from './MesApplisPage.jsx';
+import { useApplis, ageFiches, FICHE_PERIMEE_JOURS } from './MesApplisPage.jsx';
+import { pire } from './Temoins.jsx';
 import { LogoAppli } from './LogoAppli.jsx';
 import { Ligne, ouvert as estOuvert } from './AFaire.jsx';
 import './accueil.css';
@@ -15,7 +16,6 @@ import './afaire.css';
 import './point.css';
 
 const nb = (n) => Number(n || 0).toLocaleString('fr-FR');
-const COULEUR = { ok: 'var(--ok)', run: 'var(--run)', ko: 'var(--ko)', none: 'var(--none)' };
 
 // Un nombre qui monte depuis zéro.
 function Compte({ n, delai = 0 }) {
@@ -82,68 +82,6 @@ function Fraicheur({ liste }) {
         ))}
       </div>
     </div>
-  );
-}
-
-const ilYa = (iso) => {
-  if (!iso) return '';
-  const j = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
-  return j <= 0 ? "envoyé aujourd'hui" : j === 1 ? 'envoyé hier' : `envoyé il y a ${j} j`;
-};
-
-// Les trois témoins d'une app : [couleur, raison].
-function temoins(app, site) {
-  const c = ciInfo(app);
-  const code = [c.k === 'run' ? 'run' : c.k, `Code : ${c.label.toLowerCase()}${c.dateLong ? ` (${c.dateLong})` : ''}${c.enCours ? ' · revérification en cours' : ''}`];
-  const age = ageFiches(app);
-  const fiche = age === null ? ['none', 'Fiche sans date'] : [age > FICHE_PERIMEE_JOURS ? 'run' : 'ok', age > FICHE_PERIMEE_JOURS ? `Fiche figée depuis ${age} jours` : `Fiche de ${age} jour${age > 1 ? 's' : ''}`];
-  let enLigne;
-  if (estSite(app)) {
-    enLigne = !site
-      ? ['none', 'Adresse du site inconnue']
-      : site.etat === 'ok'
-        ? ['ok', `${site.url.replace(/^https?:\/\/(www\.)?/, '')} répond`]
-        : site.etat === 'ko'
-          ? ['ko', `${site.url.replace(/^https?:\/\/(www\.)?/, '')} répond en erreur (${site.code})`]
-          : ['none', `${site.url.replace(/^https?:\/\/(www\.)?/, '')} : non vérifiable pour l'instant`];
-  } else {
-    const etats = (app.publicationPlateformes || [])
-      .filter((p) => !/^web/i.test(p.titre))
-      .map((p) => [p.titre, p.faits.find((f) => /^[ée]tat$/i.test(f.label.trim()))?.value || '']);
-    // « en pause » : une décision en suspens (sur l'Accueil, À décider), pas une panne → gris.
-    const k = (v) => (/en pause/i.test(v) ? 'none' : /en ligne|publi[ée]e|disponible/i.test(v) ? 'ok' : /bloqu|rejet|refus/i.test(v) ? 'ko' : /test|en cours|revue|examen/i.test(v) ? 'run' : 'none');
-    const ks = etats.map(([, v]) => k(v));
-    const pire = ks.includes('ok') ? 'ok' : ks.includes('ko') ? 'ko' : ks.includes('run') ? 'run' : 'none';
-    enLigne = [pire, etats.length ? etats.map(([t, v]) => `${t} : ${v || 'non renseigné'}`).join('\n') : 'Aucune boutique renseignée'];
-  }
-  return [
-    ['Code', ...code],
-    ['Fiche', ...fiche],
-    [estSite(app) ? 'En ligne' : 'Store', ...enLigne],
-  ];
-}
-
-function Encart({ app, site, envoi, delai }) {
-  return (
-    <a className="ac-e2 anim" style={{ animationDelay: `${delai}s` }} href={`#/applis/${app.id}`}>
-      <span className="haut">
-        <span className="ic">
-          <Logo app={app} cls="ic-in" />
-        </span>
-        <span className="t">
-          <b>{app.name}</b>
-          <small>{ilYa(envoi)}</small>
-        </span>
-      </span>
-      <span className="temoins">
-        {temoins(app, site).map(([nom, k, raison]) => (
-          <span key={nom} className="tm" title={raison}>
-            <i className={k === 'ko' ? 'battant' : ''} style={{ background: COULEUR[k] }} />
-            <span>{nom}</span>
-          </span>
-        ))}
-      </span>
-    </a>
   );
 }
 
@@ -246,17 +184,23 @@ const ICONES = {
   ),
 };
 
-function Mini({ id, ouvert, onBasculer, valeur, sous }) {
+// « lien » : la mini-carte mène à une autre page au lieu de déplier un détail (État → Mes applis).
+function Mini({ id, ouvert, onBasculer, valeur, sous, lien }) {
   const actif = ouvert === id;
   return (
-    <button type="button" className={`ac-mini ${id}${actif ? ' on' : ''}`} aria-expanded={actif} onClick={() => onBasculer(actif ? null : id)}>
+    <button
+      type="button"
+      className={`ac-mini ${id}${actif ? ' on' : ''}`}
+      aria-expanded={lien ? undefined : actif}
+      onClick={() => (lien ? (window.location.hash = lien) : onBasculer(actif ? null : id))}
+    >
       <span className="ic">{ICONES[id]}</span>
       <span className="t">
         <b>{valeur}</b>
         <small>{sous}</small>
       </span>
       <span className="fl" aria-hidden="true">
-        ▾
+        {lien ? '→' : '▾'}
       </span>
     </button>
   );
@@ -341,22 +285,12 @@ function PanneauMails({ mails, onCorbeille }) {
   );
 }
 
-// Le pire des trois témoins d'une app.
-const pire = (app, site) => {
-  const ks = temoins(app, site).map(([, k]) => k);
-  return ks.includes('ko') ? 'ko' : ks.includes('run') ? 'run' : ks.includes('none') ? 'none' : 'ok';
-};
-
-function PanneauEtat({ apps, ext }) {
+// Chiffres et raccourcis, affichés directement sur l'Accueil (choix de Jean, 23/10).
+function Chiffres({ apps, ext }) {
   const c = ext?.compteurs || {};
   const perimees = apps.filter((a) => (ageFiches(a) ?? 0) > FICHE_PERIMEE_JOURS).length;
   const ouverts = apps.reduce((t, a) => t + (a.marketingSummary?.done || 0), 0);
   const canaux = ouverts + apps.reduce((t, a) => t + (a.marketingSummary?.todo || 0), 0);
-  const envoi = (a) => ext?.envois?.[String(a.repo || '').toLowerCase()];
-  const groupes = [
-    ['Applis', apps.filter((a) => !estSite(a))],
-    ['Sites', apps.filter(estSite)],
-  ];
   const raccourcis = [
     ['#/pub', '📣', c.videosHier, 'vidéos prêtes'],
     ['#/indexation', '🔎', c.indexation, 'à régler sur Google'],
@@ -365,7 +299,7 @@ function PanneauEtat({ apps, ext }) {
     ['#/reglages/routines', '⏰', c.routinesDuJour, c.routinesBloquees ? `tâches · ${c.routinesBloquees} bloquée${c.routinesBloquees > 1 ? 's' : ''}` : 'tâches aujourd’hui'],
   ];
   return (
-    <div className="ac-etat">
+    <div className="ac-etat ac-etat-ouvert anim">
       <div className="ac-chiffres">
         <a className="gc" href="#/applis">
           <span className="lab">Fiches</span>
@@ -396,36 +330,6 @@ function PanneauEtat({ apps, ext }) {
             <span className="lab">{lab}</span>
           </a>
         ))}
-      </div>
-      {groupes.map(([titre, liste]) =>
-        liste.length ? (
-          <React.Fragment key={titre}>
-            <span className="ac-sstitre">{titre}</span>
-            <div className="ac-encarts">
-              {liste.map((a) => (
-                <Encart key={a.id} app={a} site={ext?.sites?.[a.id]} envoi={envoi(a)} delai={0} />
-              ))}
-            </div>
-          </React.Fragment>
-        ) : null,
-      )}
-      <Fraicheur liste={ext?.fraicheur} />
-      <div className="ac-legende">
-        <span>
-          <i style={{ background: 'var(--ok)' }} />
-          tout va
-        </span>
-        <span>
-          <i style={{ background: 'var(--run)' }} />à surveiller
-        </span>
-        <span>
-          <i style={{ background: 'var(--ko)' }} />
-          bloqué
-        </span>
-        <span>
-          <i style={{ background: 'var(--none)' }} />
-          rien encore
-        </span>
       </div>
     </div>
   );
@@ -566,7 +470,7 @@ export function AccueilPage() {
       <div className="ac-minis">
         <Mini id="agenda" ouvert={ouvert} onBasculer={setOuvert} valeur={agendaV} sous={agendaS} />
         <Mini id="mails" ouvert={ouvert} onBasculer={setOuvert} valeur={mailsV} sous={mailsS} />
-        <Mini id="etat" ouvert={ouvert} onBasculer={setOuvert} valeur={`${vert}/${apps.length} au vert`} sous={etatS} />
+        <Mini id="etat" lien="#/applis" valeur={`${vert}/${apps.length} au vert`} sous={etatS} />
       </div>
 
       {ouvert ? (
@@ -583,9 +487,10 @@ export function AccueilPage() {
               }
             />
           ) : null}
-          {ouvert === 'etat' ? <PanneauEtat apps={apps} ext={ext} /> : null}
         </div>
       ) : null}
+
+      <Chiffres apps={apps} ext={ext} />
 
       {erreur ? <p className="error small">{erreur}</p> : null}
 
@@ -639,6 +544,8 @@ export function AccueilPage() {
           ) : null}
         </section>
       </div>
+
+      <Fraicheur liste={ext?.fraicheur} />
     </div>
   );
 }
