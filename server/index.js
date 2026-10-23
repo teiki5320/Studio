@@ -104,7 +104,6 @@ import {
   passageDuJour,
   renvoyerPlans,
   resumePlans,
-  envoyerAClaude,
   consigneClaude,
   trouverProbleme,
   noterCorrection,
@@ -162,7 +161,7 @@ app.use((req, res, next) => {
       });
     return;
   }
-  res.status(403).send('Drama Studio ne répond qu’aux pages ouvertes sur ce Mac (localhost).');
+  res.status(403).send('Le Studio ne répond qu’aux pages ouvertes sur ce Mac (localhost).');
 });
 
 app.use(express.json({ limit: '60mb' }));
@@ -1438,14 +1437,6 @@ app.get('/api/indexation/consigne', (req, res) => {
   }
 });
 // File d'attente pour la routine Claude « Indexation : corrections ».
-app.post('/api/indexation/envoyer', (req, res) => {
-  try {
-    envoyerAClaude(String((req.body || {}).id || ''));
-    res.json(etatIndexation());
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
 // Point du matin : déposé par la routine de 7 h, réponses de Jean, file d'actions.
 const reponse = (f) => (req, res) => {
   try {
@@ -1457,25 +1448,21 @@ const reponse = (f) => (req, res) => {
 app.get('/api/point', (req, res) => res.json(pointDuMatin()));
 app.post('/api/point', reponse((req) => deposerPoint(req.body)));
 app.post('/api/point/corbeille', reponse((req) => demanderCorbeille(Array.isArray(req.body?.groupes) ? req.body.groupes.map(String) : [])));
-app.post('/api/indexation/corrige', (req, res) => {
-  try {
-    noterCorrection(String((req.body || {}).id || ''), 'Corrigé (noté à la main)');
-    res.json(etatIndexation());
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
 // À faire (Accueil) : tout ce qu'il reste à faire, une file commune pour Claude.
 app.get('/api/afaire', (req, res) => res.json(listeAfaire()));
 app.post('/api/afaire', reponse((req) => deposerAfaire(req.body)));
 app.post('/api/afaire/envoyer', reponse((req) => envoyerAfaire(String(req.body?.id || ''), String(req.body?.choix || 'oui'))));
 app.get('/api/afaire/file', (req, res) => res.json(fileAfaire()));
 app.post('/api/afaire/retour', reponse((req) => retourAfaire(String(req.body?.id || ''), req.body?.reussi !== false, req.body?.compteRendu)));
-setInterval(() => {
+// Le passage du jour d'Indexation (dès 4 h 30, voir passageDuJour) : on
+// regarde toutes les 10 minutes, et une fois juste après le démarrage.
+const passageSiDu = () => {
   try {
     if (passageDuJour() && getJob(passageId)?.status !== 'running') lancerPassage();
   } catch {}
-}, 30 * 60 * 1000);
+};
+setTimeout(passageSiDu, 60 * 1000);
+setInterval(passageSiDu, 10 * 60 * 1000);
 
 // ---------- Mes applis (repris du Dashboard) ----------
 let synchroApplis = null;
@@ -2018,7 +2005,7 @@ if (fs.existsSync(DIST_DIR)) {
 
 app.listen(PORT, HOST, () => {
   console.log('');
-  console.log('  🎬 Drama Studio');
+  console.log('  🎬 Studio');
   console.log(`  → http://localhost:${PORT}`);
   if (!fs.existsSync(DIST_DIR)) {
     console.log('  (interface non construite : lance `npm run dev` ou `npm run build`)');

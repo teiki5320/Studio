@@ -20,6 +20,9 @@ const SITES = {
   keurdeco: 'https://www.keurdeco.com',
   keurbook: 'https://www.keurbook.com',
   solelis: 'https://solelis.com',
+  keurfoot: 'https://keurfoot.com',
+  keurkado: 'https://keurkado.com',
+  erea: 'https://erea.toakeur.com',
 };
 
 // Gardé 10 minutes. Au-delà, on montre tout de suite le dernier état connu et
@@ -84,18 +87,18 @@ async function vues7j() {
 // Une source qui ne se met plus à jour se voit tout de suite sur l'Accueil.
 function fraicheur(ix, toutes, vues) {
   const a = applis();
-  const plusVieilleFiche = (a?.apps || [])
-    .map((x) => Object.values(x.fiches || {}).filter(Boolean).sort()[0])
-    .filter(Boolean)
-    .sort()[0];
+  // Les fiches sont « fraîches » quand la tâche des fiches (6 h 30) les a
+  // relues et vérifiées, même si rien n'a changé (une fiche juste ne bouge
+  // pas : sa date à elle n'est pas un signe de panne).
   const ficheRoutine = toutes.find((r) => r.id === 'fiches-mes-apps');
+  const fichesRelues = [a?.verification?.le, ficheRoutine?.dernierPassage].filter(Boolean).sort().pop();
   const bloquees = toutes.filter((r) => r.active && r.statut === 'bloquee');
   const dernierRun = toutes.map((r) => r.dernierPassage).filter(Boolean).sort().pop();
   const derniereVue = (vues?.jours || []).map((j) => j.date).sort().pop();
   const ixErreurs = ix.sites.filter((s) => s.erreur).length;
   return [
     { cle: 'code', ic: '🐙', nom: 'Code (GitHub)', le: a?.synchro?.le, seuilH: 7, lien: '#/applis', erreur: a?.synchro?.ok === false ? a.synchro.erreur || 'synchro en échec' : null },
-    { cle: 'fiches', ic: '📄', nom: 'Fiches des applis', le: plusVieilleFiche ? `${plusVieilleFiche}T12:00:00Z` : null, seuilH: 50, lien: '#/applis', detail: ficheRoutine?.dernierPassage ? 'la plus ancienne' : null },
+    { cle: 'fiches', ic: '📄', nom: 'Fiches des applis', le: fichesRelues || null, seuilH: 26, lien: '#/applis' },
     { cle: 'indexation', ic: '🔎', nom: 'Indexation Google', le: ix.dernierPassage, seuilH: 26, lien: '#/indexation', erreur: ixErreurs ? `${ixErreurs} site(s) en erreur` : null },
     { cle: 'sites', ic: '🌐', nom: 'Sites en ligne', le: cacheSites.at ? new Date(cacheSites.at).toISOString() : null, seuilH: 1, lien: '#/accueil' },
     { cle: 'audience', ic: '📈', nom: 'Audience', le: derniereVue ? `${derniereVue}T12:00:00Z` : null, seuilH: 50, lien: '#/audience', erreur: etatCloudflare().configure ? null : 'clé Cloudflare absente' },

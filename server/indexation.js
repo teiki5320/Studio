@@ -446,7 +446,13 @@ function problemesDuSite(propriete, site, ignores, file = {}) {
     .map((g) => {
       const suivi = ignores[`${propriete}|${g.cle}`];
       const id = `${propriete}|${g.cle}`;
-      return { ...g, id, corrige: suivi ? { ...suivi, ...resultatCorrection(site, g, suivi) } : null, envoi: file[id] || null };
+      const corrige = suivi ? { ...suivi, ...resultatCorrection(site, g, suivi) } : null;
+      // Plan du site renvoyé : on redit ce que Google en sait AUJOURD'HUI (les
+      // plans sont relus à chaque passage), pas la phrase figée du jour de l'envoi.
+      if (corrige && g.action === 'plan' && (site.sitemaps || []).length && !/^Corrigé/.test(corrige.compteRendu || '')) {
+        corrige.compteRendu = resumePlans(site.sitemaps);
+      }
+      return { ...g, id, corrige, envoi: file[id] || null };
     })
     .sort((a, b) => b.gravite - a.gravite || b.urls.length - a.urls.length);
 }
@@ -543,9 +549,10 @@ Règles :
 }
 
 // ---------- File d'attente pour Claude ----------
-// « Envoyer à Claude » range le problème ici ; la routine Claude « Indexation :
-// corrections » (routine « Référencement du jour », 6 h) prend la file, corrige chaque site et
-// renvoie son compte rendu (retourClaude).
+// « Envoyer à Claude » (depuis l'Accueil) range le problème ici ; la routine
+// « Sites du jour » (5 h 05, partie référencement) prend la file commune
+// (/api/afaire/file), corrige chaque site et renvoie son compte rendu
+// (/api/afaire/retour → retourClaude).
 export function envoyerAClaude(id) {
   trouverProbleme(id);
   const etat = lireEtat();
@@ -608,12 +615,16 @@ export function noterCorrection(id, compteRendu) {
   ecrireJson(ETAT, etat);
 }
 
-// Un passage par jour, à partir de 7 h, quand le Studio est allumé.
+// Un passage par jour, à partir de 4 h 30 : les chiffres sont frais pour
+// « Sites du jour » (5 h 05) et le Point du matin (7 h). Le Studio tourne en
+// service sur le Mac (launchd), il n'a pas besoin d'être ouvert.
+export const HEURE_PASSAGE = { h: 4, min: 30 };
 export function passageDuJour() {
   const { connecte } = etatIndexation();
   const dernier = lireEtat().dernierPassage;
   const maintenant = new Date();
-  return connecte && maintenant.getHours() >= 7 && (!dernier || new Date(dernier).toDateString() !== maintenant.toDateString());
+  const apres = maintenant.getHours() * 60 + maintenant.getMinutes() >= HEURE_PASSAGE.h * 60 + HEURE_PASSAGE.min;
+  return connecte && apres && (!dernier || new Date(dernier).toDateString() !== maintenant.toDateString());
 }
 
 // ---------- Performances sur Google (7 jours) ----------
