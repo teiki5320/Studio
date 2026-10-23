@@ -1,0 +1,32 @@
+/* Point du matin (Accueil) */
+.pm { padding: 22px 24px; border-radius: 28px; background: var(--carte); box-shadow: var(--clay); display: grid; gap: 14px; }
+.pm h3 { margin: 0; font-size: 22px; font-weight: 800; }
+.pm-tete { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.pm-tete > span, .pm-vide { color: var(--c-muted); font-size: 13px; margin: 4px 0; }
+.pm-compteurs { display: flex; gap: 10px; flex-wrap: wrap; }
+.pm-compteurs span { padding: 8px 14px; border-radius: 14px; font-size: 14px; }
+.pm-compteurs b { font-size: 20px; margin-right: 4px; }
+.pm-compteurs .run { background: var(--run-tint); color: var(--run); }
+.pm-compteurs .ko { background: var(--ko-tint); color: var(--ko); }
+.pm-compteurs .ok { background: var(--ok-tint); color: var(--ok); }
+.pm-carte { background: var(--carte-2); border-radius: 18px; padding: 12px 16px; box-shadow: var(--clay-sm); }
+.pm-carte h4 { margin: 0 0 6px; font-size: 15px; }
+.pm-carte h4.ko { color: var(--ko); }
+.pm-ligne { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-top: 1px solid var(--ligne); }
+.pm-ligne:first-of-type { border-top: 0; }
+.pm-texte { font-size: 14px; line-height: 1.45; }
+.pm-texte small { display: block; color: var(--c-muted); }
+.pm-boutons { display: flex; gap: 6px; flex: none; }
+.pm-etat { display: block; font-size: 13px; margin-top: 2px; }
+.pm-etat.ok { color: var(--ok); } .pm-etat.ko { color: var(--ko); } .pm-etat.run { color: var(--run); }
+.pm-deux { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@media (max-width: 760px) { .pm-deux { grid-template-columns: 1fr; } }
+.pm-rdv { font-size: 14px; padding: 2px 0; }
+.pm-rdv small, .pm-mail small { color: var(--c-muted); }
+.pm-mail { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; padding: 3px 0; cursor: pointer; }
+.pm-mail.fait { opacity: .6; }
+.pm-sites { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; }
+@media (max-width: 760px) { .pm-sites { grid-template-columns: 1fr; } }
+.pm-site-l { all: unset; cursor: pointer; display: flex; gap: 8px; align-items: baseline; font-size: 14px; padding: 4px 0; width: 100%; }
+.pm-site-l small { color: var(--c-muted); }
+.pm-site ul { margin: 2px 0 6px 26px; padding: 0; font-size: 13px; color: var(--c-muted); }

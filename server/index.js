@@ -120,6 +120,7 @@ import {
   depotDe,
 } from './indexation.js';
 import { applis, construireApplis, synchroniserApplis, synchroDue } from './applis.js';
+import { pointDuMatin, deposerPoint, repondre, demanderCorbeille, fileActions, retourAction } from './point.js';
 import { accueil } from './accueil.js';
 import { routines } from './routines.js';
 import { audience, etatCloudflare, enregistrerCle as enregistrerCleCloudflare, oublierCle as oublierCleCloudflare } from './audience.js';
@@ -1484,6 +1485,20 @@ app.post('/api/indexation/envoyer', (req, res) => {
     res.status(400).json({ error: e.message });
   }
 });
+// Point du matin : déposé par la routine de 7 h, réponses de Jean, file d'actions.
+const reponse = (f) => (req, res) => {
+  try {
+    res.json(f(req));
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+};
+app.get('/api/point', (req, res) => res.json(pointDuMatin()));
+app.post('/api/point', reponse((req) => deposerPoint(req.body)));
+app.post('/api/point/repondre', reponse((req) => repondre(String(req.body?.id || ''), String(req.body?.choix || ''))));
+app.post('/api/point/corbeille', reponse((req) => demanderCorbeille(Array.isArray(req.body?.groupes) ? req.body.groupes.map(String) : [])));
+app.get('/api/point/actions', (req, res) => res.json(fileActions()));
+app.post('/api/point/retour', reponse((req) => retourAction(String(req.body?.id || ''), Boolean(req.body?.reussi), req.body?.compteRendu)));
 app.get('/api/indexation/file', (req, res) => res.json(fileClaude()));
 app.post('/api/indexation/retour', (req, res) => {
   try {
