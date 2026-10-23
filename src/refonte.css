@@ -1,0 +1,635 @@
+/* ============================================================
+   Refonte « Studio animé » (maquette du 23/10, canevas Design
+   « Studio — refonte animée »). Chargée en DERNIER par Shell.jsx :
+   elle repeint les jetons (couleurs, ombres, polices) et l'ossature,
+   sans toucher aux écrans eux-mêmes.
+   - Palette nuit chaude, accent pêche ; thème clair crème.
+   - Titres Bricolage Grotesque, texte Geist, chiffres Geist Mono
+     (polices chargées dans index.html, repli système sinon).
+   - Cartes plates à liseré, qui se soulèvent au survol.
+   - Barre latérale large avec repère qui glisse ; barre d'onglets
+     du bas sur téléphone.
+   ============================================================ */
+
+html:root {
+  --fond: #11100f;
+  --side: #161412;
+  --carte: #1c1a18;
+  --carte-2: #25221f;
+  --texte: #f4efe9;
+  --c-muted: #a8a199;
+  --ligne: rgba(255, 236, 220, 0.08);
+  --ligne-2: rgba(255, 236, 220, 0.16);
+  --accent: #f2a285;
+  --accent-fort: #f6b9a2;
+  --accent-ink: #2a140b;
+  --accent-doux: rgba(242, 162, 133, 0.14);
+  --ok: #7fd6a0;
+  --ok-tint: rgba(127, 214, 160, 0.13);
+  --ko: #f28b82;
+  --ko-tint: rgba(242, 139, 130, 0.14);
+  --run: #e9be6c;
+  --run-tint: rgba(233, 190, 108, 0.14);
+  --none-tint: #2a2724;
+  --none: #8a837c;
+  --peach-ink: #f2a285;
+  --clay: 0 0 0 1px var(--ligne), 0 18px 40px -20px rgba(0, 0, 0, 0.75);
+  --clay-sm: 0 0 0 1px var(--ligne), 0 10px 24px -16px rgba(0, 0, 0, 0.7);
+  --clay-haut: 0 0 0 1px var(--ligne-2), 0 26px 48px -22px rgba(0, 0, 0, 0.85);
+  --inset: inset 0 0 0 1px var(--ligne);
+  --pouss: none;
+  --pouss-bas: none;
+  --font: 'Geist', -apple-system, 'Segoe UI', system-ui, sans-serif;
+  --titre: 'Bricolage Grotesque', 'Geist', -apple-system, system-ui, sans-serif;
+  --mono: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --doux: cubic-bezier(0.16, 0.84, 0.24, 1);
+  --ressort: cubic-bezier(0.34, 1.45, 0.5, 1);
+  --glass: rgba(22, 20, 18, 0.86);
+}
+
+html:root[data-theme='clair'] {
+  --fond: #f6f1ea;
+  --side: #eee6db;
+  --carte: #ffffff;
+  --carte-2: #f4ede4;
+  --texte: #2a241f;
+  --c-muted: #6b6259;
+  --ligne: rgba(48, 34, 22, 0.09);
+  --ligne-2: rgba(48, 34, 22, 0.18);
+  --accent: #b4532f;
+  --accent-fort: #963f20;
+  --accent-ink: #ffffff;
+  --accent-doux: rgba(180, 83, 47, 0.1);
+  --ok: #2f7d4e;
+  --ok-tint: rgba(47, 125, 78, 0.1);
+  --ko: #b3402c;
+  --ko-tint: rgba(179, 64, 44, 0.1);
+  --run: #8c620c;
+  --run-tint: rgba(140, 98, 12, 0.11);
+  --none-tint: #ece5dc;
+  --none: #9a9087;
+  --peach-ink: #b4532f;
+  --clay: 0 0 0 1px var(--ligne), 0 14px 30px -18px rgba(48, 34, 22, 0.28);
+  --clay-sm: 0 0 0 1px var(--ligne), 0 8px 18px -14px rgba(48, 34, 22, 0.26);
+  --clay-haut: 0 0 0 1px var(--ligne-2), 0 22px 40px -20px rgba(48, 34, 22, 0.32);
+  --glass: rgba(255, 255, 255, 0.88);
+}
+
+body {
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Les bulles d'argile n'ont plus leur place sur un fond plat. */
+.res-bulles {
+  display: none;
+}
+
+/* ---------- Typographie ---------- */
+.clay-shell h1,
+.clay-shell h2,
+.clay-shell h3 {
+  font-family: var(--titre) !important;
+  letter-spacing: -0.02em;
+}
+
+.rf-ic {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.rf-ic.petite {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- Barre latérale (ordinateur) ---------- */
+@media (min-width: 761px) {
+  .clay-shell .clay-side {
+    width: 236px;
+    flex: 0 0 236px;
+    border-radius: 0;
+    box-shadow: none;
+    border-right: 1px solid var(--ligne);
+    align-items: stretch;
+    padding: 22px 14px;
+    gap: 24px;
+    transition: background 0.4s;
+  }
+  .clay-shell .clay-logo {
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0 8px;
+    border-radius: 0;
+    background: none;
+    display: flex;
+    justify-content: flex-start;
+    gap: 12px;
+    font-size: inherit;
+    color: var(--texte);
+    text-decoration: none;
+    animation: none;
+  }
+  .clay-shell .rf-nav {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .clay-shell .clay-nav {
+    position: relative;
+    z-index: 1;
+    flex-direction: row;
+    justify-content: flex-start;
+    width: auto;
+    height: 44px;
+    padding: 0 14px;
+    gap: 12px;
+    border-radius: 12px;
+    font-size: 14.5px;
+    font-weight: 500;
+    color: var(--c-muted);
+    background: transparent;
+    box-shadow: none;
+    transition: color 0.25s;
+  }
+  .clay-shell .clay-nav:hover,
+  .clay-shell .clay-nav.on {
+    background: transparent;
+    box-shadow: none;
+    color: var(--texte);
+  }
+  .clay-shell .clay-nav-ic {
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+    font-size: inherit;
+  }
+  .clay-shell .clay-sep {
+    width: auto;
+    margin: 8px 12px;
+  }
+  .rf-repere {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    border-radius: 12px;
+    background: var(--carte-2);
+    box-shadow: inset 3px 0 0 var(--accent);
+    transition: transform 0.55s var(--ressort), height 0.3s;
+  }
+  .clay-shell .clay-dot {
+    top: -8px;
+    right: -10px;
+  }
+}
+
+.rf-logo-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  flex: none;
+  animation: rf-flotte 3.2s ease-in-out infinite;
+}
+.rf-logo-t {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.rf-logo-t b {
+  font-family: var(--titre);
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.rf-logo-t small {
+  font-size: 12px;
+  color: var(--c-muted);
+}
+.clay-nav.on .clay-nav-ic {
+  color: var(--accent);
+}
+.clay-nav .clay-nav-ic {
+  transition: transform 0.25s var(--ressort);
+}
+.clay-nav:hover .clay-nav-ic {
+  transform: translateY(-2px);
+}
+.clay-dot {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-family: var(--mono);
+}
+
+/* ---------- Barre d'onglets (téléphone) ---------- */
+@media (max-width: 760px) {
+  /* ressort.css remettait la barre en position relative : elle remontait en haut. */
+  .clay-shell .clay-side {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: auto;
+    z-index: 20;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    border-radius: 0;
+    border-top: 1px solid var(--ligne);
+    box-shadow: none;
+    padding: 6px 6px calc(8px + env(safe-area-inset-bottom));
+  }
+  .clay-shell .rf-nav {
+    display: flex;
+    flex: 1;
+    min-width: 0;
+  }
+  .rf-repere {
+    display: none;
+  }
+  .clay-shell .clay-nav {
+    color: var(--c-muted);
+    font-weight: 500;
+    background: transparent;
+    box-shadow: none;
+  }
+  .clay-shell .clay-nav {
+    flex: 1 0 50px;
+    min-width: 50px;
+  }
+  .clay-shell .clay-nav .clay-nav-t {
+    display: block;
+    font-size: 10px;
+    max-width: 56px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .clay-shell .clay-nav-ic {
+    width: 52px;
+    height: 32px;
+    border-radius: 999px;
+    background: transparent;
+    box-shadow: none;
+    transition: background 0.3s, color 0.3s;
+  }
+  .clay-shell .clay-nav.on {
+    background: transparent;
+    box-shadow: none;
+    color: var(--accent);
+  }
+  .clay-shell .clay-nav.on .clay-nav-ic {
+    background: var(--accent-doux);
+    animation: res-pop 0.5s ease;
+  }
+}
+
+/* ---------- Barre du haut ---------- */
+.clay-shell .clay-top {
+  border-bottom: 0;
+  padding: 26px clamp(16px, 3vw, 40px) 4px;
+}
+.clay-shell .clay-top h1 {
+  font-size: clamp(28px, 3.2vw, 42px);
+  font-weight: 800;
+  line-height: 1.05;
+  animation: rf-monte 0.6s var(--doux) both;
+}
+.clay-shell .clay-pill {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: var(--carte);
+  box-shadow: var(--clay-sm);
+  color: var(--texte);
+  transition: box-shadow 0.25s, transform 0.2s;
+}
+.clay-shell .clay-pill:hover {
+  box-shadow: 0 0 0 1px var(--accent);
+}
+.clay-shell .clay-pill:active {
+  transform: scale(0.94);
+}
+.clay-shell .clay-content {
+  padding: 22px clamp(16px, 3vw, 40px) 64px;
+}
+
+/* ---------- Boutons ---------- */
+.clay-shell .clay-btn {
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: none;
+  min-height: 40px;
+  transition: transform 0.2s var(--ressort), filter 0.2s, box-shadow 0.2s;
+}
+.clay-shell .clay-btn:hover {
+  filter: brightness(1.07);
+}
+.clay-shell .clay-btn:active {
+  transform: scale(0.95);
+}
+.clay-shell .clay-btn.ghost {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ligne-2);
+}
+.clay-shell .clay-btn.ghost:hover {
+  box-shadow: inset 0 0 0 1px var(--accent);
+  filter: none;
+}
+.clay-shell .clay-btn.small {
+  min-height: 34px;
+  border-radius: 10px;
+}
+.clay-shell .clay-badge {
+  border-radius: 7px;
+  font-weight: 600;
+}
+
+/* ---------- Cartes : liseré, rayon 20, soulèvement au survol ---------- */
+.clay-shell .clay-block,
+.clay-shell .clay-tile,
+.clay-shell .clay-big,
+.clay-shell .ac-col,
+.clay-shell .ac-panneau {
+  border-radius: 20px;
+}
+.clay-shell .clay-tile,
+.clay-shell .clay-big,
+.clay-shell .ac-e2,
+.clay-shell .ac-mini,
+.clay-shell .ac-chiffres .gc,
+.clay-shell .ac-raccourcis .rc,
+.clay-shell .ac-fr {
+  transition: transform 0.35s var(--doux), box-shadow 0.35s var(--doux), background 0.4s;
+}
+.clay-shell .clay-tile:hover,
+.clay-shell .clay-big:hover,
+.clay-shell .ac-e2:hover,
+.clay-shell .ac-mini:hover,
+.clay-shell .ac-chiffres .gc:hover,
+.clay-shell .ac-raccourcis .rc:hover,
+.clay-shell .ac-fr:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--clay-haut);
+}
+.clay-shell .clay-tile:active,
+.clay-shell .clay-big:active,
+.clay-shell .ac-e2:active,
+.clay-shell .ac-mini:active {
+  transform: scale(0.98);
+}
+.clay-shell .clay-tile-ic,
+.clay-shell .clay-big-ic {
+  box-shadow: none;
+}
+
+/* ---------- Accueil ---------- */
+.accueil .ac-salut .jour {
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.accueil .ac-salut h3 {
+  font-size: clamp(34px, 4.4vw, 54px);
+  font-weight: 800;
+  line-height: 1;
+  margin-top: 6px;
+}
+.accueil .ac-salut h3::after {
+  content: '.';
+  color: var(--accent);
+}
+.accueil .ac-mini {
+  border: 0;
+  min-height: 78px;
+  padding: 14px 18px;
+  border-radius: 20px;
+}
+.accueil .ac-mini.on {
+  box-shadow: 0 0 0 1.5px var(--accent), var(--clay-sm);
+}
+html:root .accueil .ac-mini.agenda.on,
+html:root .accueil .ac-mini.mails.on,
+html:root .accueil .ac-mini.etat.on {
+  background: var(--carte);
+}
+.accueil .ac-mini .ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+}
+.accueil .ac-mini .t b {
+  font-family: var(--titre);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.accueil .ac-chiffres .gc b,
+.accueil .ac-raccourcis b {
+  font-family: var(--mono);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.accueil .ac-mini .fl {
+  transition: transform 0.35s var(--ressort);
+}
+.accueil .ac-chiffres {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+.accueil .ac-chiffres .gc {
+  position: relative;
+  overflow: hidden;
+  padding: 18px 20px;
+  border-radius: 20px;
+  min-height: 128px;
+}
+.accueil .ac-chiffres .gc b {
+  font-size: 40px;
+  margin: 4px 0 2px;
+}
+/* Un reflet passe une fois sur les chiffres à l'arrivée. */
+.accueil .ac-chiffres .gc::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.06) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: rf-reflet 2.4s 0.9s ease-in-out;
+}
+.accueil .ac-courbe {
+  height: 34px;
+  margin-top: auto;
+}
+.accueil .ac-raccourcis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.accueil .ac-raccourcis .rc {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 18px 7px 8px;
+  border-radius: 999px;
+}
+.accueil .ac-raccourcis .ic {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: var(--accent-doux);
+  box-shadow: none;
+}
+.accueil .ac-raccourcis b {
+  font-size: 16px;
+}
+.accueil .ac-raccourcis .lab {
+  font-size: 14px;
+  font-weight: 500;
+}
+.accueil .ac-col {
+  padding: 20px 22px 14px;
+  border-radius: 20px;
+}
+.accueil .ac-col-t h3 {
+  font-size: 22px;
+}
+.accueil .ac-col-t h3 span {
+  font-family: var(--mono);
+  color: var(--accent);
+}
+.accueil .ac-col-t small {
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 500;
+  font-size: 12.5px;
+}
+.accueil .ac-tache .ac-logo img {
+  border-radius: 9px;
+}
+.accueil .ac-fr {
+  border-radius: 14px;
+}
+
+/* ---------- Mes applis : cartes à témoins ---------- */
+.clay-shell .ac-e2 {
+  padding: 18px;
+  border-radius: 20px;
+  gap: 14px;
+}
+.clay-shell .ac-e2 .ic {
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  box-shadow: none;
+}
+.clay-shell .ac-e2 .t b {
+  font-family: var(--titre);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.clay-shell .ac-e2 .t small {
+  font-weight: 500;
+}
+.clay-shell .ac-e2 .tm {
+  flex-direction: row;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  background: var(--carte-2);
+  box-shadow: none;
+}
+.clay-shell .ac-e2 .tm span {
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--texte);
+}
+.clay-shell .ac-legende {
+  background: transparent;
+  padding: 0;
+}
+
+/* Témoin rouge : un anneau qui s'élargit, au lieu d'un battement. */
+.clay-shell .battant {
+  position: relative;
+  color: var(--ko);
+  animation: none;
+}
+.clay-shell .battant::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: rf-anneau 1.8s ease-out infinite;
+}
+
+/* ---------- Animations ---------- */
+@keyframes rf-flotte {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes rf-monte {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes rf-reflet {
+  to {
+    transform: translateX(100%);
+  }
+}
+@keyframes rf-anneau {
+  0% {
+    opacity: 0.7;
+    transform: scale(0.6);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rf-logo-ic,
+  .clay-shell .clay-top h1,
+  .accueil .ac-chiffres .gc::after,
+  .clay-shell .battant::after {
+    animation: none !important;
+  }
+  .rf-repere {
+    transition: none;
+  }
+}

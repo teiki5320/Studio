@@ -7,7 +7,7 @@
 //   #/keurcook       → Keur Cook : Recettes ou Publicité
 //   #/recettes, #/chaine, #/encours, #/reglages, #/projet/<id>
 // (#/autre, l'ancienne entrée, renvoie vers #/chaine.)
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { LogoReseau } from './LogoReseau.jsx';
 import { VOICES } from '../shared/catalog.js';
 import { api, followJob } from './api.js';
@@ -31,6 +31,7 @@ import { ChainesPage, ChaineDetail, NouvelleChaine, AppliPubPage } from './Chain
 import './clay.css';
 import './ressort.css';
 import './reglages.css';
+import './refonte.css';
 import { useRessort, BULLES } from './ressort.js';
 
 // ---------- Adresse (#/…) ----------
@@ -87,37 +88,139 @@ const sectionOfProject = () => 'pub';
 // Keur Cook a deux usages : ses recettes en vidéo, et sa pub.
 const KEURCOOK_REPO = 'teiki5320/keurcook';
 
+// Icônes du menu (trait, couleur du texte) — refonte « Studio animé » du 23/10.
+const ICONES = {
+  accueil: <path d="M3 11l9-7 9 7v8a2 2 0 0 1-2 2h-4v-6H9v6H5a2 2 0 0 1-2-2z" />,
+  applis: (
+    <>
+      <rect x="3" y="3" width="7.5" height="7.5" rx="2" />
+      <rect x="13.5" y="3" width="7.5" height="7.5" rx="2" />
+      <rect x="3" y="13.5" width="7.5" height="7.5" rx="2" />
+      <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2" />
+    </>
+  ),
+  pub: (
+    <>
+      <path d="M4 10v4a1 1 0 0 0 1 1h2l6 4V5L7 9H5a1 1 0 0 0-1 1z" />
+      <path d="M16.5 9a4 4 0 0 1 0 6" />
+      <path d="M19 6.5a7.5 7.5 0 0 1 0 11" />
+    </>
+  ),
+  indexation: (
+    <>
+      <circle cx="11" cy="11" r="7" />
+      <path d="M20 20l-4-4" />
+    </>
+  ),
+  audience: (
+    <>
+      <path d="M3 17l5-5 4 3 8-8" />
+      <path d="M15 7h5v5" />
+    </>
+  ),
+  planning: (
+    <>
+      <rect x="3" y="5" width="18" height="16" rx="3" />
+      <path d="M3 10h18M8 3v4M16 3v4" />
+    </>
+  ),
+  encours: (
+    <>
+      <path d="M20 12a8 8 0 1 1-2.3-5.7" />
+      <path d="M20 4v5h-5" />
+    </>
+  ),
+  reglages: (
+    <>
+      <path d="M4 7h9M17 7h3M4 17h3M11 17h9" />
+      <circle cx="15" cy="7" r="2" />
+      <circle cx="9" cy="17" r="2" />
+    </>
+  ),
+  camera: (
+    <>
+      <rect x="3" y="6" width="13" height="12" rx="3" />
+      <path d="M16 10l5-3v10l-5-3" />
+    </>
+  ),
+  retour: <path d="M15 6l-6 6 6 6" />,
+  soleil: (
+    <>
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+    </>
+  ),
+  lune: <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />,
+};
+
+export function Icone({ id, petite = false }) {
+  return (
+    <svg className={`rf-ic${petite ? ' petite' : ''}`} viewBox="0 0 24 24" aria-hidden="true">
+      {ICONES[id]}
+    </svg>
+  );
+}
+
 // Chaîne (dans Publicité, page de chaque appli) et Lexique (lien depuis Mes
 // applis) ne sont plus dans le menu ; leurs adresses marchent toujours.
 const NAV = [
-  { id: 'accueil', icon: '⌂', label: 'Accueil', path: 'accueil' },
-  { id: 'applis', icon: '📱', label: 'Mes applis', path: 'applis' },
-  { id: 'pub', icon: '📣', label: 'Publicité', path: 'pub' },
-  { id: 'indexation', icon: '🔎', label: 'Indexation', path: 'indexation' },
-  { id: 'audience', icon: '📈', label: 'Audience', path: 'audience' },
-  { id: 'planning', icon: '🗓️', label: 'Planning', path: 'planning' },
+  { id: 'accueil', label: 'Accueil', path: 'accueil' },
+  { id: 'applis', label: 'Mes applis', path: 'applis' },
+  { id: 'pub', label: 'Publicité', path: 'pub' },
+  { id: 'indexation', label: 'Indexation', path: 'indexation' },
+  { id: 'audience', label: 'Audience', path: 'audience' },
+  { id: 'planning', label: 'Planning', path: 'planning' },
   { id: 'sep' },
-  { id: 'encours', icon: '🏭', label: 'En cours', path: 'encours' },
-  { id: 'reglages', icon: '⚙️', label: 'Réglages', path: 'reglages' },
+  { id: 'encours', label: 'En cours', path: 'encours' },
+  { id: 'reglages', label: 'Réglages', path: 'reglages' },
 ];
 
+// Barre latérale : un repère glisse (en ressort) sous l'entrée choisie.
+// Sur téléphone, elle devient la barre d'onglets du bas (refonte.css).
 function Sidebar({ active, running }) {
+  const navRef = useRef(null);
+  const [repere, setRepere] = useState(null);
+  useLayoutEffect(() => {
+    const placer = () => {
+      const el = navRef.current?.querySelector('.clay-nav.on');
+      setRepere(el ? { top: el.offsetTop, height: el.offsetHeight } : null);
+    };
+    placer();
+    window.addEventListener('resize', placer);
+    return () => window.removeEventListener('resize', placer);
+  }, [active]);
   return (
     <aside className="clay-side">
-      <div className="clay-logo" title="Studio">🎬</div>
-      {NAV.map((n) =>
-        n.id === 'sep' ? (
-          <div key="sep" className="clay-sep" />
-        ) : (
-          <a key={n.id} href={`#/${n.path}`} className={`clay-nav${active === n.id ? ' on' : ''}`}>
-            <span className="clay-nav-ic">
-              {n.icon}
-              {n.id === 'encours' && running > 0 && <span className="clay-dot">{running}</span>}
-            </span>
-            {n.label}
-          </a>
-        ),
-      )}
+      <a href="#/accueil" className="clay-logo" title="Studio">
+        <span className="rf-logo-ic">
+          <Icone id="camera" />
+        </span>
+        <span className="rf-logo-t">
+          <b>Studio</b>
+          <small>Jean</small>
+        </span>
+      </a>
+      <nav ref={navRef} className="rf-nav" aria-label="Sections">
+        {repere ? <span className="rf-repere" aria-hidden="true" style={{ transform: `translateY(${repere.top}px)`, height: repere.height }} /> : null}
+        {NAV.map((n) =>
+          n.id === 'sep' ? (
+            <div key="sep" className="clay-sep" />
+          ) : (
+            <a
+              key={n.id}
+              href={`#/${n.path}`}
+              className={`clay-nav${active === n.id ? ' on' : ''}`}
+              aria-current={active === n.id ? 'page' : undefined}
+            >
+              <span className="clay-nav-ic">
+                <Icone id={n.id} />
+                {n.id === 'encours' && running > 0 && <span className="clay-dot">{running}</span>}
+              </span>
+              <span className="clay-nav-t">{n.label}</span>
+            </a>
+          ),
+        )}
+      </nav>
     </aside>
   );
 }
@@ -126,13 +229,13 @@ function TopBar({ title, onBack, theme, onTheme }) {
   return (
     <header className="clay-top">
       {onBack && (
-        <button className="clay-pill" onClick={onBack} title="Retour">
-          ←
+        <button className="clay-pill" onClick={onBack} title="Retour" aria-label="Retour">
+          <Icone id="retour" />
         </button>
       )}
       <h1>{title}</h1>
-      <button className="clay-pill" onClick={onTheme} title="Thème clair / sombre">
-        {theme === 'clair' ? '🌙' : '☀️'}
+      <button className="clay-pill" onClick={onTheme} title="Thème clair / sombre" aria-label="Thème clair ou sombre">
+        <Icone id={theme === 'clair' ? 'lune' : 'soleil'} />
       </button>
     </header>
   );

@@ -303,22 +303,26 @@ function Chiffres({ apps, ext }) {
       <div className="ac-chiffres">
         <a className="gc" href="#/applis">
           <span className="lab">Fiches</span>
-          <b>{nb(perimees)}</b>
+          <b>
+            <Compte n={perimees} />
+          </b>
           <span className={`var${perimees ? ' chaud' : ''}`}>à rafraîchir</span>
         </a>
         <a className="gc" href="#/applis">
           <span className="lab">Canaux</span>
-          <b>{nb(ouverts)}</b>
+          <b>
+            <Compte n={ouverts} delai={80} />
+          </b>
           <span className="var">ouverts sur {canaux}</span>
         </a>
         <a className="gc" href="#/indexation">
           <span className="lab">Google</span>
-          <b>{ext?.compteurs ? nb(c.pagesGoogle) : '—'}</b>
+          <b>{ext?.compteurs ? <Compte n={c.pagesGoogle} delai={160} /> : '—'}</b>
           <span className="var">pages sur {nb(c.pagesTotal)}</span>
         </a>
         <a className="gc cb" href="#/audience">
           <span className="lab">Visiteurs 7 j</span>
-          <b>{ext?.vues ? nb(ext.vues.total) : '—'}</b>
+          <b>{ext?.vues ? <Compte n={ext.vues.total} delai={240} /> : '—'}</b>
           <Courbe jours={ext?.vues?.jours} />
         </a>
       </div>
