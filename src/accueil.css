@@ -115,6 +115,7 @@ html:not([data-theme='clair']) .ac-general { background: #2b211d; }
 .ac-lien-liste a span { color: var(--c-muted); }
 
 /* ---------- Maquette n° 11 (23/10) : trois mini-cartes + deux colonnes ---------- */
+.ac-alerte { margin: 0 0 12px; padding: 12px 16px; border-radius: 16px; background: color-mix(in srgb, var(--ko) 18%, var(--carte)); border: 2px solid var(--ko); font-weight: 600; }
 .ac-minis { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
 .ac-mini { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 72px;
   padding: 10px 16px; border-radius: 20px; background: var(--carte); box-shadow: var(--clay-sm); border: 2px solid transparent;

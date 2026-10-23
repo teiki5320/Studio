@@ -90,7 +90,7 @@ function fraicheur(ix, toutes, vues) {
   // Les fiches sont « fraîches » quand la tâche des fiches (6 h 30) les a
   // relues et vérifiées, même si rien n'a changé (une fiche juste ne bouge
   // pas : sa date à elle n'est pas un signe de panne).
-  const ficheRoutine = toutes.find((r) => r.id === 'fiches-mes-apps');
+  const ficheRoutine = toutes.find((r) => r.id === 'fiches-du-jour');
   const fichesRelues = [a?.verification?.le, ficheRoutine?.dernierPassage].filter(Boolean).sort().pop();
   const bloquees = toutes.filter((r) => r.active && r.statut === 'bloquee');
   const dernierRun = toutes.map((r) => r.dernierPassage).filter(Boolean).sort().pop();

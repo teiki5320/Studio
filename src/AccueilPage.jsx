@@ -558,6 +558,11 @@ export function AccueilPage() {
         <LiensMenus />
       </div>
 
+      {/* Sécurité : après 7 h 30 sans point du jour, on le dit (sinon tout paraîtrait à jour). */}
+      {point !== undefined && (!point || ancien) && maintenant >= 7 * 60 + 30 ? (
+        <div className="ac-alerte">⚠️ Pas de point ce matin : la tâche de 7 h n’est pas passée. Les infos ci-dessous peuvent être anciennes. Vérifie que le Mac et l’app Claude sont ouverts.</div>
+      ) : null}
+
       <div className="ac-minis">
         <Mini id="agenda" ouvert={ouvert} onBasculer={setOuvert} valeur={agendaV} sous={agendaS} />
         <Mini id="mails" ouvert={ouvert} onBasculer={setOuvert} valeur={mailsV} sous={mailsS} />
