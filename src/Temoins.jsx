@@ -6,8 +6,6 @@ import React from 'react';
 import { estSite, ciInfo, ageFiches, FICHE_PERIMEE_JOURS, Logo } from './MesApplisPage.jsx';
 import './accueil.css';
 
-const COULEUR = { ok: 'var(--ok)', run: 'var(--run)', ko: 'var(--ko)', none: 'var(--none)' };
-
 const ilYa = (iso) => {
   if (!iso) return '';
   const j = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
@@ -19,7 +17,7 @@ export function temoins(app, site) {
   const c = ciInfo(app);
   const code = [c.k === 'run' ? 'run' : c.k, `Code : ${c.label.toLowerCase()}${c.dateLong ? ` (${c.dateLong})` : ''}${c.enCours ? ' · revérification en cours' : ''}`];
   const age = ageFiches(app);
-  const fiche = age === null ? ['none', 'Fiche sans date'] : [age > FICHE_PERIMEE_JOURS ? 'run' : 'ok', age > FICHE_PERIMEE_JOURS ? `Fiche figée depuis ${age} jours` : `Fiche de ${age} jour${age > 1 ? 's' : ''}`];
+  const fiche = age === null ? ['none', 'Fiche sans date'] : [age > FICHE_PERIMEE_JOURS ? 'run' : 'ok', age > FICHE_PERIMEE_JOURS ? `Fiche figée depuis ${age} jours` : age <= 0 ? 'Fiche du jour' : `Fiche de ${age} jour${age > 1 ? 's' : ''}`];
   let enLigne;
   if (estSite(app)) {
     enLigne = !site
@@ -46,22 +44,43 @@ export function temoins(app, site) {
   ];
 }
 
-export function Encart({ app, site, envoi, delai }) {
+// L'étiquette d'état d'une carte : [classe, libellé]. Une appli « en pause »
+// (dit par son accroche) n'est pas en panne : gris, comme sur la maquette.
+export const enPause = (app) => /en pause/i.test(app.tagline || '');
+export function etatApp(app, site) {
+  const k = pire(app, site);
+  if (k === 'ko') return ['ko', 'Bloqué'];
+  if (enPause(app)) return ['none', 'En pause'];
+  if (k === 'run') return ['run', 'À surveiller'];
+  return ['ok', 'Au vert'];
+}
+// « À voir » : au moins un témoin rouge ou orange.
+export const aVoir = (app, site) => ['ko', 'run'].includes(pire(app, site));
+
+// L'accroche sans le pictogramme de tête (« ⏸️ En pause · … ») : l'étiquette le dit déjà.
+export const accroche = (app) => String(app.tagline || '').replace(/^[\p{Extended_Pictographic}\uFE0F\u200D\s]+/u, '');
+
+export function Encart({ app, site, envoi, entre, rang = 0 }) {
+  const [cls, lib] = etatApp(app, site);
+  const quand = ilYa(envoi);
   return (
-    <a className="ac-e2 anim" style={{ animationDelay: `${delai}s` }} href={`#/applis/${app.id}`}>
-      <span className="haut">
-        <span className="ic">
-          <Logo app={app} cls="ic-in" />
-        </span>
-        <span className="t">
+    <a className={`ap-carte${entre ? ' entre' : ''}`} style={{ '--i': rang }} href={`#/applis/${app.id}`}>
+      <span className="ap-carte-h">
+        <Logo app={app} cls="ap-logo" />
+        <span className="ap-nom">
           <b>{app.name}</b>
-          <small>{ilYa(envoi)}</small>
+          <small>
+            {estSite(app) ? 'Site' : 'Appli'}
+            {quand ? ` · ${quand}` : ''}
+          </small>
         </span>
+        <span className={`ap-etat ${cls}`}>{lib}</span>
       </span>
-      <span className="temoins">
+      {app.tagline ? <span className="ap-accroche">{accroche(app)}</span> : null}
+      <span className="ap-temoins">
         {temoins(app, site).map(([nom, k, raison]) => (
-          <span key={nom} className="tm" title={raison}>
-            <i className={k === 'ko' ? 'battant' : ''} style={{ background: COULEUR[k] }} />
+          <span key={nom} className="ap-tm" title={raison}>
+            <i className={`ap-dot ${k}`} />
             <span>{nom}</span>
           </span>
         ))}
@@ -69,7 +88,6 @@ export function Encart({ app, site, envoi, delai }) {
     </a>
   );
 }
-
 
 // Le pire des trois témoins d'une app.
 export const pire = (app, site) => {
@@ -79,22 +97,18 @@ export const pire = (app, site) => {
 
 export function LegendeTemoins() {
   return (
-    <div className="ac-legende">
-      <span>
-        <i style={{ background: 'var(--ok)' }} />
-        tout va
-      </span>
-      <span>
-        <i style={{ background: 'var(--run)' }} />à surveiller
-      </span>
-      <span>
-        <i style={{ background: 'var(--ko)' }} />
-        bloqué
-      </span>
-      <span>
-        <i style={{ background: 'var(--none)' }} />
-        rien encore
-      </span>
+    <div className="ap-legende">
+      {[
+        ['ok', 'tout va'],
+        ['run', 'à surveiller'],
+        ['ko', 'bloqué'],
+        ['none', 'rien encore'],
+      ].map(([k, l]) => (
+        <span key={k}>
+          <i className={`ap-dot ${k}`} />
+          {l}
+        </span>
+      ))}
     </div>
   );
 }

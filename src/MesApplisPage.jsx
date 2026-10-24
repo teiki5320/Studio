@@ -9,7 +9,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { api, followJob } from './api.js';
 import './applis.css';
-import { Encart, LegendeTemoins } from './Temoins.jsx';
+import { Encart, LegendeTemoins, aVoir, etatApp, temoins, accroche } from './Temoins.jsx';
 
 const TINTS = ['mint', 'peach', 'sun', 'sky', 'lilac'];
 const BADGES = { requis: 'Requis', optionnel: 'Optionnel', gratuit: 'Gratuit' };
@@ -127,53 +127,117 @@ export function useApplis() {
 
 // ---------- La grille ----------
 // Page d'entrée : une carte par appli ou site avec ses trois témoins (venues
-// du panneau État de l'Accueil, choix de Jean le 23/10).
-function Grille({ data, onSynchro, synchro }) {
-  const [ext, setExt] = useState(null);
-  useEffect(() => {
-    api
-      .accueil()
-      .then(setExt)
-      .catch(() => setExt({}));
-  }, []);
-  const groupes = [
-    ['Applis', data.apps.filter((a) => !estSite(a))],
-    ['Sites', data.apps.filter(estSite)],
+// du panneau État de l'Accueil, choix de Jean le 23/10), filtrable en
+// pastilles Tout / Applis / Sites / À voir (maquette « Studio animé », 23/10).
+const CLE_FILTRE = 'studio.applis.filtre';
+const lireFiltre = () => {
+  try {
+    return localStorage.getItem(CLE_FILTRE) || 'tout';
+  } catch {
+    return 'tout';
+  }
+};
+
+// Petites icônes au trait (même dessin que la barre latérale).
+const TRACES = {
+  synchro: 'M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5',
+  livre: 'M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2zM22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7z',
+  cle: 'M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.8-3.8a6 6 0 0 1-7.9 7.9l-6.9 6.9a2.1 2.1 0 0 1-3-3l6.9-6.9a6 6 0 0 1 7.9-7.9z',
+  porte: 'M3 11l18-5v12L3 14zM11.6 16.8a3 3 0 1 1-5.8-1.6',
+  fusee: 'M4.5 16.5c-1.5 1.3-2 5-2 5s3.7-.5 5-2c.7-.8.7-2.1-.1-2.9a2.2 2.2 0 0 0-2.9-.1zM12 15l-3-3a22 22 0 0 1 2-4A12.9 12.9 0 0 1 22 2c0 2.7-.8 7.5-6 11a22.4 22.4 0 0 1-4 2zM9 12H4s.6-3 2-4c1.6-1.1 5 0 5 0M12 15v5s3-.6 4-2c1.1-1.6 0-5 0-5',
+  depot: 'M21 8l-9-5-9 5 9 5zM3 8v8l9 5 9-5V8M12 13v8',
+  vide: 'M5 12l4 4L19 6',
+};
+export function Ic({ n, cls = 'rf-ic petite' }) {
+  return (
+    <svg className={cls} viewBox="0 0 24 24" aria-hidden="true">
+      <path d={TRACES[n]} />
+    </svg>
+  );
+}
+
+function Grille({ data, ext, onSynchro, synchro }) {
+  const [filtre, setFiltre] = useState(lireFiltre);
+  const [bouge, setBouge] = useState(false);
+  const siteDe = (a) => ext?.sites?.[a.id];
+  const applis = data.apps.filter((a) => !estSite(a));
+  const sites = data.apps.filter(estSite);
+  const avoir = data.apps.filter((a) => aVoir(a, siteDe(a)));
+  const FILTRES = [
+    ['tout', 'Tout', data.apps],
+    ['applis', 'Applis', applis],
+    ['sites', 'Sites', sites],
+    ['avoir', 'À voir', avoir],
   ];
+  const vue = (FILTRES.find((f) => f[0] === filtre) || FILTRES[0])[2];
+  // Applis puis Sites, comme avant.
+  const liste = [...vue.filter((a) => !estSite(a)), ...vue.filter(estSite)];
+  const choisir = (id) => {
+    setFiltre(id);
+    setBouge(true);
+    try {
+      localStorage.setItem(CLE_FILTRE, id);
+    } catch {
+      /* rien : le filtre reste pour la visite */
+    }
+  };
   const s = data.synchro || {};
   const derniereModif = data.apps
     .flatMap((a) => Object.values(a.fiches || {}).filter(Boolean))
     .sort()
     .pop();
+  const pl = (n, mot) => `${n} ${mot}${n > 1 ? 's' : ''}`;
   return (
-    <div className="clay-content">
-      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-        <span className="clay-muted small" title={s.le ? `Dernière synchro avec GitHub : ${fmtDate(s.le, true)}` : ''}>
-          Fiches {relues(data.verification?.le)}
-          {derniereModif ? ` · dernière vraie modification le ${fmtDate(derniereModif)}` : ''}
-          {s.ok === false ? ' · ⚠️ dernière synchro en échec' : ''}
-        </span>
-        <button className="clay-btn small ghost" disabled={synchro} onClick={onSynchro}>
-          {synchro ? '⏳ Synchro…' : '🔄 Synchroniser'}
-        </button>
-        {/* Le Lexique n'est plus dans le menu : on l'ouvre d'ici. */}
-        <a className="clay-btn small ghost" href="#/lexique">
-          ▤ Lexique des services
-        </a>
+    <div className="clay-content ap">
+      <div className="ap-tete">
+        <div className="ap-tete-t">
+          <span className="ap-compte">
+            {pl(applis.length, 'appli')} · {pl(sites.length, 'site')}
+          </span>
+          <span className="ap-releve" title={s.le ? `Dernière synchro avec GitHub : ${fmtDate(s.le, true)}` : ''}>
+            Fiches {relues(data.verification?.le)}
+            {derniereModif ? ` · dernière vraie modification le ${fmtDate(derniereModif)}` : ''}
+            {s.ok === false ? <b className="ap-alerte"> · dernière synchro en échec</b> : null}
+          </span>
+        </div>
+        <div className="ap-filtres" role="group" aria-label="Filtrer les applis">
+          {FILTRES.map(([id, lab, l]) => (
+            <button key={id} type="button" data-filtre={id} className={`ap-pastille${filtre === id ? ' on' : ''}`} aria-pressed={filtre === id} onClick={() => choisir(id)}>
+              {lab}
+              <span className="n">{l.length}</span>
+            </button>
+          ))}
+        </div>
       </div>
-      {groupes.map(([titre, liste]) =>
-        liste.length ? (
-          <div key={titre}>
-            <p className="clay-sub">{titre}</p>
-            <div className="ac-encarts">
-              {liste.map((a) => (
-                <Encart key={a.id} app={a} site={ext?.sites?.[a.id]} envoi={ext?.envois?.[String(a.repo || '').toLowerCase()]} delai={0} />
-              ))}
-            </div>
-          </div>
-        ) : null,
+      <div className="ap-barre">
+        <LegendeTemoins />
+        <span className="ap-outils">
+          <button className="clay-btn small ghost" disabled={synchro} onClick={onSynchro}>
+            <Ic n="synchro" cls={`rf-ic petite${synchro ? ' tourne' : ''}`} />
+            {synchro ? 'Synchro…' : 'Synchroniser'}
+          </button>
+          {/* Le Lexique n'est plus dans le menu : on l'ouvre d'ici. */}
+          <a className="clay-btn small ghost" href="#/lexique">
+            <Ic n="livre" />
+            Lexique des services
+          </a>
+        </span>
+      </div>
+      {liste.length ? (
+        <div className="ap-grille">
+          {liste.map((a, i) => (
+            <Encart key={a.id} app={a} site={siteDe(a)} envoi={ext?.envois?.[String(a.repo || '').toLowerCase()]} entre={bouge} rang={i} />
+          ))}
+        </div>
+      ) : (
+        <div className="ap-vide">
+          <span className="ap-vide-ic">
+            <Ic n="vide" cls="rf-ic" />
+          </span>
+          <b>Rien à voir : tout est au vert.</b>
+          <small>Aucun témoin rouge ni orange pour l’instant.</small>
+        </div>
       )}
-      <LegendeTemoins />
     </div>
   );
 }
@@ -570,12 +634,14 @@ function AnciennesBoutiques({ app }) {
   ));
 }
 
-function FicheApp({ app, data, volet, famTint, ouvrir }) {
+const TITRE_TEMOIN = { ok: 'Tout va', run: 'À surveiller', ko: 'Bloqué', none: 'Rien encore' };
+
+function FicheApp({ app, data, ext, volet, famTint, ouvrir }) {
   const volets = [
-    ['technique', '🛠️', 'Technique'],
-    ['marketing', '📣', 'Marketing'],
+    ['technique', 'cle', 'Technique'],
+    ['marketing', 'porte', 'Marketing'],
   ];
-  if (app.publicationHtml) volets.push(['publication', '🚀', 'Publication']);
+  if (app.publicationHtml) volets.push(['publication', 'fusee', 'Publication']);
   const v = volets.find((x) => x[0] === volet) || volets[0];
   // Un titre de la fiche technique rattaché à un service ouvre sa fiche.
   const clicMd = (e) => {
@@ -590,11 +656,13 @@ function FicheApp({ app, data, volet, famTint, ouvrir }) {
   const [curseur, setCurseur] = useState(null);
   React.useLayoutEffect(() => {
     const b = barre.current?.querySelector('.on');
-    if (b) setCurseur({ left: b.offsetLeft, top: b.offsetTop, width: b.offsetWidth, height: b.offsetHeight });
+    if (b) setCurseur({ left: b.offsetLeft, width: b.offsetWidth });
   }, [v[0], app.id]);
   const age = ageFiches(app);
   const plusRecente = Object.values(app.fiches || {}).filter(Boolean).sort().pop();
   const version = (app.boutiques?.enBref || []).find((f) => /version/i.test(f.label))?.value?.split(/[ (]/)[0];
+  const site = ext?.sites?.[app.id];
+  const etat = etatApp(app, site);
 
   let corps;
   if (v[0] === 'publication') {
@@ -680,17 +748,20 @@ function FicheApp({ app, data, volet, famTint, ouvrir }) {
       <div className="fa-hero">
         <Logo app={app} cls="app-big" />
         <div className="fa-hero-t">
-          <h2>{app.name}</h2>
-          {app.tagline ? <p>{app.tagline}</p> : null}
-          <div className="chips">
+          <div className="fa-tags">
             {(app.platforms || []).map((p) => (
-              <span key={p} className="chip">
+              <span key={p} className="fa-tag">
                 {p}
               </span>
             ))}
+            <span className={`fa-tag ${etat[0]}`}>{etat[1]}</span>
+          </div>
+          <h2>{app.name}</h2>
+          {app.tagline ? <p>{accroche(app)}</p> : null}
+          <div className="chips fa-infos">
             {app.repo ? (
               <a className="chip" href={`https://github.com/${app.repo}`} target="_blank" rel="noopener noreferrer">
-                📦 {app.repo}
+                <Ic n="depot" /> {app.repo}
               </a>
             ) : (
               <span className="chip">Pas de dépôt</span>
@@ -701,12 +772,24 @@ function FicheApp({ app, data, volet, famTint, ouvrir }) {
         </div>
         <CiPill app={app} big />
       </div>
+      <div className="fa-temoins">
+        {temoins(app, site).map(([nom, k, raison]) => (
+          <div key={nom} className={`fa-tm ${k}`} title={raison}>
+            <span className="fa-tm-h">
+              <i className={`ap-dot ${k}`} />
+              {nom}
+            </span>
+            <b>{TITRE_TEMOIN[k]}</b>
+            <small>{raison.replace(/^Code : (.)/, (_, c) => c.toUpperCase())}</small>
+          </div>
+        ))}
+      </div>
       <div className="fa-onglets-l">
-        <div className="fa-onglets" ref={barre}>
+        <div className="fa-onglets" ref={barre} role="tablist">
           {curseur ? <span className="fa-curseur" style={curseur} /> : null}
           {volets.map(([id, ic, nom]) => (
-            <a key={id} className={id === v[0] ? 'on' : ''} href={`#/applis/${app.id}/${id}`}>
-              <span className="ic">{ic}</span>
+            <a key={id} role="tab" aria-selected={id === v[0]} className={id === v[0] ? 'on' : ''} href={`#/applis/${app.id}/${id}`}>
+              <Ic n={ic} cls="rf-ic petite ic" />
               {nom}
             </a>
           ))}
@@ -916,6 +999,14 @@ export function MesApplisPage({ arg }) {
   const [svc, setSvc] = useState(null);
   const [synchro, setSynchro] = useState(false);
   const [errSynchro, setErrSynchro] = useState('');
+  // Les adresses des sites et les derniers envois (témoins « En ligne », « envoyé il y a… »).
+  const [ext, setExt] = useState(null);
+  useEffect(() => {
+    api
+      .accueil()
+      .then(setExt)
+      .catch(() => setExt({}));
+  }, []);
   useEffect(() => setSvc(null), [arg]);
   if (!data) return <div className="clay-content clay-muted">{error || 'Chargement de tes applis…'}</div>;
   const famTint = famTintDe(data);
@@ -933,7 +1024,7 @@ export function MesApplisPage({ arg }) {
   };
   return (
     <div className="applis">
-      {app ? <FicheApp app={app} data={data} volet={volet || 'technique'} famTint={famTint} ouvrir={setSvc} /> : <Grille data={data} onSynchro={lancerSynchro} synchro={synchro} />}
+      {app ? <FicheApp app={app} data={data} ext={ext} volet={volet || 'technique'} famTint={famTint} ouvrir={setSvc} /> : <Grille data={data} ext={ext} onSynchro={lancerSynchro} synchro={synchro} />}
       {errSynchro && <p className="error small clay-content">{errSynchro}</p>}
       {svc ? <FicheService svc={svc} app={app} data={data} famTint={famTint} onFermer={() => setSvc(null)} onAller={setSvc} /> : null}
     </div>

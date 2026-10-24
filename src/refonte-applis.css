@@ -1,0 +1,791 @@
+/* ============================================================
+   Refonte « Studio animé » — Mes applis (grille + fiche d'une appli).
+   Importé en tête de refonte.css : ses règles générales passent après
+   celles-ci, d'où le préfixe .clay-shell .applis (spécificité ≥ 0,3,0).
+   Jetons : ceux de refonte.css (--carte, --ligne, --accent, --ok…).
+   ============================================================ */
+
+/* ---------- Témoins (pastilles) ---------- */
+.clay-shell .applis .ap-dot {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: none;
+  display: inline-block;
+  background: var(--none);
+}
+.clay-shell .applis .ap-dot.ok { background: var(--ok); }
+.clay-shell .applis .ap-dot.run { background: var(--run); color: var(--run); }
+.clay-shell .applis .ap-dot.ko { background: var(--ko); color: var(--ko); }
+/* Rouge ou orange : un anneau qui s'élargit. */
+.clay-shell .applis .ap-dot.ko::after,
+.clay-shell .applis .ap-dot.run::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  animation: rf-anneau 1.8s ease-out infinite;
+}
+
+/* ---------- Grille : en-tête ---------- */
+.clay-shell .applis .ap {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.clay-shell .applis .ap-tete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px 20px;
+  animation: rf-monte 0.6s var(--doux) both;
+}
+.clay-shell .applis .ap-tete-t {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.clay-shell .applis .ap-compte {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--texte);
+}
+.clay-shell .applis .ap-releve {
+  font-size: 13px;
+  color: var(--c-muted);
+}
+.clay-shell .applis .ap-alerte {
+  color: var(--ko);
+  font-weight: 600;
+}
+.clay-shell .applis .ap-filtres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.clay-shell .applis .ap-pastille {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--ligne-2);
+  background: var(--carte);
+  color: var(--texte);
+  font: 500 14px var(--font);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.2s var(--ressort);
+}
+.clay-shell .applis .ap-pastille .n {
+  font-family: var(--mono);
+  font-size: 13px;
+  opacity: 0.7;
+}
+.clay-shell .applis .ap-pastille:hover { border-color: var(--accent); }
+.clay-shell .applis .ap-pastille:active { transform: scale(0.95); }
+.clay-shell .applis .ap-pastille:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.clay-shell .applis .ap-pastille.on {
+  background: var(--texte);
+  border-color: var(--texte);
+  color: var(--fond);
+}
+
+.clay-shell .applis .ap-barre {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 18px;
+  animation: rf-monte 0.6s 0.05s var(--doux) both;
+}
+.clay-shell .applis .ap-legende {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  font-size: 13px;
+  color: var(--c-muted);
+}
+.clay-shell .applis .ap-legende span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.clay-shell .applis .ap-outils {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.clay-shell .applis .ap-outils .clay-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--texte);
+  text-decoration: none;
+}
+.clay-shell .applis .ap-outils .clay-btn:hover { opacity: 1; }
+.clay-shell .applis .tourne { animation: ap-tourne 1s linear infinite; }
+
+/* ---------- Grille : cartes ---------- */
+.clay-shell .applis .ap-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+  gap: 16px;
+}
+.clay-shell .applis .ap-carte {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+  border-radius: 20px;
+  background: var(--carte);
+  box-shadow: var(--clay-sm);
+  color: var(--texte);
+  text-decoration: none;
+  min-width: 0;
+  transition: transform 0.35s var(--doux), box-shadow 0.35s var(--doux), background 0.4s;
+}
+.clay-shell .applis .ap-carte:hover {
+  opacity: 1;
+  transform: translateY(-4px);
+  box-shadow: var(--clay-haut);
+}
+.clay-shell .applis .ap-carte:active { transform: scale(0.98); }
+.clay-shell .applis .ap-carte:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* Après un changement de filtre (ressort.js ne rejoue que les arrivées de page). */
+.clay-shell .applis .ap-carte.entre {
+  animation: ap-entre 0.6s var(--ressort) both;
+  animation-delay: calc(min(var(--i), 12) * 40ms);
+}
+.clay-shell .applis .ap-carte-h {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+.clay-shell .applis .ap-logo {
+  width: 52px;
+  height: 52px;
+  border-radius: 15px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--carte-2);
+  font-size: 26px;
+  box-shadow: 0 8px 18px -8px rgba(0, 0, 0, 0.5);
+}
+html:root[data-theme='clair'] .clay-shell .applis .ap-logo { box-shadow: 0 6px 14px -8px rgba(48, 34, 22, 0.35); }
+.clay-shell .applis .ap-logo img,
+.clay-shell .applis .fa-hero .app-big.logo-vrai img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+}
+.clay-shell .applis .ap-nom {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.clay-shell .applis .ap-nom b {
+  font-family: var(--titre);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clay-shell .applis .ap-nom small {
+  font-size: 12.5px;
+  color: var(--c-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* Étiquette d'état (et petites étiquettes de la fiche) */
+.clay-shell .applis .ap-etat,
+.clay-shell .applis .fa-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 7px;
+  flex: none;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: var(--carte-2);
+  color: var(--c-muted);
+}
+.clay-shell .applis .ap-etat.ok, .clay-shell .applis .fa-tag.ok { background: var(--ok-tint); color: var(--ok); }
+.clay-shell .applis .ap-etat.run, .clay-shell .applis .fa-tag.run { background: var(--run-tint); color: var(--run); }
+.clay-shell .applis .ap-etat.ko, .clay-shell .applis .fa-tag.ko { background: var(--ko-tint); color: var(--ko); }
+.clay-shell .applis .ap-accroche {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--c-muted);
+  min-height: 39px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.clay-shell .applis .ap-temoins {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: auto;
+}
+.clay-shell .applis .ap-tm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--carte-2);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.clay-shell .applis .ap-tm span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.clay-shell .applis .ap-vide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 44px 20px;
+  border-radius: 20px;
+  background: var(--carte);
+  box-shadow: var(--clay-sm);
+  text-align: center;
+  animation: rf-monte 0.5s var(--doux) both;
+}
+.clay-shell .applis .ap-vide-ic {
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 6px;
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+.clay-shell .applis .ap-vide b {
+  font-family: var(--titre);
+  font-size: 20px;
+  font-weight: 700;
+}
+.clay-shell .applis .ap-vide small {
+  font-size: 13.5px;
+  color: var(--c-muted);
+}
+
+/* ============================================================
+   Fiche d'une appli
+   ============================================================ */
+.clay-shell .applis .fa { gap: 20px; }
+.clay-shell .applis .fa-fil {
+  font-size: 13px;
+  font-weight: 500;
+}
+.clay-shell .applis .fa-fil b { font-weight: 600; }
+
+/* Hero */
+.clay-shell .applis .fa-hero {
+  position: relative;
+  overflow: hidden;
+  gap: 24px;
+  padding: 26px;
+  border-radius: 20px;
+  background: var(--carte);
+  box-shadow: var(--clay);
+}
+html:root .clay-shell .applis .fa-hero,
+html:root .clay-shell .applis .fa-poids { background: var(--carte); }
+html:root .clay-shell .applis .fa-phases {
+  background: linear-gradient(160deg, var(--accent-doux), transparent 60%), var(--carte);
+}
+/* Un halo pêche discret derrière le logo. */
+.clay-shell .applis .fa-hero::before {
+  content: '';
+  position: absolute;
+  left: -80px;
+  top: -120px;
+  width: 340px;
+  height: 340px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, var(--accent-doux), transparent);
+  pointer-events: none;
+}
+.clay-shell .applis .fa-hero > * { position: relative; }
+.clay-shell .applis .fa-hero .app-big {
+  width: 96px;
+  height: 96px;
+  border-radius: 26px;
+  overflow: hidden;
+  background: var(--carte-2);
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.6);
+  animation: ap-pop 0.5s 0.1s var(--ressort) both;
+}
+html:root[data-theme='clair'] .clay-shell .applis .fa-hero .app-big { box-shadow: 0 16px 32px -16px rgba(48, 34, 22, 0.45); }
+.clay-shell .applis .fa-hero-t {
+  flex: 1 1 300px;
+  gap: 0;
+}
+.clay-shell .applis .fa-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.clay-shell .applis .fa-hero-t h2 {
+  font-family: var(--titre);
+  font-size: clamp(34px, 4vw, 48px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+.clay-shell .applis .fa-hero-t p {
+  margin-top: 10px;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--c-muted);
+  max-width: 62ch;
+}
+.clay-shell .applis .fa-infos { margin-top: 14px; }
+.clay-shell .applis .fa-infos .chip {
+  gap: 6px;
+  padding: 0 10px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--c-muted);
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ligne-2);
+}
+.clay-shell .applis .fa-infos a.chip:hover { color: var(--texte); box-shadow: inset 0 0 0 1px var(--accent); transform: none; }
+.clay-shell .applis .ci-big {
+  align-self: flex-start;
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-weight: 600;
+  box-shadow: none;
+  text-decoration: none;
+}
+.clay-shell .applis .ci-big .ci-lbl small { font-weight: 500; }
+.clay-shell .applis a.ci-big:hover { opacity: 1; filter: brightness(1.08); }
+
+/* Les trois témoins, en cartes */
+.clay-shell .applis .fa-temoins {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+.clay-shell .applis .fa-tm {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px 18px;
+  border-radius: 20px;
+  background: var(--carte);
+  box-shadow: var(--clay-sm);
+}
+.clay-shell .applis .fa-tm-h {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--c-muted);
+}
+.clay-shell .applis .fa-tm b {
+  font-family: var(--titre);
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.clay-shell .applis .fa-tm.ko b { color: var(--ko); }
+.clay-shell .applis .fa-tm.run b { color: var(--run); }
+.clay-shell .applis .fa-tm small {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--c-muted);
+  white-space: pre-line;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Onglets soulignés, curseur accent qui glisse */
+.clay-shell .applis .fa-onglets-l {
+  gap: 10px 18px;
+  border-bottom: 1px solid var(--ligne);
+}
+.clay-shell .applis .fa-onglets {
+  gap: 4px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.clay-shell .applis .fa-curseur {
+  top: auto;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 12px var(--accent-doux);
+  transition: left 0.55s var(--ressort), width 0.55s var(--ressort);
+}
+.clay-shell .applis .fa-onglets a {
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--c-muted);
+  transition: color 0.25s;
+}
+.clay-shell .applis .fa-onglets a:hover { color: var(--texte); transform: none; opacity: 1; }
+.clay-shell .applis .fa-onglets a.on { color: var(--texte); }
+.clay-shell .applis .fa-onglets a.on .ic { color: var(--accent); }
+.clay-shell .applis .fa-age {
+  margin-left: auto;
+  padding: 8px 0;
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+/* Cartes plates à liseré */
+.clay-shell .applis .fa-carte,
+.clay-shell .applis .tile {
+  border-radius: 20px;
+  background: var(--carte);
+  box-shadow: var(--clay-sm);
+}
+.clay-shell .applis .fa-carte { padding: 20px 22px; }
+.clay-shell .applis .fa-carte-h h3,
+.clay-shell .applis .tile-h b {
+  font-family: var(--titre);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.clay-shell .applis .fa-carte-h small,
+.clay-shell .applis .tile-h span {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+.clay-shell .applis .fa-pt.run { background: var(--run); }
+.clay-shell .applis .fa-pt { background: var(--none); }
+.clay-shell .applis .fa-legende {
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+/* Trajets */
+.clay-shell .applis .fa-trajet-nom { font-weight: 600; }
+.clay-shell .applis .fa-etape {
+  border-radius: 12px;
+  background: var(--carte-2);
+  box-shadow: inset 0 0 0 1px var(--ligne);
+  transition: transform 0.3s var(--doux), box-shadow 0.25s;
+}
+.clay-shell .applis .fa-etape.cliquable:hover {
+  transform: translateY(-3px);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.clay-shell .applis .fa-etape-h { font-weight: 600; }
+.clay-shell .applis .fa-etape-h b { font-weight: 600; }
+.clay-shell .applis .fa-etape small { font-weight: 400; }
+
+/* L'essentiel */
+.clay-shell .applis .fa-bref-c {
+  border-radius: 16px;
+  background: var(--carte);
+  box-shadow: var(--clay-sm);
+}
+.clay-shell .applis .fa-bref-c .lab {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+.clay-shell .applis .fa-bref-c .val {
+  font-size: 13.5px;
+  font-weight: 500;
+}
+
+/* Services */
+.clay-shell .applis .fam-h {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.clay-shell .applis .chips .chip {
+  border-radius: 9px;
+  padding: 6px 11px;
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--carte-2);
+  box-shadow: none;
+  transition: box-shadow 0.25s, transform 0.25s var(--doux);
+}
+.clay-shell .applis button.chip:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.clay-shell .applis .chip-f { font-weight: 400; color: var(--c-muted); }
+.clay-shell .applis .sw { border-radius: 50%; width: 8px; height: 8px; }
+
+/* Fiche markdown dépliable */
+.clay-shell .applis .fiche { padding: 0; }
+.clay-shell .applis .fiche-toggle { padding: 18px 22px; }
+.clay-shell .applis .fiche-t b {
+  font-family: var(--titre);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.clay-shell .applis .fiche-t small { font-weight: 400; }
+.clay-shell .applis .chev {
+  padding: 8px 14px;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--ligne-2);
+  font-size: 13px;
+  font-weight: 600;
+  transition: box-shadow 0.25s, transform 0.2s var(--ressort);
+}
+.clay-shell .applis .fiche-toggle:hover .chev { box-shadow: inset 0 0 0 1px var(--accent); }
+.clay-shell .applis .toc a { font-weight: 500; }
+.clay-shell .applis .md {
+  margin: 0;
+  padding: 4px 22px 22px;
+  border-radius: 0;
+  background: transparent;
+  border-top: 1px solid var(--ligne);
+}
+.clay-shell .applis .md h1,
+.clay-shell .applis .md h2,
+.clay-shell .applis .md h3,
+.clay-shell .applis .md h4 {
+  font-family: var(--titre);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.clay-shell .applis .md pre,
+.clay-shell .applis .md blockquote { border-radius: 12px; }
+.clay-shell .applis .md code { font-family: var(--mono); }
+
+/* Marketing / Publication */
+.clay-shell .applis .fa-phases {
+  background: linear-gradient(160deg, var(--accent-doux), transparent 60%), var(--carte);
+}
+.clay-shell .applis .fa-sur {
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+.clay-shell .applis .fa-phases .fa-carte-h h3 { font-size: 22px; }
+.clay-shell .applis .fa-phase .rond {
+  border-radius: 12px;
+  font-family: var(--mono);
+  font-weight: 600;
+  background: var(--carte-2);
+  box-shadow: inset 0 0 0 1px var(--ligne);
+}
+.clay-shell .applis .fa-phase.run .rond { color: var(--accent); outline-color: var(--accent); }
+.clay-shell .applis .fa-phase.ok::before,
+.clay-shell .applis .fa-phase.run::before { background: linear-gradient(90deg, var(--ok), var(--accent)); }
+.clay-shell .applis .fa-phase b { font-weight: 600; }
+.clay-shell .applis .fa-phase small { font-weight: 400; }
+.clay-shell .applis .fa-force {
+  transition: transform 0.35s var(--doux), box-shadow 0.35s var(--doux);
+}
+.clay-shell .applis .fa-force:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--clay-haut);
+}
+.clay-shell .applis .fa-force b {
+  font-family: var(--titre);
+  font-size: 17px;
+  font-weight: 700;
+}
+.clay-shell .applis .fa-force p { font-weight: 400; }
+.clay-shell .applis .num {
+  border-radius: 9px;
+  font-family: var(--mono);
+  font-weight: 600;
+  background: var(--accent-doux);
+  box-shadow: none;
+  color: var(--accent);
+}
+.clay-shell .applis .fa-priorites li,
+.clay-shell .applis .fa-reste li { font-weight: 400; }
+.clay-shell .applis .fa-reste li .t b { font-weight: 600; }
+.clay-shell .applis .fa-reste li .t small { font-weight: 400; }
+.clay-shell .applis .fa-reste-h b {
+  font-family: var(--mono);
+  font-weight: 600;
+}
+.clay-shell .applis .fa-ligne span { font-weight: 500; }
+.clay-shell .applis .fa-ligne b { font-weight: 600; }
+.clay-shell .applis .fa-ligne b.gris { font-weight: 500; }
+.clay-shell .applis .fa-barre.run > span { background: var(--run); }
+.clay-shell .applis .fa-boutiques thead th {
+  font-family: var(--titre);
+  font-size: 16px;
+  font-weight: 700;
+}
+.clay-shell .applis .fa-boutiques tbody th { font-weight: 600; }
+.clay-shell .applis .fa-boutiques td { font-weight: 500; }
+.clay-shell .applis .fa-poids { background: var(--carte); }
+.clay-shell .applis .fa-poids .fa-carte-h b { font-family: var(--mono); font-weight: 600; }
+.clay-shell .applis .fa-poids .fa-carte-h b.run { color: var(--run); }
+.clay-shell .applis .fa-note { font-weight: 400; }
+.clay-shell .applis .fact {
+  border-radius: 12px;
+  font-weight: 400;
+}
+.clay-shell .applis .fact span:first-child { font-weight: 600; }
+.clay-shell .applis .fact span:last-child { font-weight: 500; }
+.clay-shell .applis .empty-note { font-weight: 400; }
+
+/* ---------- Téléphone ---------- */
+@media (max-width: 760px) {
+  .clay-shell .applis .ap { gap: 14px; }
+  .clay-shell .applis .ap-tete { gap: 12px; }
+  .clay-shell .applis .ap-filtres {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    width: calc(100% + 32px);
+    margin: 0 -16px;
+    padding: 2px 16px;
+    scrollbar-width: none;
+  }
+  .clay-shell .applis .ap-filtres::-webkit-scrollbar { display: none; }
+  .clay-shell .applis .ap-barre { flex-direction: column; align-items: flex-start; }
+  .clay-shell .applis .ap-legende { gap: 6px 14px; font-size: 12.5px; }
+  .clay-shell .applis .ap-grille {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  /* Carte compacte de la maquette téléphone : logo, nom + état, témoins en ligne. */
+  .clay-shell .applis .ap-carte {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    grid-template-areas:
+      'logo nom etat'
+      'logo tm tm';
+    column-gap: 12px;
+    row-gap: 8px;
+    align-items: center;
+    padding: 14px;
+  }
+  .clay-shell .applis .ap-carte-h { display: contents; }
+  .clay-shell .applis .ap-logo { grid-area: logo; width: 48px; height: 48px; border-radius: 14px; align-self: center; }
+  .clay-shell .applis .ap-nom { grid-area: nom; }
+  .clay-shell .applis .ap-nom b { font-size: 17px; }
+  .clay-shell .applis .ap-etat { grid-area: etat; height: 22px; font-size: 11.5px; }
+  .clay-shell .applis .ap-accroche { display: none; }
+  .clay-shell .applis .ap-temoins {
+    grid-area: tm;
+    display: flex;
+    gap: 14px;
+    margin: 0;
+  }
+  .clay-shell .applis .ap-tm {
+    padding: 0;
+    background: none;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--c-muted);
+  }
+
+  .clay-shell .applis .fa { gap: 14px; }
+  .clay-shell .applis .fa-hero {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 22px 18px;
+    gap: 14px;
+  }
+  .clay-shell .applis .fa-hero::before { left: 50%; margin-left: -170px; }
+  .clay-shell .applis .fa-hero .app-big { width: 88px; height: 88px; border-radius: 24px; }
+  .clay-shell .applis .fa-hero-t { flex: none; width: 100%; min-width: 0; align-items: center; }
+  .clay-shell .applis .fa-tags,
+  .clay-shell .applis .fa-infos { justify-content: center; }
+  .clay-shell .applis .fa-hero-t h2 { font-size: 32px; }
+  .clay-shell .applis .fa-hero-t p { font-size: 14px; margin-left: auto; margin-right: auto; }
+  .clay-shell .applis .ci-big { align-self: center; }
+  .clay-shell .applis .fa-temoins {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .clay-shell .applis .fa-tm {
+    padding: 12px 8px;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+  }
+  .clay-shell .applis .fa-tm-h { flex-direction: column; gap: 6px; font-size: 11px; }
+  .clay-shell .applis .fa-tm b { font-size: 13.5px; font-family: var(--font); font-weight: 600; letter-spacing: 0; }
+  .clay-shell .applis .fa-tm small { display: none; }
+  .clay-shell .applis .fa-onglets { flex: 1 1 100%; }
+  .clay-shell .applis .fa-onglets a { flex: 1; justify-content: center; padding: 0 6px; font-size: 13.5px; gap: 6px; }
+  .clay-shell .applis .fa-age { margin-left: 0; padding: 0 0 10px; }
+  .clay-shell .applis .fa-carte { padding: 16px; }
+}
+
+/* ---------- Animations ---------- */
+@keyframes ap-entre {
+  from { opacity: 0; transform: translateY(22px) scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ap-pop {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ap-tourne {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clay-shell .applis .ap-dot::after,
+  .clay-shell .applis .ap-carte.entre,
+  .clay-shell .applis .ap-tete,
+  .clay-shell .applis .ap-barre,
+  .clay-shell .applis .ap-vide,
+  .clay-shell .applis .fa-hero .app-big,
+  .clay-shell .applis .tourne {
+    animation: none !important;
+  }
+  .clay-shell .applis .ap-carte,
+  .clay-shell .applis .fa-curseur {
+    transition: none;
+  }
+}
+
+/* La légende reste discrète : pas d'anneau. */
+.clay-shell .applis .ap-legende .ap-dot::after { display: none; }

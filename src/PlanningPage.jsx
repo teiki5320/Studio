@@ -63,7 +63,28 @@ function lireRangement() {
   }
 }
 
-const COLS = '140px repeat(7, minmax(0, 1fr))';
+// Petites icônes au trait (pas d'émoji dans la grille).
+const DESSINS = {
+  chev: 'M6 9l6 6 6-6',
+  gauche: 'M15 18l-6-6 6-6',
+  droite: 'M9 6l6 6-6 6',
+  croix: 'M6 6l12 12M18 6L6 18',
+  plus: 'M12 5v14M5 12h14',
+  article: 'M7 3h7l4 4v14H7zM14 3v4h4M10 12h5M10 16h5',
+  globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z',
+};
+const Ic = ({ n, taille }) => (
+  <svg className="pl-ic" viewBox="0 0 24 24" aria-hidden="true" style={taille ? { width: taille, height: taille } : undefined}>
+    <path d={DESSINS[n]} />
+  </svg>
+);
+// Étiquette réseau colorée (TikTok, YouTube…).
+const Net = ({ r }) => (
+  <span className={`pl-net ${r}`}>
+    <LogoReseau id={r} taille={14} seul />
+    <span className="t">{NOM_RESEAU[r] || r}</span>
+  </span>
+);
 const pastille = (bg, color) => ({ fontSize: 12, fontWeight: 800, padding: '3px 10px', borderRadius: 999, background: bg, color, whiteSpace: 'nowrap' });
 const petitBouton = { border: 'none', borderRadius: 10, padding: '6px 10px', background: 'var(--carte-2)', color: 'var(--texte)', fontWeight: 800, fontSize: 12, cursor: 'pointer' };
 
@@ -96,24 +117,26 @@ function filtrer(d, cle) {
 // `appli` (clé du dépôt) : planning réduit à cette appli (écran Publicité).
 // Les sites : une ligne par site, ce qui sort chaque jour (articles datés,
 // épingles Pinterest prévues). Lu dans les dépôts, rien ne se déplace ici.
-function LignesSites({ sites, appli, jours, aujourdhui, caseSite, setCaseSite }) {
+function LignesSites({ sites, appli, jours, aujourdhui, caseSite, setCaseSite, rang0 = 0 }) {
   const liste = (sites?.sites || []).filter((s) => !appli || s.cle === appli);
   if (!liste.length) return null;
   return (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 2px 2px', color: 'var(--c-muted)', fontSize: 12 }}>
-        <span style={{ width: 12 }}>▾</span>
-        <span style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--texte)' }}>Sites</span>
+      <div className="pl-section statique">
+        <Ic n="globe" />
+        <span className="nom">Sites</span>
         <span>articles programmés et épingles Pinterest prévues</span>
       </div>
-      {liste.map((s) => (
-        <div key={s.cle} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '6px 10px', background: 'var(--side)', borderRadius: 12, minHeight: 52, boxSizing: 'border-box' }}>
-            <b style={{ fontSize: 13, display: 'flex', alignItems: 'center', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
-              <LogoAppli de={s.domaine} taille={18} />
-              {s.nom}
-            </b>
-            <span className="clay-muted" style={{ fontSize: 11 }}>{s.domaine}</span>
+      {liste.map((s, n) => (
+        <div key={s.cle} className="pl-rang pl-monte" style={{ '--i': rang0 + n }}>
+          <div className="pl-compte">
+            <div className="t">
+              <b>
+                <LogoAppli de={s.domaine} taille={20} />
+                <span className="nom">{s.nom}</span>
+              </b>
+              <small>{s.domaine}</small>
+            </div>
           </div>
           {jours.map((d) => {
             const j = iso(d);
@@ -126,11 +149,22 @@ function LignesSites({ sites, appli, jours, aujourdhui, caseSite, setCaseSite })
                 key={j}
                 type="button"
                 disabled={!ici.length}
+                aria-pressed={caseSite === k}
                 onClick={() => setCaseSite(caseSite === k ? null : k)}
-                style={{ background: j === aujourdhui ? 'var(--carte-2)' : 'var(--carte)', border: 'none', borderRadius: 12, minHeight: 52, padding: 5, display: 'flex', flexDirection: 'column', gap: 3, alignItems: 'flex-start', justifyContent: 'center', cursor: ici.length ? 'pointer' : 'default', color: 'var(--texte)', outline: caseSite === k ? '2px solid var(--accent)' : 'none', fontSize: 12, fontWeight: 800 }}
+                className={`pl-case pl-site-case${j === aujourdhui ? ' auj' : j < aujourdhui ? ' passe' : ''}${caseSite === k ? ' on' : ''}`}
               >
-                {a ? <span>📝 {pluriel(a, 'article')}</span> : null}
-                {p ? <span>📌 {pluriel(p, 'épingle')}</span> : null}
+                {a ? (
+                  <span className="pl-net article">
+                    <Ic n="article" />
+                    {pluriel(a, 'article')}
+                  </span>
+                ) : null}
+                {p ? (
+                  <span className="pl-net pinterest">
+                    <LogoReseau id="pinterest" taille={14} seul />
+                    {pluriel(p, 'épingle')}
+                  </span>
+                ) : null}
               </button>
             );
           })}
@@ -147,21 +181,35 @@ function DetailSite({ sites, caseSite, fermer }) {
   const ici = s?.jours[j] || [];
   if (!ici.length) return null;
   const jour = depuisIso(j).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
+  const a = ici.filter((e) => e.type === 'article').length;
+  const p = ici.length - a;
   return (
-    <div className="clay-block" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <LogoAppli de={s.domaine} taille={22} />
-        <b style={{ flex: 1 }}>
-          {s.nom} · {jour}
-        </b>
+    <div key={caseSite} className="pl-panneau">
+      <div className="pl-panneau-t">
+        <LogoAppli de={s.domaine} taille={44} seul />
+        <div className="t">
+          <b>{s.nom}</b>
+          <span>
+            {jour}
+            {a ? ` · ${pluriel(a, 'article')}` : ''}
+            {p ? ` · ${pluriel(p, 'épingle')}` : ''}
+          </span>
+        </div>
         <button className="clay-btn ghost small" onClick={fermer}>
           Fermer
         </button>
       </div>
       {ici.map((e, i) => (
-        <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'baseline', fontSize: 13 }}>
-          <span>{e.type === 'article' ? '📝' : '📌'}</span>
-          <span style={{ flex: 1 }}>
+        <div key={i} className="pl-entree">
+          {e.type === 'article' ? (
+            <span className="pl-net article">
+              <Ic n="article" />
+              Article
+            </span>
+          ) : (
+            <Net r="pinterest" />
+          )}
+          <span className="t">
             {e.lien ? (
               <a href={e.lien} target="_blank" rel="noreferrer">
                 {e.titre}
@@ -169,8 +217,8 @@ function DetailSite({ sites, caseSite, fermer }) {
             ) : (
               e.titre
             )}
-            {e.type === 'epingle' ? <span className="clay-muted small"> · Pinterest{e.prevision ? ' (prévision)' : ' (déjà programmée)'}</span> : <span className="clay-muted small"> · article, en ligne ce jour-là</span>}
           </span>
+          <span className="clay-muted small">{e.type === 'epingle' ? (e.prevision ? 'prévision' : 'déjà programmée') : 'en ligne ce jour-là'}</span>
         </div>
       ))}
     </div>
@@ -348,55 +396,46 @@ export function PlanningPage({ appli } = {}) {
     surLeMac() ? v.video : `${v.video}?dl=1&name=${encodeURIComponent(v.legende.slice(0, 120) + '.mp4')}`;
 
   // ---------- Vignette d'une publication dans la grille ----------
+  // Puce : logo et nom de l'appli, diode, titre, étiquette du réseau.
   const vignette = (p) => {
     const v = p.video;
-    const [fond, encre] = teinte(v);
+    const r = compteDe[p.compte]?.reseau;
+    const retard = enRetard(p);
     return (
       <div
         key={p.id}
+        className={`pl-puce${fiche === cle(p) ? ' on' : ''}`}
         onPointerDown={(e) => glisser(e, { type: 'pub', id: p.id })}
         onClick={() => !glisse.current && setFiche(cle(p))}
         title={v.titre}
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 4,
-          borderRadius: 8,
-          padding: '5px 5px 5px 7px',
-          cursor: 'grab',
-          touchAction: 'none',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
-          background: fond,
-          color: encre,
-          outline: fiche === cle(p) ? '2px solid var(--accent)' : 'none',
-          outlineOffset: 1,
-        }}
       >
-        <span style={{ fontSize: 11, fontWeight: 700, lineHeight: 1.2, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{v.titre}</span>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="haut">
+          <LogoAppli de={v.depot === 'recettes' ? 'keurcook' : v.depot} taille={20} seul />
+          <span className="appli">{v.appli}</span>
+          {/* Diode : verte = publiée, orange = à publier, rouge = en retard (toucher pour changer) */}
           <button
+            className="pl-mini-btn"
+            title={p.publie ? 'Publiée — toucher pour annuler' : `${retard ? 'En retard' : 'À publier'} — toucher une fois publiée`}
+            onClick={(e) => {
+              e.stopPropagation();
+              basculer(p);
+            }}
+          >
+            <span className={`pl-diode${p.publie ? ' ok' : retard ? ' ko' : ''}`} />
+          </button>
+          <button
+            className="pl-mini-btn"
             title="Enlever du planning"
             onClick={(e) => {
               e.stopPropagation();
               act(api.retirerPlanning(p.id));
             }}
-            style={{ width: 24, height: 24, borderRadius: 7, border: 'none', background: 'transparent', color: encre, fontSize: 13, fontWeight: 800, cursor: 'pointer', padding: 0, lineHeight: 1, opacity: 0.7 }}
           >
-            ✕
-          </button>
-          {/* Diode : verte = publiée, orange = à publier (toucher pour changer) */}
-          <button
-            title={p.publie ? 'Publiée — toucher pour annuler' : 'À publier — toucher une fois publiée'}
-            onClick={(e) => {
-              e.stopPropagation();
-              basculer(p);
-            }}
-            style={{ width: 24, height: 24, border: 'none', background: 'transparent', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <span style={{ width: 12, height: 12, borderRadius: '50%', background: p.publie ? '#3fbf6a' : '#f0962e', boxShadow: `0 0 0 2px ${fond}, 0 0 8px ${p.publie ? '#3fbf6a' : '#f0962e'}` }} />
+            <Ic n="croix" taille={13} />
           </button>
         </div>
+        <span className="titre">{v.titre}</span>
+        {r ? <Net r={r} /> : null}
       </div>
     );
   };
@@ -405,9 +444,7 @@ export function PlanningPage({ appli } = {}) {
   const fv = fiche && videos.get(fiche);
   const fps = fv ? pubsDe(fiche) : [];
   const ficheJsx = fv && (
-    <aside
-      style={{ position: 'fixed', top: 0, right: 0, bottom: 0, zIndex: 10, width: 360, maxWidth: '92%', boxSizing: 'border-box', background: 'var(--side)', borderRadius: '28px 0 0 28px', boxShadow: 'var(--clay)', padding: 20, display: 'flex', flexDirection: 'column', gap: 14, overflowY: 'auto' }}
-    >
+    <aside className="pl-fiche" key={fiche}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={pastille(teinte(fv)[0], teinte(fv)[1])}>
           <LogoAppli de={fv.depot === 'recettes' ? 'keurcook' : fv.depot} taille={16} />
@@ -520,10 +557,16 @@ export function PlanningPage({ appli } = {}) {
     </aside>
   );
 
+  // Ce qui sort sur les sites cette semaine (pour le sous-titre).
+  const listeSites = (sites?.sites || []).filter((s) => !appli || s.cle === appli);
+  const sortiesSites = listeSites.reduce((t, s) => t + Object.entries(s.jours).filter(([j]) => j >= premier && j <= dernier).reduce((u, [, l]) => u + l.length, 0), 0);
+  const nSemaine = publications.filter(dansSemaine).length;
+  let rang = 0; // ordre d'arrivée des lignes (entrée en cascade)
+
   return (
-    <div className="clay-content" style={{ maxWidth: 'none', padding: 0, position: 'relative' }}>
-      {error && <p className="error small" style={{ padding: '16px 28px 0', margin: 0 }}>{error}</p>}
-      <div style={{ padding: '14px 28px 40px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+    <div className="clay-content pl-page" data-sans-ressort="">
+      {error && <p className="error small" style={{ padding: '16px clamp(16px, 3vw, 40px) 0', margin: 0 }}>{error}</p>}
+      <div className="pl-corps">
           {/* À placer : dans le planning d'une appli seulement (le général ne fait que montrer) */}
           {appli && aPlacer.length > 0 && (
             <>
@@ -531,21 +574,20 @@ export function PlanningPage({ appli } = {}) {
             <b>À placer</b>
             <span className="clay-state run">{aPlacer.length}</span>
           </div>
-          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', padding: '4px 2px 6px', minHeight: 58 }}>
+          <div className="pl-aplacer">
             {aPlacer.map((v) => {
               const k = cle(v);
-              const [fond, encre] = teinte(v);
               return (
                 <div
                   key={k}
+                  className={`pl-puce${sel === k ? ' on' : ''}`}
                   onPointerDown={(e) => glisser(e, { type: 'video', cle: k })}
                   onClick={() => !glisse.current && (setSel(sel === k ? null : k), setFiche(k))}
-                  style={{ touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none', flex: '0 0 180px', display: 'flex', gap: 8, alignItems: 'center', padding: 7, borderRadius: 12, background: fond, color: encre, cursor: 'grab', outline: sel === k ? '3px solid var(--accent)' : 'none', outlineOffset: 2 }}
                 >
                   <Apercu v={v} w={24} h={42} />
-                  <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                    <span style={{ fontSize: 11, fontWeight: 800 }}>{v.appli}</span>
-                    <span style={{ fontSize: 12, lineHeight: 1.25, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{v.titre}</span>
+                  <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <span className="appli">{v.appli}</span>
+                    <span style={{ fontSize: 12.5, lineHeight: 1.25, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{v.titre}</span>
                   </div>
                 </div>
               );
@@ -555,23 +597,33 @@ export function PlanningPage({ appli } = {}) {
           )}
 
           {/* Semaine */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-            {sel && (
-              <button className="clay-btn small" onClick={() => setSel(null)}>
-                Terminé
-              </button>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <button style={petitBouton} onClick={() => semaine(-1)}>
-                ‹
-              </button>
-              <b style={{ fontSize: 13, whiteSpace: 'nowrap' }}>
-                {jours[0].getDate()} – {jours[6].getDate()} {MOIS[jours[6].getMonth()]}
-              </b>
-              <button style={petitBouton} onClick={() => semaine(1)}>
-                ›
-              </button>
-              <button style={petitBouton} onClick={() => setDebut(lundi(new Date()))}>
+          <div className="pl-tete pl-monte">
+            <div className="pl-sous">
+              Semaine du {jours[0].getDate()} {MOIS[jours[0].getMonth()]} · <b>{pluriel(nSemaine, 'vidéo')}</b> programmée{nSemaine > 1 ? 's' : ''}
+              {listeSites.length ? (
+                <>
+                  {' '}· <b>{pluriel(sortiesSites, 'sortie')}</b> sur les sites
+                </>
+              ) : null}
+            </div>
+            <div className="pl-nav">
+              {sel && (
+                <button className="clay-btn small" onClick={() => setSel(null)}>
+                  Terminé
+                </button>
+              )}
+              <div className="pl-semaine">
+                <button className="pl-rond" title="Semaine précédente" onClick={() => semaine(-1)}>
+                  <Ic n="gauche" />
+                </button>
+                <b>
+                  {jours[0].getDate()} – {jours[6].getDate()} {MOIS[jours[6].getMonth()]}
+                </b>
+                <button className="pl-rond" title="Semaine suivante" onClick={() => semaine(1)}>
+                  <Ic n="droite" />
+                </button>
+              </div>
+              <button className={`pl-pill${aujourdhui >= premier && aujourdhui <= dernier ? ' on' : ''}`} onClick={() => setDebut(lundi(new Date()))}>
                 Aujourd'hui
               </button>
             </div>
@@ -579,12 +631,12 @@ export function PlanningPage({ appli } = {}) {
 
           {comptes.some((c) => rangement.masques?.[c.id]) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              <span className="clay-muted small" style={{ fontWeight: 800 }}>Comptes masqués :</span>
+              <span className="clay-muted small" style={{ fontWeight: 600 }}>Comptes masqués :</span>
               {comptes
                 .filter((c) => rangement.masques?.[c.id])
                 .map((c) => (
-                  <button key={c.id} style={{ ...petitBouton, borderRadius: 999 }} onClick={() => setRangement((x) => ({ ...x, masques: { ...x.masques, [c.id]: false } }))}>
-                    <LogoReseau id={c.reseau} taille={14} />
+                  <button key={c.id} className="pl-pill petite" onClick={() => setRangement((x) => ({ ...x, masques: { ...x.masques, [c.id]: false } }))}>
+                    <LogoReseau id={c.reseau} taille={14} seul />
                     {c.nom} · afficher
                   </button>
                 ))}
@@ -592,16 +644,19 @@ export function PlanningPage({ appli } = {}) {
           )}
 
           {(
-            <div style={{ overflowX: 'auto', scrollbarColor: 'var(--carte-2) transparent' }}>
-              <div style={{ minWidth: appli ? 700 : 880, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, position: 'sticky', top: 0, background: 'var(--fond)', zIndex: 2, padding: '4px 0' }}>
+            <div className="pl-defile">
+              <div className={`pl-grille${appli ? ' appli' : ''}`}>
+                <div className="pl-rang pl-jours">
                   <span />
                   {jours.map((d) => {
                     const j = iso(d);
                     return (
-                      <span key={j} style={{ fontSize: 12, fontWeight: 800, padding: '4px 6px', color: j === aujourdhui ? 'var(--accent)' : j < aujourdhui ? 'var(--c-muted)' : 'var(--texte)' }}>
-                        {jourCourt(d)}
-                        {j === aujourdhui ? ' · auj.' : ''}
+                      <span key={j} className={`pl-jour${j === aujourdhui ? ' auj' : j < aujourdhui ? ' passe' : ''}`}>
+                        <span>
+                          {JOURS[(d.getDay() + 6) % 7]}
+                          {j === aujourdhui ? <span className="auj-t"> · auj.</span> : null}
+                        </span>
+                        <span className="num">{d.getDate()}</span>
                       </span>
                     );
                   })}
@@ -612,12 +667,12 @@ export function PlanningPage({ appli } = {}) {
                   </p>
                 ) : null}
                 {comptes.length === 0 && !sansVideos && (
-                  <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4, marginTop: 8 }}>
-                    <div className="clay-muted" style={{ display: 'flex', alignItems: 'center', padding: '6px 10px', background: 'var(--side)', borderRadius: 12, minHeight: 60, fontSize: 13, fontWeight: 700 }}>
-                      Aucune chaîne
+                  <div className="pl-rang pl-monte" style={{ marginTop: 8 }}>
+                    <div className="pl-compte">
+                      <span className="clay-muted" style={{ fontSize: 13, fontWeight: 600 }}>Aucune chaîne</span>
                     </div>
                     {jours.map((d) => (
-                      <div key={iso(d)} style={{ background: iso(d) === aujourdhui ? 'var(--carte-2)' : 'var(--carte)', borderRadius: 12, minHeight: 60 }} />
+                      <div key={iso(d)} className={`pl-case${iso(d) === aujourdhui ? ' auj' : ''}`} />
                     ))}
                   </div>
                 )}
@@ -631,26 +686,27 @@ export function PlanningPage({ appli } = {}) {
                   return (
                     <React.Fragment key={r}>
                       <button
+                        className={`pl-section${replie ? ' replie' : ''}`}
+                        aria-expanded={!replie}
                         onClick={() => setRangement((x) => ({ ...x, replies: { ...x.replies, [r]: !replie } }))}
-                        style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'transparent', border: 'none', cursor: 'pointer', padding: '10px 2px 2px', textAlign: 'left', color: 'var(--c-muted)', fontSize: 12 }}
                       >
-                        <span style={{ width: 12 }}>{replie ? '▸' : '▾'}</span>
+                        <span className="pl-chev">
+                          <Ic n="chev" />
+                        </span>
                         <LogoReseau id={r} taille={20} seul />
-                        <span style={{ fontWeight: 800, textTransform: 'uppercase', letterSpacing: 0.5, color: 'var(--texte)' }}>{nom}</span>
+                        <span className="nom">{nom}</span>
                         <span>
                           {pluriel(tous.length, 'compte')} · {pluriel(n, 'publication')}
                         </span>
                       </button>
                       {replie ? (
-                        <div style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4 }}>
-                          <div className="clay-muted" style={{ display: 'flex', alignItems: 'center', padding: '0 10px', background: 'var(--side)', borderRadius: 10, height: 30, fontSize: 12, fontWeight: 700 }}>
-                            Replié
-                          </div>
+                        <div className="pl-rang pl-monte" style={{ '--i': rang++ }}>
+                          <div className="pl-compte replie">Replié</div>
                           {jours.map((d) => {
                             const j = iso(d);
                             const c = publications.filter((p) => p.date === j && compteDe[p.compte]?.reseau === r).length;
                             return (
-                              <div key={j} className="clay-muted" style={{ height: 30, borderRadius: 10, background: 'var(--carte)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 800 }}>
+                              <div key={j} className={`pl-case replie${j === aujourdhui ? ' auj' : ''}`}>
                                 {c || ''}
                               </div>
                             );
@@ -660,21 +716,19 @@ export function PlanningPage({ appli } = {}) {
                         tous
                           .filter((c) => !rangement.masques?.[c.id])
                           .map((c) => (
-                            <div key={c.id} style={{ display: 'grid', gridTemplateColumns: COLS, gap: 4 }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '6px 6px 6px 10px', background: 'var(--side)', borderRadius: 12, minHeight: 60, boxSizing: 'border-box' }}>
-                                <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
-                                  <b style={{ fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center' }} title={c.nom}>
+                            <div key={c.id} className="pl-rang pl-monte" style={{ '--i': rang++ }}>
+                              <div className="pl-compte">
+                                <div className="t">
+                                  <b title={c.nom}>
                                     {(c.applis || []).slice(0, 3).map((a) => (
-                                      <LogoAppli key={a} de={a} taille={18} />
+                                      <LogoAppli key={a} de={a} taille={20} />
                                     ))}
-                                    {c.nom}
+                                    <span className="nom">{c.nom}</span>
                                   </b>
-                                  <span className="clay-muted" style={{ fontSize: 11 }}>
-                                    {publications.filter((p) => p.compte === c.id && dansSemaine(p)).length} cette semaine
-                                  </span>
+                                  <small>{publications.filter((p) => p.compte === c.id && dansSemaine(p)).length} cette semaine</small>
                                 </div>
-                                <button title="Masquer ce compte" onClick={() => setRangement((x) => ({ ...x, masques: { ...x.masques, [c.id]: true } }))} style={{ ...petitBouton, background: 'transparent', color: 'var(--c-muted)', padding: '4px 6px' }}>
-                                  ✕
+                                <button className="pl-masquer" title="Masquer ce compte" onClick={() => setRangement((x) => ({ ...x, masques: { ...x.masques, [c.id]: true } }))}>
+                                  <Ic n="croix" taille={14} />
                                 </button>
                               </div>
                               {jours.map((d) => {
@@ -687,15 +741,15 @@ export function PlanningPage({ appli } = {}) {
                                     data-case={k}
                                     data-compte={c.id}
                                     data-jour={j}
-                                    style={{ background: j === aujourdhui ? 'var(--carte-2)' : 'var(--carte)', borderRadius: 12, padding: 5, display: 'flex', flexDirection: 'column', gap: 4, minHeight: 60, boxSizing: 'border-box', outline: over === k ? '2px solid var(--accent)' : ici.length > 1 ? '2px solid var(--ko)' : 'none' }}
+                                    className={`pl-case${j === aujourdhui ? ' auj' : j < aujourdhui ? ' passe' : ''}${over === k ? ' survol' : ici.length > 1 ? ' conflit' : ''}`}
                                   >
                                     {ici.map(vignette)}
                                     {sel && !dejaSur(sel, c.id) && (
-                                      <button onClick={() => placer(sel, c.id, j)} style={{ flex: 1, minHeight: 28, border: '2px dashed var(--accent)', borderRadius: 8, background: 'transparent', color: 'var(--accent)', fontWeight: 800, cursor: 'pointer' }}>
-                                        ＋
+                                      <button className="pl-poser" title="Placer ici" onClick={() => placer(sel, c.id, j)}>
+                                        <Ic n="plus" />
                                       </button>
                                     )}
-                                    {ici.length > 1 && <span style={{ fontSize: 10, fontWeight: 800, color: 'var(--ko)' }}>{ici.length} le même jour</span>}
+                                    {ici.length > 1 && <span className="pl-conflit-t">{ici.length} le même jour</span>}
                                   </div>
                                 );
                               })}
@@ -705,7 +759,7 @@ export function PlanningPage({ appli } = {}) {
                     </React.Fragment>
                   );
                 })}
-                <LignesSites sites={sites} appli={appli} jours={jours} aujourdhui={aujourdhui} caseSite={caseSite} setCaseSite={setCaseSite} />
+                <LignesSites sites={sites} appli={appli} jours={jours} aujourdhui={aujourdhui} caseSite={caseSite} setCaseSite={setCaseSite} rang0={rang} />
               </div>
             </div>
           )}

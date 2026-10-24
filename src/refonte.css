@@ -1,3 +1,7 @@
+@import './refonte-applis.css';
+@import './refonte-pub.css';
+@import './refonte-stats.css';
+
 /* ============================================================
    Refonte « Studio animé » (maquette du 23/10, canevas Design
    « Studio — refonte animée »). Chargée en DERNIER par Shell.jsx :
@@ -631,5 +635,203 @@ html:root .accueil .ac-mini.etat.on {
   }
   .rf-repere {
     transition: none;
+  }
+}
+
+/* ---------- Accueil, suite (maquette du 23/10) ---------- */
+/* Mini-cartes : pastille d'icône en teinte douce, valeur dans la couleur du texte. */
+.accueil .ac-mini .ic {
+  transition: transform 0.35s var(--ressort);
+}
+.accueil .ac-mini:hover .ic {
+  transform: rotate(-6deg) scale(1.06);
+}
+html:root .accueil .ac-mini.agenda .ic {
+  background: var(--accent-doux);
+  color: var(--accent);
+}
+html:root .accueil .ac-mini.mails .ic {
+  background: var(--run-tint);
+  color: var(--run);
+}
+html:root .accueil .ac-mini.etat .ic {
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+html:root .accueil .ac-mini .t b {
+  color: var(--texte);
+}
+.accueil .ac-mini .t small {
+  font-weight: 500;
+}
+.accueil .ac-panneau {
+  padding: 8px 12px;
+}
+.accueil .ac-rdv,
+.accueil .ac-mail {
+  border-radius: 12px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-top-color: transparent;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.accueil .ac-rdv:hover,
+.accueil .ac-mail:hover {
+  background: var(--carte-2);
+}
+.accueil .ac-rdv b {
+  font-family: var(--mono);
+  color: var(--accent);
+}
+.accueil .ac-mail b {
+  font-family: var(--mono);
+}
+.accueil .ac-chiffres .lab,
+.accueil .ac-sstitre {
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.accueil .ac-chiffres .var {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+/* Colonnes « À décider » · « À faire » : lignes aérées, logo arrondi, boutons nets. */
+.accueil .ac-col-t {
+  margin-bottom: 10px;
+}
+.accueil .ac-tache {
+  gap: 14px;
+  border-top: 1px solid var(--ligne);
+  padding: 4px 0;
+}
+.accueil .ac-tache .af-ligne {
+  border-top: 0;
+  padding: 10px 0;
+}
+.accueil .ac-tache .ac-logo {
+  width: 36px;
+  padding-top: 10px;
+}
+.accueil .ac-tache .ac-logo img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+.accueil .af-t {
+  font-weight: 500;
+  line-height: 1.4;
+}
+.accueil .af-src {
+  font-weight: 500;
+  font-size: 12.5px;
+}
+.accueil .af-site {
+  font-weight: 600;
+}
+.accueil .af-etat {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 9px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 6px;
+  animation: rf-pop 0.45s var(--ressort) both;
+}
+.accueil .af-etat.ok {
+  background: var(--ok-tint);
+}
+.accueil .af-etat.ko {
+  background: var(--ko-tint);
+}
+.accueil .af-etat.run {
+  background: var(--run-tint);
+}
+.accueil .af-boutons .clay-btn {
+  min-height: 36px;
+}
+.accueil .ac-plus {
+  font-weight: 600;
+}
+
+/* Fraîcheur : pastilles plates, point d'état à droite. */
+.accueil .ac-fr {
+  padding: 10px 14px;
+}
+.accueil .ac-fr .t b {
+  font-weight: 600;
+}
+.accueil .ac-fr .t small {
+  font-weight: 500;
+}
+html:root .accueil .ac-fr.ko {
+  background: var(--carte);
+  box-shadow: 0 0 0 1px var(--ko-tint), var(--clay-sm);
+}
+.accueil .ac-alerte {
+  border-width: 1px;
+  border-radius: 16px;
+  background: var(--ko-tint);
+  font-weight: 500;
+}
+.accueil .ac-lien-menu .clay-btn {
+  border-radius: 999px;
+}
+.accueil .ac-lien-liste {
+  border-radius: 14px;
+  padding: 8px;
+}
+.accueil .ac-lien-liste a {
+  font-weight: 500;
+  border-radius: 9px;
+}
+
+@keyframes rf-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .accueil .af-etat {
+    animation: none;
+  }
+}
+
+/* Accueil sur téléphone : chiffres en 2 × 2, comme la maquette téléphone. */
+@media (max-width: 760px) {
+  .accueil .ac-chiffres {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .accueil .ac-chiffres .gc {
+    min-height: 108px;
+    padding: 14px;
+  }
+  .accueil .ac-chiffres .gc b {
+    font-size: 28px;
+  }
+  .accueil .ac-mini {
+    min-height: 66px;
+    padding: 10px 14px;
+  }
+  .accueil .ac-mini .ic {
+    width: 38px;
+    height: 38px;
+  }
+  .accueil .ac-mini .t b {
+    font-size: 19px;
+  }
+  .accueil .ac-col {
+    padding: 16px;
   }
 }
