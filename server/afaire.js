@@ -549,7 +549,10 @@ export function listeAfaire() {
     if (s.statut === 'envoye') visibles.push({ ...s.copie, id, etat: 'fait', compteRendu: 'Réglé tout seul avant le passage de Claude.' });
     else if (s.statut === 'fait') visibles.push({ ...s.copie, id, etat: 'fait', compteRendu: s.compteRendu || '' });
   }
+  // « Laisser en attente » (choix de Jean) : vaut pour toutes les sources, Point du matin et Google compris.
+  const misDeCote = (e) => (d.suivi[e.id]?.statut === 'attente' && ['a-faire', 'bloque', 'attente'].includes(e.etat) ? { ...e, etat: 'attente', parJean: true, compteRendu: '' } : e);
   const tout = [...dePoint(), ...deIndexation(), ...visibles]
+    .map(misDeCote)
     // eslint-disable-next-line no-unused-vars
     .map(({ depuis, majLe, attente, ...e }) => ({ detail: '', consigne: '', dossier: '', compteRendu: '', ...e }))
     .sort((a, b) => rang(a) - rang(b) || ORDRE_ETAT[a.etat] - ORDRE_ETAT[b.etat] || a.site.localeCompare(b.site, 'fr'));
@@ -618,9 +621,18 @@ const idPoint = (id) => {
   return m ? { date: m[1], id: m[2] } : null;
 };
 
-// ---------- « Envoyer à Claude », « Oui », « Non » ----------
+// ---------- « Envoyer à Claude », « Oui », « Non », « Laisser en attente » ----------
 export function envoyer(id, choix = 'oui') {
-  if (!['oui', 'non'].includes(choix)) throw new Error('Réponse attendue : oui ou non');
+  if (!['oui', 'non', 'attente', 'reprendre'].includes(choix)) throw new Error('Réponse attendue : oui, non, attente ou reprendre');
+  if (choix === 'attente' || choix === 'reprendre') {
+    const d = lire();
+    const e = listeAfaire().elements.find((x) => x.id === id);
+    if (!e) throw new Error('Élément introuvable (déjà réglé ?)');
+    if (choix === 'attente') d.suivi[id] = { statut: 'attente', le: maintenant(), copie: copie(e) };
+    else if (d.suivi[id]?.statut === 'attente') delete d.suivi[id];
+    ecrire(d);
+    return listeAfaire();
+  }
   const e = listeAfaire().elements.find((x) => x.id === id);
   if (!e) throw new Error('Élément introuvable (déjà réglé ?)');
   if (e.etat === 'fait') throw new Error('Déjà fait');

@@ -2,9 +2,9 @@
 // artifact GhbQgaord7pgJWkq3Qb19x). En haut, discrets : trois mini-cartes
 // Agenda et Mails (un clic déplie le détail juste dessous) et État (« N/10 au
 // vert », un clic ouvre Mes applis et ses cartes à témoins). Puis les chiffres
-// et raccourcis, les deux colonnes « À décider » (Oui / Non) et « À faire »
-// (graves d'abord), et la Fraîcheur des infos tout en bas (ordre choisi par
-// Jean le 23/10). Agenda et mails viennent du Point du matin (7 h).
+// la Fraîcheur des infos, les chiffres et raccourcis, puis les deux colonnes
+// « À décider » (Oui / Non) et « À faire » (graves d'abord) — ordre choisi
+// par Jean les 23 et 24/10. Agenda et mails viennent du Point du matin (7 h).
 import React, { useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
 import { useApplis, ageFiches, FICHE_PERIMEE_JOURS } from './MesApplisPage.jsx';
@@ -494,6 +494,8 @@ export function AccueilPage() {
         </div>
       ) : null}
 
+      <Fraicheur liste={ext?.fraicheur} />
+
       <Chiffres apps={apps} ext={ext} />
 
       {erreur ? <p className="error small">{erreur}</p> : null}
@@ -548,8 +550,6 @@ export function AccueilPage() {
           ) : null}
         </section>
       </div>
-
-      <Fraicheur liste={ext?.fraicheur} />
     </div>
   );
 }

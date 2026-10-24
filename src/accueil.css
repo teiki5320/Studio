@@ -184,4 +184,4 @@ html:not([data-theme='clair']) .ac-mini.etat.on { background: #1f2c24; }
 .ac-plus.ac-faits { display: inline; padding: 0; border: 0; width: auto; font-size: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .ac-faits-liste { opacity: 0.85; }
 .ac-etat-ouvert { margin: 16px 0; }
-.ac-fraicheur { margin-top: 18px; }
+.ac-fraicheur { margin-top: 16px; }
