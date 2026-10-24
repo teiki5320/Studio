@@ -89,6 +89,14 @@ html:not([data-theme='clair']) .ac-general { background: #2b211d; }
 .ac-fraicheur .ac-sstitre b { letter-spacing: .04em; }
 .ac-fraicheur .chaud { color: var(--ko); } .ac-fraicheur .frais { color: var(--ok); }
 .ac-fr-liste { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+/* Écran large (iPad, Mac) : les six sources sur une seule ligne (demande de Jean, 24/10). */
+@media (min-width: 900px) {
+  .ac-fr-liste { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; }
+  html:root .accueil .ac-fr { padding: 8px 10px; gap: 7px; }
+  .accueil .ac-fr .ic { font-size: 15px; }
+  html:root .accueil .ac-fr .t b { font-size: 12px; }
+  html:root .accueil .ac-fr .t small { font-size: 11px; }
+}
 .ac-fr { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 18px; background: var(--carte); box-shadow: var(--clay-sm); min-width: 0;
   transition: transform .25s var(--ressort); }
 .ac-fr:hover { transform: translateY(-2px); }

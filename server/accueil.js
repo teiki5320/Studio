@@ -97,12 +97,12 @@ function fraicheur(ix, toutes, vues) {
   const derniereVue = (vues?.jours || []).map((j) => j.date).sort().pop();
   const ixErreurs = ix.sites.filter((s) => s.erreur).length;
   return [
-    { cle: 'code', ic: '🐙', nom: 'Code (GitHub)', le: a?.synchro?.le, seuilH: 7, lien: '#/applis', erreur: a?.synchro?.ok === false ? a.synchro.erreur || 'synchro en échec' : null },
-    { cle: 'fiches', ic: '📄', nom: 'Fiches des applis', le: fichesRelues || null, seuilH: 26, lien: '#/applis' },
-    { cle: 'indexation', ic: '🔎', nom: 'Indexation Google', le: ix.dernierPassage, seuilH: 26, lien: '#/indexation', erreur: ixErreurs ? `${ixErreurs} site(s) en erreur` : null },
-    { cle: 'sites', ic: '🌐', nom: 'Sites en ligne', le: cacheSites.at ? new Date(cacheSites.at).toISOString() : null, seuilH: 1, lien: '#/accueil' },
+    { cle: 'code', ic: '🐙', nom: 'Code', le: a?.synchro?.le, seuilH: 7, lien: '#/applis', erreur: a?.synchro?.ok === false ? a.synchro.erreur || 'synchro en échec' : null },
+    { cle: 'fiches', ic: '📄', nom: 'Fiches', le: fichesRelues || null, seuilH: 26, lien: '#/applis' },
+    { cle: 'indexation', ic: '🔎', nom: 'Google', le: ix.dernierPassage, seuilH: 26, lien: '#/indexation', erreur: ixErreurs ? `${ixErreurs} site(s) en erreur` : null },
+    { cle: 'sites', ic: '🌐', nom: 'Sites', le: cacheSites.at ? new Date(cacheSites.at).toISOString() : null, seuilH: 1, lien: '#/accueil' },
     { cle: 'audience', ic: '📈', nom: 'Audience', le: derniereVue ? `${derniereVue}T12:00:00Z` : null, seuilH: 50, lien: '#/audience', erreur: etatCloudflare().configure ? null : 'clé Cloudflare absente' },
-    { cle: 'routines', ic: '⏰', nom: 'Routines', le: dernierRun, seuilH: 26, lien: '#/reglages/routines', erreur: bloquees.length ? `${bloquees.length} bloquée${bloquees.length > 1 ? 's' : ''}` : null },
+    { cle: 'routines', ic: '⏰', nom: 'Tâches', le: dernierRun, seuilH: 26, lien: '#/reglages/routines', erreur: bloquees.length ? `${bloquees.length} bloquée${bloquees.length > 1 ? 's' : ''}` : null },
   ];
 }
 
