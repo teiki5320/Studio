@@ -20,6 +20,7 @@
     "game-services",
     "storekit",
     "admob",
+    "pub-acquisition",
     "play-console",
     "android-keystore",
     "in-app-review"

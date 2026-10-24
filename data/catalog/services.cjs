@@ -772,6 +772,7 @@ const SERVICES = [
   {
     id: 'pub-acquisition',
     nom: "Publicité d'acquisition (Apple Search Ads, Meta…)",
+    alias: ['tiktok for business', 'tiktok ads', 'google ads', 'meta ads', 'apple search ads'],
     emoji: '📢',
     categorie: 'Marketing & lancement',
     badge: 'optionnel',
