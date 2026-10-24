@@ -1,0 +1,532 @@
+/* ============================================================
+   Refonte « Studio animé » — Publicité, En cours (et l'attente
+   d'une campagne), sous-titres d'Indexation et de Réglages.
+   Importé en tête de refonte.css : ses règles générales passent
+   après celles-ci, d'où le préfixe .clay-shell.
+   ============================================================ */
+
+/* Sous-titre sous le grand titre de la page (maquette : « Vidéos verticales… »). */
+.clay-shell .pb-sous {
+  margin: -14px 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--c-muted);
+}
+.clay-shell .pb-alerte {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--run-tint);
+  color: var(--run);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* ---------- Publicité : grille de tuiles ---------- */
+.clay-shell .pb {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.clay-shell .pb-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.clay-shell .pb-tuile {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 20px;
+  background: var(--carte);
+  box-shadow: var(--clay);
+  transition: transform 0.35s var(--doux), box-shadow 0.35s var(--doux), background 0.4s;
+}
+.clay-shell .pb-tuile:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--clay-haut);
+}
+.clay-shell .pb-ouvrir {
+  display: flex;
+  flex-direction: column;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--texte);
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+.clay-shell .pb-ouvrir:hover {
+  color: var(--texte);
+}
+.clay-shell .pb-ouvrir:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  border-radius: 20px 20px 0 0;
+}
+.clay-shell .pb-bandeau {
+  position: relative;
+  height: 150px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--carte-2);
+}
+.clay-shell .pb-fond {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.55;
+  filter: blur(14px) saturate(1.3);
+  transform: scale(1.3);
+  transition: transform 0.6s var(--doux), opacity 0.4s;
+}
+html[data-theme='clair'] .clay-shell .pb-fond {
+  opacity: 0.45;
+}
+.clay-shell .pb-tuile:hover .pb-fond {
+  transform: scale(1.42);
+  opacity: 0.68;
+}
+.clay-shell .pb-logo {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--carte);
+  color: var(--accent);
+  font-size: 30px;
+  box-shadow: 0 14px 30px -10px rgba(0, 0, 0, 0.6);
+  animation: pb-flotte 3.2s ease-in-out infinite;
+}
+.clay-shell .pb-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.clay-shell .pb-logo .rf-ic {
+  width: 30px;
+  height: 30px;
+}
+.clay-shell .pb-tuile:nth-child(3n + 2) .pb-logo {
+  animation-delay: -1.1s;
+}
+.clay-shell .pb-tuile:nth-child(3n) .pb-logo {
+  animation-delay: -2.2s;
+}
+.clay-shell .pb-nb {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.clay-shell .pb-txt {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px 0;
+}
+.clay-shell .pb-txt b {
+  font-family: var(--titre);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.clay-shell .pb-txt small {
+  font-size: 12.5px;
+  color: var(--c-muted);
+}
+.clay-shell .pb-creer {
+  margin: 12px 16px 16px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Les deux entrées secondaires : autre appli, toutes les chaînes. */
+.clay-shell .pb-autres {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+.clay-shell .pb-ajout {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border: 1.5px dashed var(--ligne-2);
+  border-radius: 16px;
+  background: transparent;
+  color: var(--texte);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.25s, background 0.25s, transform 0.2s var(--ressort);
+}
+.clay-shell .pb-ajout:hover {
+  border-color: var(--accent);
+  background: var(--accent-doux);
+}
+.clay-shell .pb-ajout:active {
+  transform: scale(0.98);
+}
+.clay-shell .pb-ajout .ic {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--accent-doux);
+  color: var(--accent);
+}
+.clay-shell .pb-ajout .t {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.clay-shell .pb-ajout b {
+  font-weight: 600;
+  font-size: 15px;
+}
+.clay-shell .pb-ajout small {
+  font-size: 12.5px;
+  color: var(--c-muted);
+}
+
+/* ---------- Barres de progression (attente, En cours) ---------- */
+.clay-shell .rayures {
+  background-image: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0.22) 25%,
+    transparent 25%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.22) 75%,
+    transparent 75%
+  );
+  background-size: 22px 22px;
+  animation: pb-rayures 0.9s linear infinite;
+}
+
+.clay-shell .pb-attente {
+  max-width: 560px;
+  margin: 0 auto;
+}
+.clay-shell .pb-attente .clay-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.clay-shell .pb-jauge-l {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.clay-shell .pb-jauge {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--carte-2);
+  overflow: hidden;
+}
+.clay-shell .pb-jauge-f {
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--accent);
+  transition: width 1s var(--doux);
+}
+.clay-shell .pb-pc {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--c-muted);
+  min-width: 44px;
+  text-align: right;
+}
+
+/* ---------- En cours : une carte par vidéo ---------- */
+.clay-shell .pb-encours {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.clay-shell .qp-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.clay-shell .qp.clay-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.clay-shell .qp-job {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  background: var(--carte);
+  box-shadow: var(--clay-sm);
+  min-width: 0;
+}
+.clay-shell .qp.clay-block .qp-job {
+  padding: 12px 14px;
+  gap: 14px;
+  border-radius: 16px;
+  background: var(--carte-2);
+  box-shadow: none;
+}
+.clay-shell .qp-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  overflow: hidden;
+  flex: none;
+  display: grid;
+  place-items: center;
+  background: var(--carte-2);
+  color: var(--accent);
+}
+.clay-shell .qp-logo img {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 0 !important;
+}
+.clay-shell .qp.clay-block .qp-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--carte);
+}
+.clay-shell .qp-corps {
+  flex: 1;
+  min-width: 0;
+}
+.clay-shell .qp-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+.clay-shell .qp-h b {
+  font-weight: 600;
+  font-size: 15px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.clay-shell .qp-pc {
+  font-family: var(--mono);
+  font-size: 13.5px;
+  color: var(--c-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.clay-shell .qp-job.ok .qp-pc {
+  color: var(--ok);
+}
+.clay-shell .qp-sous {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 10px;
+  font-size: 13px;
+  color: var(--c-muted);
+}
+.clay-shell .qp-etape {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.clay-shell .qp-tag {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  font-weight: 600;
+  background: var(--carte-2);
+  color: var(--c-muted);
+  white-space: nowrap;
+}
+.clay-shell .qp.clay-block .qp-tag {
+  background: var(--carte);
+}
+.clay-shell .qp-tag.run {
+  background: var(--accent-doux);
+  color: var(--accent);
+}
+.clay-shell .qp-tag.ok {
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+.clay-shell .qp-tag.ko {
+  background: var(--ko-tint);
+  color: var(--ko);
+}
+.clay-shell .qp-err {
+  display: block;
+  margin: -4px 0 10px;
+}
+.clay-shell .qp-barre {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--carte-2);
+  overflow: hidden;
+}
+.clay-shell .qp.clay-block .qp-barre {
+  height: 8px;
+  background: var(--carte);
+}
+.clay-shell .qp-fill {
+  height: 100%;
+  border-radius: 999px;
+  background-color: var(--accent);
+  transition: width 1s var(--doux), background-color 0.4s;
+}
+.clay-shell .qp-job.ok .qp-fill {
+  background-color: var(--ok);
+}
+.clay-shell .qp-job.ko .qp-fill {
+  background-color: var(--ko);
+}
+.clay-shell .qp-job.att .qp-fill {
+  background-color: var(--none);
+}
+.clay-shell .qp-actions {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+.clay-shell .qp-ic {
+  width: 36px;
+  min-width: 36px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+.clay-shell .qp-voir {
+  align-self: flex-start;
+}
+.clay-shell .qp-vide {
+  padding: 28px 20px;
+  border-radius: 20px;
+  border: 1.5px dashed var(--ligne-2);
+  color: var(--c-muted);
+  text-align: center;
+  font-size: 14px;
+}
+
+/* ---------- Téléphone ---------- */
+@media (max-width: 760px) {
+  .clay-shell .pb-sous {
+    margin-top: -10px;
+    font-size: 13px;
+  }
+  .clay-shell .pb-grille {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .clay-shell .pb-bandeau {
+    height: 112px;
+  }
+  .clay-shell .pb-logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 15px;
+  }
+  .clay-shell .pb-nb {
+    left: 8px;
+    top: 8px;
+    height: 22px;
+    font-size: 11px;
+    padding: 0 7px;
+  }
+  .clay-shell .pb-txt {
+    padding: 10px 12px 0;
+  }
+  .clay-shell .pb-txt b {
+    font-size: 16px;
+  }
+  .clay-shell .pb-txt small {
+    font-size: 11.5px;
+  }
+  .clay-shell .pb-creer {
+    margin: 10px 12px 12px;
+    padding: 0 8px;
+    font-size: 13px;
+  }
+  .clay-shell .qp-job {
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px 14px;
+    padding: 14px;
+  }
+  .clay-shell .qp-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+  }
+  .clay-shell .qp-corps {
+    flex-basis: calc(100% - 54px);
+  }
+  .clay-shell .qp-actions {
+    margin-left: 54px;
+  }
+}
+.clay-shell .qp-actions:empty {
+  display: none;
+}
+
+@keyframes pb-flotte {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+@keyframes pb-rayures {
+  to {
+    background-position: 22px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clay-shell .pb-logo,
+  .clay-shell .rayures {
+    animation: none;
+  }
+  .clay-shell .pb-tuile,
+  .clay-shell .pb-fond,
+  .clay-shell .qp-fill,
+  .clay-shell .pb-jauge-f {
+    transition: none;
+  }
+  .clay-shell .pb-tuile:hover {
+    transform: none;
+  }
+}

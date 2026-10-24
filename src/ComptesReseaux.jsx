@@ -42,7 +42,7 @@ export function ComptesReseauxCard() {
   return (
     <div className="rg-carte">
       <div className="rg-carte-h">
-        <h3>📱 Comptes des réseaux</h3>
+        <h3>Comptes des réseaux</h3>
         <small title="« Applis » : les applis pour lesquelles ce compte est coché d'office dans le Planning ; un compte sans appli sert quand aucune règle ne s'applique.">
           chaque compte a sa ligne dans le Planning
         </small>

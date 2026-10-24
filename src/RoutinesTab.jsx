@@ -67,9 +67,9 @@ export function RoutinesTab() {
   return (
     <>
       <p className="rg-aide">Elles tournent dans l’appli Claude, Mac allumé. Pour en lancer une tout de suite : appli Claude → Routines → la routine → « Exécuter maintenant ».</p>
-      <Tableau titre="⏰ Tous les jours, chaque mois" liste={actives.filter((r) => r.recurrente)} />
-      <Tableau titre="📅 Rappels à venir" liste={actives.filter((r) => !r.recurrente)} />
-      <Tableau titre="💤 Éteintes ou passées" liste={liste.filter((r) => !r.active)} />
+      <Tableau titre="Tous les jours, chaque mois" liste={actives.filter((r) => r.recurrente)} />
+      <Tableau titre="Rappels à venir" liste={actives.filter((r) => !r.recurrente)} />
+      <Tableau titre="Éteintes ou passées" liste={liste.filter((r) => !r.active)} />
     </>
   );
 }

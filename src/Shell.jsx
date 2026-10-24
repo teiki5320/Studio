@@ -180,6 +180,13 @@ const NAV = [
 function Sidebar({ active, running }) {
   const navRef = useRef(null);
   const [repere, setRepere] = useState(null);
+  // Pas de glissement au tout premier placement (sinon le repère part du haut à chaque chargement).
+  const [pret, setPret] = useState(false);
+  useEffect(() => {
+    if (!repere || pret) return undefined;
+    const raf = requestAnimationFrame(() => setPret(true));
+    return () => cancelAnimationFrame(raf);
+  }, [repere, pret]);
   useLayoutEffect(() => {
     const placer = () => {
       const el = navRef.current?.querySelector('.clay-nav.on');
@@ -201,7 +208,7 @@ function Sidebar({ active, running }) {
         </span>
       </a>
       <nav ref={navRef} className="rf-nav" aria-label="Sections">
-        {repere ? <span className="rf-repere" aria-hidden="true" style={{ transform: `translateY(${repere.top}px)`, height: repere.height }} /> : null}
+        {repere ? <span className="rf-repere" aria-hidden="true" style={{ transform: `translateY(${repere.top}px)`, height: repere.height, transition: pret ? undefined : 'none' }} /> : null}
         {NAV.map((n) =>
           n.id === 'sep' ? (
             <div key="sep" className="clay-sep" />
@@ -241,26 +248,127 @@ function TopBar({ title, onBack, theme, onTheme }) {
   );
 }
 
+// Petits pictos trait (Publicité, En cours, Réglages) — mêmes règles que ICONES.
+const PICTOS = {
+  plus: <path d="M12 5v14M5 12h14" />,
+  globe: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+    </>
+  ),
+  chaines: (
+    <>
+      <rect x="3" y="6" width="13" height="12" rx="3" />
+      <path d="M16 10l5-3v10l-5-3" />
+    </>
+  ),
+  reseaux: (
+    <>
+      <circle cx="6" cy="12" r="2.5" />
+      <circle cx="18" cy="6" r="2.5" />
+      <circle cx="18" cy="18" r="2.5" />
+      <path d="M8.2 10.8l7.6-3.6M8.2 13.2l7.6 3.6" />
+    </>
+  ),
+  voix: (
+    <>
+      <rect x="9" y="3" width="6" height="11" rx="3" />
+      <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" />
+    </>
+  ),
+  routines: (
+    <>
+      <circle cx="12" cy="13" r="8" />
+      <path d="M12 9v4l2.5 2.5M9 2.5h6" />
+    </>
+  ),
+  comptes: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <path d="M3 8l9 6 9-6" />
+    </>
+  ),
+  fleche: <path d="M5 12h14M13 6l6 6-6 6" />,
+  retour: <path d="M19 12H5M11 6l-6 6 6 6" />,
+};
+
+function Picto({ id, petite = true }) {
+  return (
+    <svg className={`rf-ic${petite ? ' petite' : ''}`} viewBox="0 0 24 24" aria-hidden="true">
+      {PICTOS[id]}
+    </svg>
+  );
+}
+
 // Suivi d'un job de création (campagne, atelier…) en plein écran.
 function Waiting({ job, error, onBack }) {
+  const pc = job?.progress != null ? Math.round(job.progress * 100) : null;
   return (
-    <div className="clay-wait">
+    <div className="clay-wait pb-attente">
       {!error && <div className="spinner" />}
       <h2>{error ? 'Ça n’a pas marché' : 'Préparation…'}</h2>
       <p className="clay-muted">{error || job?.step || 'Démarrage…'}</p>
-      {!error && job?.progress != null && (
-        <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${Math.round(job.progress * 100)}%` }} />
+      {!error && pc != null && (
+        <div className="pb-jauge-l">
+          <div className="pb-jauge">
+            <div className="pb-jauge-f rayures" style={{ width: `${pc}%` }} />
+          </div>
+          <span className="pb-pc">{pc} %</span>
         </div>
       )}
       <button className="clay-btn ghost" onClick={onBack}>
-        ← Retour
+        <Picto id="retour" /> Retour
       </button>
     </div>
   );
 }
 
-// ---------- Publicité : un bouton par dépôt ----------
+// « aujourd'hui », « hier », « il y a 4 j », puis la date.
+function ilYa(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const jours = Math.floor((new Date().setHours(0, 0, 0, 0) - new Date(d).setHours(0, 0, 0, 0)) / 86400000);
+  if (jours <= 0) return 'aujourd’hui';
+  if (jours === 1) return 'hier';
+  if (jours < 30) return `il y a ${jours} j`;
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
+
+// Une tuile d'appli : bandeau avec le logo flouté en fond et net au centre.
+function TuilePub({ nom, logo, icone, n, derniere, href, onOuvrir, onCreer }) {
+  const corps = (
+    <>
+      <span className="pb-bandeau">
+        {logo ? <img className="pb-fond" src={`/${logo}`} alt="" aria-hidden="true" /> : null}
+        <span className="pb-logo">{logo ? <img src={`/${logo}`} alt="" /> : icone}</span>
+        <span className="pb-nb">{n ? `${n} pub${n > 1 ? 's' : ''}` : 'aucune pub'}</span>
+      </span>
+      <span className="pb-txt">
+        <b>{nom}</b>
+        <small>{n && derniere ? `Dernière : ${derniere}` : 'Aucune pub pour l’instant'}</small>
+      </span>
+    </>
+  );
+  return (
+    <div className="pb-tuile">
+      {href ? (
+        <a className="pb-ouvrir" href={href}>
+          {corps}
+        </a>
+      ) : (
+        <button type="button" className="pb-ouvrir" onClick={onOuvrir}>
+          {corps}
+        </button>
+      )}
+      <button type="button" className="clay-btn small pb-creer" onClick={onCreer}>
+        <Picto id="plus" /> Créer une pub
+      </button>
+    </div>
+  );
+}
+
+// ---------- Publicité : une tuile par appli ----------
 function PubPage({ projects, onOpenRepo }) {
   const [repos, setRepos] = useState(null);
   const [error, setError] = useState('');
@@ -281,7 +389,16 @@ function PubPage({ projects, onOpenRepo }) {
             .sort((a, b) => ordre.indexOf(a.fullName.toLowerCase()) - ordre.indexOf(b.fullName.toLowerCase())),
         ),
       )
-      .catch((e) => setError(e.message));
+      .catch((e) => {
+        // GitHub injoignable : les applis de « Mes applis » suffisent pour
+        // ouvrir leur page (le dépôt est écrit dans chaque fiche).
+        setError(e.message);
+        setRepos(
+          applis.apps
+            .filter((a) => a.repo && !NOT_ADVERTISED.has(String(a.repo).split('/')[1].toLowerCase()))
+            .map((a) => ({ name: String(a.repo).split('/')[1], fullName: a.repo, label: a.name })),
+        );
+      });
   }, [applis]);
 
   const campaigns = projects.filter((p) => p.kind === 'pub');
@@ -292,15 +409,14 @@ function PubPage({ projects, onOpenRepo }) {
     (p) => !p.repo || !(repos || []).some((r) => r.fullName.toLowerCase() === p.repo.toLowerCase()),
   );
   const count = (p) => (p ? (p.episodes || []).length : 0);
-  const badge = (n) => (
-    <span className={`clay-badge${n ? ' ok' : ''}`}>{n ? `${n} pub${n > 1 ? 's' : ''}` : 'aucune pub'}</span>
-  );
+  // « Créer une pub » : comme sur la page de l'appli (Keur Cook ouvre le choix Recettes / Publicité).
+  const creer = (r) => (r.fullName.toLowerCase() === KEURCOOK_REPO ? go('keurcook') : onOpenRepo(r.fullName));
 
   if (showForm) {
     return (
       <div className="clay-content">
         <button className="clay-btn ghost" onClick={() => setShowForm(false)}>
-          ← Retour aux applis
+          <Picto id="retour" /> Retour aux applis
         </button>
         <AppCreate
           error={formError}
@@ -314,48 +430,63 @@ function PubPage({ projects, onOpenRepo }) {
   }
 
   return (
-    <div className="clay-content">
-      {error && <p className="error">Liste GitHub illisible : {error}</p>}
+    <div className="clay-content pb">
+      <p className="pb-sous">Vidéos verticales · TikTok, YouTube Shorts, Pinterest</p>
+      {error && <p className="pb-alerte">GitHub injoignable ({error}) : la liste vient de Mes applis.</p>}
       {!repos && !error && <p className="clay-muted">Chargement de tes dépôts…</p>}
-      <div className="clay-grid">
+      <div className="pb-grille">
         {(repos || []).map((r) => {
           const look = appLook(r.name, r.label);
           const p = byRepo(r.fullName);
           return (
-            <button
+            <TuilePub
               key={r.fullName}
-              className="clay-tile"
-              onClick={() => go(`appli/${r.name}`)}
-            >
-              <span className="clay-tile-ic">{logoAppli(r.name) ? <LogoAppli de={r.name} taille={40} seul /> : look.icon}</span>
-              <b>{look.name}</b>
-              {badge(count(p))}
-            </button>
+              nom={look.name}
+              logo={logoAppli(r.name)}
+              icone={look.icon}
+              n={count(p)}
+              derniere={p ? ilYa(p.updatedAt) : ''}
+              href={`#/appli/${r.name}`}
+              onCreer={() => creer(r)}
+            />
           );
         })}
         {others.map((p) => (
-          <button key={p.id} className="clay-tile" onClick={() => go(`projet/${p.id}`)}>
-            <span className="clay-tile-ic">🌐</span>
-            <b>{p.title}</b>
-            {badge(count(p))}
-          </button>
+          <TuilePub
+            key={p.id}
+            nom={p.title}
+            logo={logoAppli(p.title)}
+            icone={<Picto id="globe" petite={false} />}
+            n={count(p)}
+            derniere={ilYa(p.updatedAt)}
+            href={`#/projet/${p.id}`}
+            onCreer={() => go(`projet/${p.id}`)}
+          />
         ))}
-        {repos && (
-          <button className="clay-tile add" onClick={() => setShowForm(true)}>
-            <span className="clay-tile-ic">➕</span>
-            <b>Autre appli ou site</b>
-            <span className="clay-muted small">depuis une adresse de site</span>
-          </button>
-        )}
-        {/* Les chaînes vivent dans la page de chaque appli ; la vue d'ensemble reste ici. */}
-        {repos && (
-          <button className="clay-tile add" onClick={() => go('chaine')}>
-            <span className="clay-tile-ic">🎥</span>
-            <b>Toutes les chaînes</b>
-            <span className="clay-muted small">les comptes réseaux, toutes applis confondues</span>
-          </button>
-        )}
       </div>
+      {repos && (
+        <div className="pb-autres">
+          <button type="button" className="pb-ajout" onClick={() => setShowForm(true)}>
+            <span className="ic">
+              <Picto id="plus" petite={false} />
+            </span>
+            <span className="t">
+              <b>Autre appli ou site</b>
+              <small>depuis une adresse de site</small>
+            </span>
+          </button>
+          {/* Les chaînes vivent dans la page de chaque appli ; la vue d'ensemble reste ici. */}
+          <button type="button" className="pb-ajout" onClick={() => go('chaine')}>
+            <span className="ic">
+              <Picto id="chaines" petite={false} />
+            </span>
+            <span className="t">
+              <b>Toutes les chaînes</b>
+              <small>les comptes réseaux, toutes applis confondues</small>
+            </span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -482,10 +613,10 @@ function YoutubeCard() {
 }
 
 const ONGLETS_REGLAGES = [
-  ['marque', '🔌 Réseaux'],
-  ['voix', '🎙️ Voix'],
-  ['routines', '⏰ Routines'],
-  ['comptes', '🗂️ Comptes & adresses'],
+  ['marque', 'Réseaux', 'reseaux'],
+  ['voix', 'Voix', 'voix'],
+  ['routines', 'Routines', 'routines'],
+  ['comptes', 'Comptes & adresses', 'comptes'],
 ];
 
 function ReglagesPage({ arg }) {
@@ -520,6 +651,7 @@ function ReglagesPage({ arg }) {
   }, []);
   return (
     <div className="clay-content reglages">
+      <p className="pb-sous">Réseaux, voix, routines et comptes</p>
       <OngletsReglages onglet={onglet} choisir={choisirOnglet} pastilles={pastilles} />
       <div key={onglet} className="rg-corps" data-sans-ressort>
         {onglet === 'comptes' ? (
@@ -548,6 +680,11 @@ function OngletsReglages({ onglet, choisir, pastilles }) {
     const mesurer = () => {
       const b = barre.current?.querySelector(`[data-onglet="${onglet}"]`);
       if (b) setCurseur({ left: b.offsetLeft, top: b.offsetTop, width: b.offsetWidth, height: b.offsetHeight });
+      // Téléphone : la barre défile, l'onglet choisi reste en vue.
+      const c = barre.current;
+      if (b && c && c.scrollWidth > c.clientWidth) {
+        c.scrollTo({ left: Math.max(0, b.offsetLeft - (c.clientWidth - b.offsetWidth) / 2), behavior: 'smooth' });
+      }
     };
     mesurer();
     window.addEventListener('resize', mesurer);
@@ -556,13 +693,14 @@ function OngletsReglages({ onglet, choisir, pastilles }) {
   return (
     <div className="rg-onglets" ref={barre} role="tablist">
       {curseur ? <span className="rg-curseur" style={curseur} /> : null}
-      {ONGLETS_REGLAGES.map(([id, nom]) => {
-        const [ic, ...mots] = nom.split(' ');
+      {ONGLETS_REGLAGES.map(([id, nom, picto]) => {
         const n = pastilles[id];
         return (
           <button key={id} type="button" role="tab" aria-selected={onglet === id} data-onglet={id} className={`rg-onglet${onglet === id ? ' on' : ''}`} onClick={() => choisir(id)}>
-            <span className="ic">{ic}</span>
-            <span className="nom">{mots.join(' ')}</span>
+            <span className="ic">
+              <Picto id={picto} />
+            </span>
+            <span className="nom">{nom}</span>
             {n ? <span className={`rg-pastille ${id === 'routines' ? 'ko' : 'run'}`}>{n}</span> : null}
           </button>
         );
@@ -574,7 +712,8 @@ function OngletsReglages({ onglet, choisir, pastilles }) {
 // ---------- En cours : la file et les fabrications ----------
 function EnCoursPage() {
   return (
-    <div className="clay-content">
+    <div className="clay-content pb-encours">
+      <p className="pb-sous">Rendus Remotion, voix ElevenLabs, images OpenArt</p>
       <QueuePanel />
     </div>
   );

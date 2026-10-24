@@ -12,6 +12,7 @@ import { api } from './api.js';
 import { useApplis, Logo } from './MesApplisPage.jsx';
 import { PlanningPage } from './PlanningPage.jsx';
 import { BrandCard } from './App.jsx';
+import { logoAppli } from './apps.js';
 import './chaines.css';
 
 export const RESEAUX = [
@@ -110,7 +111,11 @@ export function ChainesPage() {
     <div className="clay-content ch">
       <div className="ch-grille">
         <a className="ch-carte ch-ajout" href="#/chaine/nouvelle">
-          <span className="ch-ic">＋</span>
+          <span className="ch-ic">
+            <svg className="rf-ic" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </span>
           <b>Ouvrir une nouvelle chaîne</b>
           <small>YouTube, TikTok, Instagram ou Pinterest, guidé pas à pas</small>
         </a>
@@ -211,7 +216,7 @@ export function ChaineDetail({ id }) {
           <p className="ch-aide">Aucune vidéo placée sur cette chaîne pour l’instant.</p>
         )}
         <a className="clay-btn small" href="#/planning">
-          🗓️ Programmer dans le Planning
+          Programmer dans le Planning
         </a>
       </div>
     </div>
@@ -346,7 +351,8 @@ export function AppliPubPage({ repo, onCreerPub }) {
       .catch((e) => alert(e.message));
   return (
     <div className="clay-content ch">
-      <div className="ch-tete">
+      <div className="ch-tete ch-tete-appli">
+        {logoAppli(app.repo) ? <img className="ch-tete-fond" src={`/${logoAppli(app.repo)}`} alt="" aria-hidden="true" /> : null}
         <Logo app={app} cls="ch-logo grand" />
         <div className="t">
           <h2>{app.name}</h2>
@@ -354,7 +360,10 @@ export function AppliPubPage({ repo, onCreerPub }) {
         </div>
         <div className="ch-actions">
           <button type="button" className="clay-btn" onClick={onCreerPub}>
-            ＋ Créer une pub
+            <svg className="rf-ic petite" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            Créer une pub
           </button>
         </div>
       </div>
@@ -380,13 +389,21 @@ export function AppliPubPage({ repo, onCreerPub }) {
           />
         ))}
         <a className="ch-carte ch-ajout" href={`#/chaine/nouvelle//${cle}`}>
-          <span className="ch-ic">＋</span>
+          <span className="ch-ic">
+            <svg className="rf-ic" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </span>
           <b>Créer une chaîne</b>
           <small>YouTube, TikTok, Instagram ou Pinterest</small>
         </a>
         {autres.length ? (
           <button type="button" className="ch-carte ch-ajout" onClick={() => setRelier(!relier)}>
-            <span className="ch-ic">🔗</span>
+            <span className="ch-ic">
+              <svg className="rf-ic" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
+              </svg>
+            </span>
             <b>Relier une chaîne existante</b>
             <small>{relier ? 'fermer' : `parmi tes ${autres.length} autres chaînes`}</small>
           </button>

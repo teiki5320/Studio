@@ -249,10 +249,15 @@ export function IndexationPage() {
 
   return (
     <div className="clay-content ix">
+      <p className="pb-sous">Google Search Console · pages connues de Google</p>
       <div className="ix-haut">
         <span className="ix-date">Dernière vérification : {heure(data.dernierPassage)} · tous les matins à partir de 4 h 30</span>
         <button className="clay-btn" disabled={Boolean(data.passageId)} onClick={verifier}>
-          {data.passageId ? '⏳ Vérification en cours…' : '🔄 Vérifier maintenant'}
+          <svg className="rf-ic petite" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 12a8 8 0 1 1-2.3-5.7" />
+            <path d="M20 4v5h-5" />
+          </svg>
+          {data.passageId ? 'Vérification en cours…' : 'Vérifier maintenant'}
         </button>
       </div>
       <div className="ix-kpis">
@@ -282,63 +287,71 @@ export function IndexationPage() {
           <span className="sub">routine chaque matin à 5 h 05</span>
         </div>
       </div>
-      <Courbe />
       {data.sites.length === 0 && (
         <div className="ix-carte">
           <p className="ix-explication">Aucune vérification encore. Touche « Vérifier maintenant » : la première peut prendre une vingtaine de minutes.</p>
         </div>
       )}
-      <div className="ix-jauges">
-        {data.sites.map((x) => {
-          const n = ouverts(x).length;
-          // Une page corrigée n'est plus « cassée » ni « refusée » : elle attend Google (bleu).
-          const ouvertsIci = ouverts(x);
-          const urls = (g) => ouvertsIci.filter((p) => p.gravite === g).reduce((t, p) => t + p.urls.length, 0);
-          const enAttente = x.problemes.filter((p) => !ouvertsIci.includes(p) || p.gravite === 1).reduce((t, p) => t + p.urls.length, 0);
-          const p100 = pct(x.indexees, x.total);
-          const parts = [
-            ['ok', x.indexees, 'sur Google'],
-            ['bleu', enAttente, 'en attente de Google'],
-            ['run', urls(2), 'refusées par Google'],
-            ['ko', urls(3), 'cassées'],
-          ];
-          return (
-            <button key={x.propriete} type="button" className={`ix-jauge${choisi && x.propriete === choisi.propriete ? ' on' : ''}`} onClick={() => choisir(x)}>
-              <span className="ix-jauge-h">
-                <span className="ix-anneau">
-                  <svg viewBox="0 0 80 80" aria-hidden="true">
-                    <circle className="piste" cx="40" cy="40" r="34" />
-                    <circle className="part" cx="40" cy="40" r="34" style={{ strokeDasharray: `${((214 * p100) / 100).toFixed(1)} 214` }} />
-                  </svg>
-                  <b>{p100}%</b>
+      {data.sites.length ? (
+        <div className="ix-liste">
+          {data.sites.map((x) => {
+            const n = ouverts(x).length;
+            // Une page corrigée n'est plus « cassée » ni « refusée » : elle attend Google (bleu).
+            const ouvertsIci = ouverts(x);
+            const urls = (g) => ouvertsIci.filter((p) => p.gravite === g).reduce((t, p) => t + p.urls.length, 0);
+            const enAttente = x.problemes.filter((p) => !ouvertsIci.includes(p) || p.gravite === 1).reduce((t, p) => t + p.urls.length, 0);
+            const p100 = pct(x.indexees, x.total);
+            const parts = [
+              ['ok', x.indexees, 'sur Google'],
+              ['bleu', enAttente, 'en attente de Google'],
+              ['run', urls(2), 'refusées par Google'],
+              ['ko', urls(3), 'cassées'],
+            ];
+            const ps = perf?.sites[x.propriete];
+            return (
+              <button
+                key={x.propriete}
+                type="button"
+                className={`ix-ligne${choisi && x.propriete === choisi.propriete ? ' on' : ''}`}
+                aria-pressed={Boolean(choisi && x.propriete === choisi.propriete)}
+                onClick={() => choisir(x)}
+              >
+                <span className="ix-site">
+                  <span className="ix-logo">
+                    <LogoAppli de={x.domaine} taille={32} seul />
+                  </span>
+                  <span className="t">
+                    <b title={x.domaine}>{x.domaine.replace(/\.(com|fr)$/, '')}</b>
+                    <small>
+                      {ps && !ps.erreur ? (
+                        <>
+                          {nb(ps.clics)} clics · {nb(ps.vues)} apparitions{ps.position ? ` · ${place(ps.position)}` : ''} · 7 j
+                        </>
+                      ) : (
+                        `${p100} % sur Google`
+                      )}
+                      {x.verifiees < x.total ? ` · ${x.total - x.verifiees} pas encore vérifiées` : ''}
+                    </small>
+                  </span>
                 </span>
-                <span className="t">
-                  <b title={x.domaine}>
-                    <LogoAppli de={x.domaine} taille={22} />
-                    {x.domaine.replace(/\.(com|fr)$/, '')}
-                  </b>
-                  <small>
-                    <strong>{nb(x.indexees)}</strong> sur Google, sur {nb(x.total)}
-                    {x.verifiees < x.total ? ` · ${x.total - x.verifiees} pas encore vérifiées` : ''}
-                  </small>
+                <span className="ix-barre" title={parts.filter(([, v]) => v).map(([, v, l]) => `${v} ${l}`).join(' · ')}>
+                  <span className="ix-barre-in">
+                    {parts.map(([c, v]) => (v ? <span key={c} className={c} style={{ width: `${(100 * v) / Math.max(1, x.total)}%` }} /> : null))}
+                  </span>
                 </span>
-              </span>
-              {perf?.sites[x.propriete] && !perf.sites[x.propriete].erreur ? (
-                <span className="ix-perf">
-                  <b>{nb(perf.sites[x.propriete].clics)}</b> clics · {nb(perf.sites[x.propriete].vues)} apparitions
-                  {perf.sites[x.propriete].position ? <> · <b>{place(perf.sites[x.propriete].position)}</b></> : null} · 7 j
+                <span className="ix-compte">
+                  <span className="ix-nbs">
+                    {nb(x.indexees)} <i>/ {nb(x.total)}</i>
+                  </span>
+                  <span className={`ix-etat ${x.erreur ? 'ko' : n ? 'run' : 'ok'}`}>
+                    {x.erreur ? 'vérification ratée' : n ? `${n} à régler` : x.problemes.length ? 'corrigé, Google repassera' : 'rien à régler'}
+                  </span>
                 </span>
-              ) : null}
-              <span className="ix-barre" title={parts.filter(([, v]) => v).map(([, v, l]) => `${v} ${l}`).join(' · ')}>
-                {parts.map(([c, v]) => (v ? <span key={c} className={c} style={{ width: `${(100 * v) / Math.max(1, x.total)}%` }} /> : null))}
-              </span>
-              <span className={`ix-etat ${x.erreur ? 'ko' : n ? 'run' : 'ok'}`}>
-                {x.erreur ? '⚠️ vérification ratée' : n ? `${n} à régler (Accueil)` : x.problemes.length ? '✓ Corrigé, Google repassera' : '✓ Rien à corriger'}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
       {!choisi ? (
         <div className="ix-detail" key="tous" data-sans-ressort>
           <h3>
@@ -395,6 +408,7 @@ export function IndexationPage() {
           ))}
         </div>
       )}
+      <Courbe />
       {error && <p className="error small">{error}</p>}
     </div>
   );
