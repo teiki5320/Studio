@@ -1,6 +1,6 @@
 # Keur Cook — recettes africaines & produits rares
 
-Site en français de **recettes de plats africains** (58 recettes, 16 pays), avec une rubrique **Conseils** (trois articles par semaine : lundi, mercredi, vendredi), une **boutique de 131 produits africains rares** en 9 gammes et des pages **Top 10** (10 classements de produits). Le site ne vend rien lui-même : les boutons « Acheter · prix » mènent à Amazon.fr (programme Partenaires).
+Site en français de **recettes de plats africains** (58 recettes, 16 pays), avec une rubrique **Conseils** (trois articles par semaine : lundi, mercredi, vendredi), une **boutique de 128 produits africains rares** en 9 gammes et des pages **Top 10** (10 classements de produits). Le site ne vend rien lui-même : les boutons « Acheter · prix » mènent à Amazon.fr (programme Partenaires).
 
 - **Site** : https://keurcook.com (`www.keurcook.com` y redirige).
 - **Éditeur** : ALOHASH (SAS). Contact : keurcook@toakeur.com.
@@ -29,7 +29,7 @@ Pas de newsletter pour l'instant : le formulaire a été retiré en attendant le
 
 ### Boutique et Amazon Partenaires
 
-- 131 produits en 9 gammes : Épices & aromates, Farines & céréales, Feuilles & fleurs séchées, Poissons & fumés, Huiles & pâtes, Snacks & fruits secs, Cafés & thés, Ustensiles, Livres de cuisine. Produits retenus : plus de 3,5 étoiles sur Amazon.
+- 128 produits en 9 gammes : Épices & aromates, Farines & céréales, Feuilles & fleurs séchées, Poissons & fumés, Huiles & pâtes, Snacks & fruits secs, Cafés & thés, Ustensiles, Livres de cuisine. Produits retenus : plus de 3,5 étoiles sur Amazon.
 - Liens construits par `src/lib/amazon.ts` à partir du champ `amazonAsin` (rempli depuis les offres de `src/lib/demo/catalog*.ts`) et du tag partenaire `keurcookfr-21` (`NEXT_PUBLIC_AMAZON_TAG` pour le changer). Ce tag vient du nouveau compte Amazon Partenaires ouvert le 18 octobre 2026 (l'ancien compte a été fermé par Amazon).
 - Prix **indicatifs**, relevés le 27/09/2026 : le prix affiché par Amazon fait foi.
 - Le site n'encaisse rien et ne gère aucun stock : achat, paiement et livraison se font sur Amazon.
@@ -50,7 +50,9 @@ Données dans `src/lib/demo/top10.ts`, vérifiées par `tests/top10.test.ts`. Ch
 
 ### Pinterest
 
-Compte « Keur Cook », site revendiqué, bouton « Épingler » sur chaque recette. Les 52 recettes qui ont une image d'épingle (`public/pins/`, créées par `scripts/pin-images.mjs`) ont toutes été épinglées par la routine Claude `keurcook-epingles-pinterest` ; les six recettes de boissons ajoutées le 19 octobre n'ont pas encore d'image d'épingle.
+Compte « Keur Cook », site revendiqué, bouton « Épingler » sur chaque recette. Images d'épingle dans `public/pins/` (58, créées par `scripts/pin-images.mjs`). 52 recettes ont été épinglées du 2 au 14 octobre 2026 par la routine Claude `keurcook-epingles-pinterest` ; les six recettes de boissons ajoutées le 19 octobre ont leur image depuis le 23 octobre : cinq ont été épinglées le 24 octobre 2026 (57 sur 58), le rooibos glacé reste à partir.
+
+Publication automatique (même système que Keur Déco, depuis le 23 octobre 2026) : `scripts/epingles.ts` écrit au build le manifeste `epingles.json` ; `.github/workflows/pinterest.yml` publie chaque jour à 4 h 17 UTC au plus 5 épingles (`config/pinterest.json`), jamais deux de la même recette le même jour, et note chacune dans `data/pinterest-etat.json`. La clé du compte Keur Cook a été créée le 23 octobre 2026 (`npm run pinterest:auth` puis `npm run pinterest:secrets`, voir `docs/PINTEREST.md`) ; à refaire avant son échéance, environ 60 jours plus tard.
 
 ### Conformité
 

@@ -96,7 +96,7 @@ Selon le type :
 - **top** : `classement: [{ produit, pourquoi, a_savoir }]` (5 à 10), données structurées `ItemList`. `{{classement}}` dans le texte place le classement.
 - **guide** : `{{produit: <id>}}` seul sur une ligne insère un encadré produit ; sommaire automatique.
 
-Les articles sont publiés à leur date : le site est reconstruit à chaque push sur `main` et **chaque lundi à 5 h UTC**.
+Les articles sont publiés à leur date : le site est reconstruit à chaque push sur `main` et **chaque lundi, mercredi et vendredi à 5 h UTC**.
 
 ### Images
 
@@ -141,14 +141,14 @@ Tout est détaillé dans [`docs/pinterest.md`](docs/pinterest.md), y compris les
 
 - **Sur le site** : Open Graph complet + données structurées `Article` (Rich Pins), balise `p:domain_verify` (variable `PINTEREST_VERIFY`), bouton « Épingler » sans script externe.
 - **Au build** (`scripts/epingles.ts`, sharp) : pour chaque article publié, une épingle 1000 × 1500 JPG par titre de `epingles[]`, 4 gabarits qui alternent (bandeau haut, bandeau bas, cadre, split) ; sortie `public/epingles/<slug>-<n>.jpg` et manifeste `epingles.json` (slug, image, titre, description avec mots-clés, lien avec `utm_source=pinterest`, tableau).
-- **Publication** (`scripts/pinterest-publier.mjs`, workflow quotidien 7 h 17 UTC) : lit le manifeste publié et `data/pinterest-etat.json`, publie au plus 5 épingles (config) sans deux épingles du même article le même jour, `POST /v5/pins` avec `media_source` `image_url`, tableau choisi via `config/tableaux-pinterest.json`, puis commit de l'état sur `main`. Le workflow échoue si un tableau n'a pas de `board_id`, et ouvre un ticket GitHub quand Pinterest renouvelle le refresh token (à recopier dans le secret). OAuth : `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`, `PINTEREST_REFRESH_TOKEN` (jeton d'accès renouvelé automatiquement). `PINTEREST_SANDBOX=1` : `https://api-sandbox.pinterest.com`. Sans secrets : mode à blanc.
+- **Publication** (`scripts/pinterest-publier.mjs`, workflow quotidien 4 h 17 UTC) : lit le manifeste publié et `data/pinterest-etat.json`, publie au plus 5 épingles (config) sans deux épingles du même article le même jour, `POST /v5/pins` avec `media_source` `image_url`, tableau choisi via `config/tableaux-pinterest.json`, puis commit de l'état sur `main`. Le workflow échoue si un tableau n'a pas de `board_id`, et ouvre un ticket GitHub quand Pinterest renouvelle le refresh token (à recopier dans le secret). OAuth : `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`, `PINTEREST_REFRESH_TOKEN` (jeton d'accès renouvelé automatiquement). `PINTEREST_SANDBOX=1` : `https://api-sandbox.pinterest.com`. Sans secrets : mode à blanc.
 - **Import manuel** : le build écrit aussi `public/epingles-pinterest.csv` (format d'import en masse de Pinterest). Des épingles importées ainsi sont programmées jusqu'au 18 novembre 2026 (2 par jour), en plus de celles publiées par l'API.
-- **État au 21 octobre 2026** : accès standard à l'API Pinterest accordé ; le workflow publie 5 épingles par passage (correctif du 20 octobre, commit `3529a05`) et a publié ses 5 premières épingles le 20 octobre. Le secret `PINTEREST_REFRESH_TOKEN` a été renouvelé le 20 octobre ; comme Pinterest renvoie un nouveau refresh token à chaque renouvellement, GitHub peut rouvrir un ticket demandant de le recopier dans le secret (le jeton actuel reste valable environ 60 jours).
+- **État au 24 octobre 2026** : accès standard à l'API Pinterest accordé ; le workflow publie 5 épingles par passage (correctif du 20 octobre, commit `3529a05`) ; il a publié ses 5 premières épingles le 20 octobre et 20 au total au 24 octobre. Le secret `PINTEREST_REFRESH_TOKEN` a été renouvelé le 20 octobre ; comme Pinterest renvoie un nouveau refresh token à chaque renouvellement, GitHub peut rouvrir un ticket demandant de le recopier dans le secret (le jeton actuel reste valable environ 60 jours).
 - **`npm run pinterest:auth`** : serveur local (http://localhost:8085/) qui mène le parcours OAuth complet et affiche le refresh token, les tableaux et un formulaire d'épingle de démonstration (pour la vidéo exigée par Pinterest).
 
 ## Déploiement (GitHub Pages)
 
-`.github/workflows/pages.yml` : à chaque push sur `main`, chaque lundi à 5 h UTC et à la demande : `npm ci`, tests, build (épingles comprises), test de bout en bout Chromium, puis déploiement GitHub Pages.
+`.github/workflows/pages.yml` : à chaque push sur `main`, chaque lundi, mercredi et vendredi à 5 h UTC et à la demande : `npm ci`, tests, build (épingles comprises), test de bout en bout Chromium, puis déploiement GitHub Pages.
 
 Réglages facultatifs (*Settings* › *Secrets and variables* › *Actions* › *Variables*) : `SITE_URL` (par défaut `https://www.keurdeco.com/`), `CLOUDFLARE_WEB_ANALYTICS` (token public du « JS Snippet » de Cloudflare Web Analytics : mesure d'audience sans cookie, en place), `PLAUSIBLE_DOMAIN` (alternative : Plausible), `PINTEREST_VERIFY`, `GOOGLE_VERIFY` (code de la Search Console, balise `google-site-verification`).
 
@@ -156,7 +156,7 @@ Référencement : `sitemap.xml` (avec `lastmod`) ne contient que les pages index
 
 Première mise en route : *Settings* › *Pages* › *Source* = **GitHub Actions**.
 
-Autre workflow : `pinterest.yml` (quotidien, 7 h 17 UTC).
+Autre workflow : `pinterest.yml` (quotidien, 4 h 17 UTC).
 
 ## Domaine (Cloudflare + GitHub Pages)
 

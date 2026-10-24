@@ -42,7 +42,7 @@ npm test           # cohérence des contenus
 | Articles Conseils | `content/conseils/<slug>.md` |
 | Calendrier des fêtes | `src/lib/calendrier.ts` |
 
-Règles de rédaction : [`docs/REDACTION.md`](docs/REDACTION.md). Pinterest : [`docs/PINTEREST.md`](docs/PINTEREST.md). Déploiement : [`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md).
+Règles de rédaction : [`docs/REDACTION.md`](docs/REDACTION.md). Pinterest : [`docs/PINTEREST.md`](docs/PINTEREST.md) (21 épingles programmées à la main à partir du 21 octobre 2026 ; publication automatique par l'API, même système que Keur Déco, en place depuis le 23 octobre 2026, clé du compte créée le même jour ; à refaire vers mi-décembre : `npm run pinterest:auth` puis `npm run pinterest:secrets`). Déploiement : [`docs/DEPLOIEMENT.md`](docs/DEPLOIEMENT.md).
 
 ## Amazon Partenaires
 

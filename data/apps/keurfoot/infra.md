@@ -1,6 +1,6 @@
 # INFRA — fiche technique
 
-Mis à jour le 21 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
+Mis à jour le 24 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
 ## En bref
@@ -9,13 +9,13 @@ uniquement des noms de variables et de consoles.
 - **Stack** : Next.js 16 en export statique, React 19, Tailwind CSS 4
 - **Backend** : aucun — site statique, sans base ni compte
 - **Distribution** : Worker de fichiers statiques Cloudflare, publié par GitHub Actions
-- **Site** : keurfoot.com (96 adresses dans le sitemap)
+- **Site** : keurfoot.com (97 adresses dans le sitemap)
 - **IA et outils** : illustrations faites avec OpenArt, épingles générées au build
 
 ## Parcours
 
 - 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build [ok] → ☁️ Cloudflare Workers — Worker keurfoot [ok] → 🌍 keurfoot.com — en ligne, réponse 200 [ok]
-- 📝 **Contenu** : ✍️ Conseils — 6 publiés, 3 programmés [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — indexation à vérifier dans la console [à faire]
+- 📝 **Contenu** : ✍️ Conseils — 7 publiés, 14 programmés jusqu'au 25 novembre 2026 [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — indexation à vérifier dans la console [à faire]
 - 🛒 **Affiliation** : 🛍️ Boutique et fiches — boutons Amazon [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurfootfr-21 [ok] → 🌐 Site déclaré chez Amazon — à vérifier dans la console [à faire] → 🔗 Liens directs — aucun ASIN, recherches seulement [pas encore]
 - 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en place [ok] → ✅ Examen du site — demandé le 20 octobre [à faire] → 🧱 Blocs d'annonces — aucun identifiant renseigné [pas encore]
 
@@ -31,8 +31,8 @@ uniquement des noms de variables et de consoles.
 - **Backend** : aucun. Site entièrement statique (dossier `out/`), sans base de données ni compte.
   Seuls cookies possibles : ceux de Google AdSense, après accord dans le bandeau de consentement de
   Google (lien « Cookies » en pied de page).
-- **Taille** : 96 adresses dans le sitemap au 21 octobre 2026 (54 sélections, 15 joueurs,
-  10 Top 10, 2 pages CAN, 6 articles Conseils publiés, boutique, pages de liste et pages légales).
+- **Taille** : 97 adresses dans le sitemap au 24 octobre 2026 (54 sélections, 15 joueurs,
+  10 Top 10, 2 pages CAN, 7 articles Conseils publiés, boutique, pages de liste et pages légales).
 - **Images** : illustrations originales créées avec OpenArt puis découpées par
   `scripts/decouper-planche.mjs` (voir docs/ILLUSTRATIONS.md) ; épingles Pinterest des Top 10
   générées avant chaque build par `scripts/epingles.mts` (satori et resvg), dans `public/epingles/`.
@@ -88,7 +88,7 @@ uniquement des noms de variables et de consoles.
 ## AdSense (publicité web)
 
 - **Rôle** : script AdSense chargé sur les pages (identifiant d'éditeur dans `src/lib/config.ts`,
-  `ADSENSE_CLIENT`, réglable par `NEXT_PUBLIC_ADSENSE_CLIENT` — vide, plus aucun script Google) ;
+  `ADSENSE_CLIENT`, réglable par `NEXT_PUBLIC_ADSENSE_CLIENT` ; identifiant `ca-pub-2680784147246798`, présent dans le HTML en ligne) ;
   `public/ads.txt` est publié et répond.
 - **Emplacements prévus** (composant `AdSlot`) : 1 sur les fiches sélections, 1 sur les fiches
   joueurs, 1 sur la page CAN, 2 dans les Top 10 et 2 dans les Conseils. Aucun identifiant de bloc

@@ -1,6 +1,6 @@
 # INFRA — fiche technique
 
-Mis à jour le 21 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
+Mis à jour le 24 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
 ## En bref
@@ -17,7 +17,7 @@ uniquement des noms de variables et de consoles.
 - 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build [ok] → ☁️ Hébergement web — Worker Cloudflare « keurkado » [ok] → 🌍 keurkado.com — en ligne, réponse 200 [ok]
 - 🛒 **Affiliation** : 🎁 Fiche cadeau — bouton « Voir sur Amazon » [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurkadofr-21 [ok] → 🔗 Liens directs — 53 ASIN sur 95 cadeaux [à faire]
 - 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en ligne [ok] → 🧱 Blocs d'annonces — pas encore créés [à faire] → 💶 Revenus — aucun constaté [pas encore]
-- 📝 **Contenu** : ✍️ Articles Conseils — 4 publiés, 8 programmés [ok] → ⚙️ GitHub Actions — republie chaque lundi [ok] → 🔍 Google — 9 pages indexées sur 61 [à faire]
+- 📝 **Contenu** : ✍️ Articles Conseils — 4 publiés, 8 programmés [ok] → ⚙️ GitHub Actions — republie lun., mer., ven. [ok] → 🔍 Google — 9 pages indexées sur 61 [à faire]
 
 ## Vue d'ensemble
 
@@ -38,18 +38,27 @@ uniquement des noms de variables et de consoles.
   « Illustration créée par IA ». Détail : `docs/IMAGES.md`.
 - **Particularités** : tests de cohérence des contenus dans `tests/` ; épingles Pinterest
   (une par Top 10), manifeste `/epingles.json` et fichier d'import `/epingles-pinterest.csv`
-  générés à chaque build par `scripts/epingles.mts`.
+  générés à chaque build par `scripts/epingles.mts` ; publication automatique par l'API Pinterest
+  (même système que Keur Déco) depuis le 23 octobre 2026, clé du compte créée le même jour ; voir GitHub ci-dessous.
 
 ## GitHub
 
-- **Rôle** : dépôt du code et des contenus, et deux workflows :
+- **Rôle** : dépôt du code et des contenus, et trois workflows :
   - `deploy.yml` (« Publier le site ») : lint, types, tests, build, puis publication par
-    `npx wrangler deploy` à chaque push sur `main`, chaque lundi (0 h 15 heure de Paris, pour les
-    articles programmés) et à la main ; dernière exécution réussie le 20 octobre 2026 ;
-  - `pages.yml` : publie sur l'ancienne adresse GitHub Pages une page qui renvoie vers keurkado.com.
+    `npx wrangler deploy` à chaque push sur `main`, chaque lundi, mercredi et vendredi (0 h 15 heure de Paris, pour les
+    articles programmés) et à la main ; dernière exécution réussie le 23 octobre 2026 ;
+  - `pages.yml` : publie sur l'ancienne adresse GitHub Pages une page qui renvoie vers keurkado.com ;
+  - `pinterest.yml` (« Publier les épingles Pinterest ») : chaque jour à 4 h 17 UTC, au plus 5 épingles
+    du manifeste (`config/pinterest.json`), jamais deux du même Top le même jour, dans le tableau de sa
+    rubrique, puis enregistre `data/pinterest-etat.json` sur `main` (les 21 épingles programmées à la
+    main y sont notées). Clé du compte en place : l'exécution du 24 octobre 2026 s'est connectée à
+    Pinterest et n'a rien publié, les 21 épingles actuelles étant déjà programmées à la main.
 - **Console** : https://github.com/teiki5320/keurkado (branche `main` uniquement).
 - **Secrets** : `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID`, réglés dans les secrets
-  Actions du dépôt, jamais dans le code. Variable sans secret : `PINTEREST_VERIFY`.
+  Actions du dépôt, jamais dans le code. Variable sans secret : `PINTEREST_VERIFY`. Pinterest :
+  `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET` (application « TOA CORP publication », la même que
+  Keur Déco, accès standard) et `PINTEREST_REFRESH_TOKEN` (clé du compte Keur Kado, environ 60 jours),
+  créés le 23 octobre 2026, clé à refaire vers mi-décembre 2026 ; procédure dans `docs/PINTEREST.md`.
 
 ## Hébergement web (GitHub Pages / Cloudflare Pages)
 

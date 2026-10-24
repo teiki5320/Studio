@@ -1,6 +1,6 @@
 # MARKETING — plan marketing & rémunération
 
-Mis à jour le 21 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
+Mis à jour le 24 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
 publications réelles, ou routine qui publie).
 
 ## Positionnement
@@ -32,9 +32,11 @@ publications réelles, ou routine qui publie).
 - ✅ Site en ligne sur `keurkado.com` depuis le 20 octobre 2026.
 - ✅ Référencement naturel : propriété `keurkado.com` dans Google Search Console, sitemap envoyé le
   20 octobre 2026 ; 12 articles Conseils, dont 4 publiés et 8 programmés jusqu'au 14 décembre,
-  republiés chaque lundi.
-- ⬜ Pinterest : compte Keur Kado créé, domaine revendiqué, 21 épingles programmées dans Pinterest
-  (une par jour à partir du 21 octobre 2026) ; pas encore branché au Planning du Studio.
+  republiés chaque lundi, mercredi et vendredi.
+- ✅ Pinterest : compte Keur Kado créé, domaine revendiqué, 21 épingles programmées dans Pinterest
+  (une par jour à partir du 21 octobre 2026) ; pas branché au Planning du Studio. Publication
+  automatique par l'API (comme Keur Déco) en place depuis le 23 octobre 2026, clé du compte créée le
+  même jour ; elle prendra les épingles des nouveaux Top 10 (les 21 actuels sont déjà programmés).
 - ⬜ TikTok, Instagram, YouTube : aucun compte Keur Kado.
 - ⬜ Newsletter : aucune.
 - ⬜ Mesure d'audience : aucune sur le site.
@@ -51,9 +53,9 @@ publications réelles, ou routine qui publie).
 
 ## Les 3 priorités
 
-- Pinterest Keur Kado : compte ouvert, domaine revendiqué et 21 épingles programmées ; reste à le
-  brancher au Planning du Studio, canal naturel des idées cadeaux avant Noël.
 - AdSense : examen de keurkado.com demandé le 20 octobre 2026 ; créer les trois blocs « Keur Kado - top / rubrique / article »
   et renseigner leurs identifiants, pour que les annonces s'affichent.
 - Faire indexer par Google les 52 pages qui ne le sont pas encore (Top 10, pages occasion et
   univers, articles) avant la saison des fêtes.
+- Liens Amazon directs : relever les ASIN vérifiés des 42 cadeaux qui ouvrent encore une recherche
+  Amazon (53 sur 95 mènent à leur fiche), en commençant par ceux des Top 10 de Noël.

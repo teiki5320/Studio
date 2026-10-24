@@ -1,6 +1,6 @@
 # MARKETING — plan marketing & rémunération
 
-Mis à jour le 21 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
+Mis à jour le 24 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
 publications réelles, ou routine qui publie).
 
 ## Positionnement
@@ -30,9 +30,10 @@ publications réelles, ou routine qui publie).
 
 - ✅ Site en ligne sur `keurfoot.com` depuis le 20 octobre 2026.
 - ✅ Contenu régulier : articles Conseils publiés automatiquement le lundi, le mercredi et le
-  vendredi (6 publiés, 3 programmés jusqu'au 28 octobre 2026).
-- ⬜ Référencement naturel : sitemap et `robots.txt` en ligne ; Search Console et indexation à
-  vérifier dans la console ; pas de signalement IndexNow.
+  vendredi (7 publiés et 14 programmés jusqu'au 25 novembre 2026, au 24 octobre 2026).
+- ⬜ Référencement naturel : sitemap et `robots.txt` en ligne ; Google montre déjà des pages joueurs
+  (Search Console relevée par le Studio, 24 septembre – 22 octobre 2026) ; signalement IndexNow
+  (Bing…) par `scripts/indexnow.mjs` depuis le 24 octobre 2026 ; suivi dans `docs/referencement.md`.
 - ⬜ Pinterest : 9 épingles et leurs textes prêts (docs/pinterest-epingles.md), mais aucun compte
   Keur Foot branché au Studio et aucune publication constatée.
 - ⬜ TikTok, YouTube, Instagram : aucun compte Keur Foot.
@@ -42,9 +43,9 @@ publications réelles, ou routine qui publie).
 
 ## Mesures
 
-- **Adresses dans le sitemap** : 96 (21 octobre 2026)
+- **Adresses dans le sitemap** : 97 (24 octobre 2026)
 - **Pages indexées par Google** : à vérifier dans la console
-- **Articles Conseils** : 6 publiés, 3 programmés
+- **Articles Conseils** : 7 publiés, 14 programmés jusqu'au 25 novembre 2026 (24 octobre 2026)
 - **Liens Amazon directs** : aucun, tous les liens ouvrent une recherche Amazon
 - **Visites** : à instrumenter
 - **Clics et revenus Amazon** : à vérifier dans la console
@@ -53,7 +54,7 @@ publications réelles, ou routine qui publie).
 ## Les 3 priorités
 
 - Faire entrer keurfoot.com dans Google : vérifier la propriété dans la Search Console, y envoyer
-  le sitemap et suivre l'indexation des 96 pages.
+  le sitemap et suivre l'indexation des 97 pages.
 - Ouvrir un compte Pinterest Keur Foot, le brancher au Planning du Studio et publier les
   9 épingles déjà prêtes.
 - Vérifier que keurfoot.com est déclaré dans le nouveau compte Amazon Partenaires, puis brancher
