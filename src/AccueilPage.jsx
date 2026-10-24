@@ -289,8 +289,6 @@ function PanneauMails({ mails, onCorbeille }) {
 function Chiffres({ apps, ext }) {
   const c = ext?.compteurs || {};
   const perimees = apps.filter((a) => (ageFiches(a) ?? 0) > FICHE_PERIMEE_JOURS).length;
-  const ouverts = apps.reduce((t, a) => t + (a.marketingSummary?.done || 0), 0);
-  const canaux = ouverts + apps.reduce((t, a) => t + (a.marketingSummary?.todo || 0), 0);
   const raccourcis = [
     ['#/pub', '📣', c.videosHier, 'vidéos prêtes'],
     ['#/indexation', '🔎', c.indexation, 'à régler sur Google'],
@@ -307,13 +305,6 @@ function Chiffres({ apps, ext }) {
             <Compte n={perimees} />
           </b>
           <span className={`var${perimees ? ' chaud' : ''}`}>à rafraîchir</span>
-        </a>
-        <a className="gc" href="#/applis">
-          <span className="lab">Canaux</span>
-          <b>
-            <Compte n={ouverts} delai={80} />
-          </b>
-          <span className="var">ouverts sur {canaux}</span>
         </a>
         <a className="gc" href="#/indexation">
           <span className="lab">Google</span>
