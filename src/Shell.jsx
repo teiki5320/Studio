@@ -738,7 +738,10 @@ const TITLES = {
 export function Shell() {
   const route = useRoute();
   const mainRef = useRef(null);
-  useRessort(mainRef, `${route.page}/${route.arg || ''}`);
+  // Changer d'onglet dans une page (fiche d'appli : Technique / Marketing / Publication,
+  // Réglages : Réseaux / Voix…) ne rejoue pas l'entrée de toute la page : seul le
+  // contenu de l'onglet s'anime, comme dans la maquette.
+  useRessort(mainRef, `${route.page}/${(route.arg || '').split('/')[0]}`);
   const [theme, toggleTheme] = useTheme();
   const [projects, setProjects] = useState([]);
   const [loaded, setLoaded] = useState(false);
