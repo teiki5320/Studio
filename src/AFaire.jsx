@@ -2,7 +2,9 @@
 // Chaque ligne se règle d'ici : « Envoyer à Claude » (ou « Oui » / « Non »
 // pour une décision) la met dans la file commune, que la routine « Sites du
 // jour » (5 h 05) applique ; elle rend compte et la ligne passe à ✅ fait ou
-// ❌ bloqué (avec ce que Jean doit faire). Les deux colonnes de l'Accueil
+// ❌ bloqué (avec ce que Jean doit faire). Une ligne cochée peut aussi partir
+// « sur GitHub » : un ticket du dépôt privé studio-demandes, où un Claude en
+// ligne répond tout seul (règle ce qu'il peut, donne les étapes pour Jean). Les deux colonnes de l'Accueil
 // (AccueilPage.jsx) utilisent cette ligne.
 import React, { useState } from 'react';
 import { api, followJob } from './api.js';
@@ -35,7 +37,16 @@ function Etat({ e }) {
   return null;
 }
 
-export function Ligne({ e, onAgir, avecSite = false }) {
+const TICKET = { 'en-cours': '⏳ Claude regarde', repondu: '💬 Claude a répondu', 'a-toi': '👉 Claude a répondu : à toi', regle: '✅ Réglé' };
+function Ticket({ t }) {
+  return (
+    <a className={`af-ticket ${t.etat}`} href={t.url} target="_blank" rel="noreferrer">
+      🎫 Ticket n° {t.numero} · {TICKET[t.etat] || TICKET['en-cours']} ↗
+    </a>
+  );
+}
+
+export function Ligne({ e, onAgir, avecSite = false, coche, onCocher }) {
   const [plus, setPlus] = useState(false);
   const [occupe, setOccupe] = useState(false);
   const agir = (f) => {
@@ -70,7 +81,13 @@ export function Ligne({ e, onAgir, avecSite = false }) {
         </span>
         {plus && e.detail ? <small className="af-detail">{e.detail}</small> : null}
         <Etat e={e} />
+        {e.ticket ? <Ticket t={e.ticket} /> : null}
       </div>
+      {onCocher && ouvert(e) && e.type !== 'decision' ? (
+        <label className="af-coche" title="Cocher pour envoyer sur GitHub">
+          <input type="checkbox" checked={Boolean(coche)} onChange={() => onCocher(e.id)} />
+        </label>
+      ) : null}
       {ouvert(e) ? (
         <div className="af-boutons">
           {e.type === 'decision' && e.etat === 'a-faire' ? (

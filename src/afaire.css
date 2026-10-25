@@ -20,3 +20,12 @@
   .af-ligne { flex-wrap: wrap; }
   .af-boutons { max-width: none; width: 100%; justify-content: flex-start; padding-left: 30px; }
 }
+
+/* Envoyer sur GitHub : case à cocher par ligne, barre d'envoi, lien du ticket. */
+.af-coche { display: flex; align-items: flex-start; padding-top: 4px; cursor: pointer; }
+.af-coche input { width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; }
+.af-github { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 4px 0 10px; padding: 10px 12px; border-radius: 14px; background: var(--carte); box-shadow: 0 0 0 1px var(--accent); }
+.af-github span { font-weight: 600; margin-right: auto; }
+.af-ticket { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--c-muted); }
+.af-ticket.a-toi, .af-ticket.repondu { color: var(--accent); }
+.af-ticket.regle { color: var(--ok); }

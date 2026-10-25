@@ -49,7 +49,7 @@ const lireJson = (f, defaut) => {
 };
 const lire = () => {
   const d = lireJson(FICHIER, {});
-  return { elements: d.elements || {}, suivi: d.suivi || {} };
+  return { elements: d.elements || {}, suivi: d.suivi || {}, tickets: d.tickets || {} };
 };
 const ecrire = (d) => {
   // On oublie ce qui est fait depuis plus de 7 jours.
@@ -565,8 +565,68 @@ export function listeAfaire() {
       bloques: compte((e) => e.etat === 'bloque'),
       faits: compte((e) => e.etat === 'fait'),
     },
-    elements: tout,
+    elements: tout.map((e) => (d.tickets[e.id] ? { ...e, ticket: avecEtat(d.tickets[e.id]) } : e)),
   };
+}
+
+// ---------- « Envoyer sur GitHub » ----------
+// Les points que Claude n'a pas pu régler partent dans un ticket du dépôt PRIVÉ
+// teiki5320/studio-demandes (jamais dans le dépôt Studio, qui est public) : un
+// Claude en ligne s'y réveille tout seul, règle ce qu'il peut et répond dans le
+// ticket avec les étapes pour Jean (voir le CLAUDE.md de ce dépôt).
+const DEPOT_DEMANDES = 'teiki5320/studio-demandes';
+const gh = () => ['/opt/homebrew/bin/gh', '/usr/local/bin/gh'].find((p) => fs.existsSync(p)) || 'gh';
+
+// État des tickets (ouvert, « à toi », réglé), relu au plus toutes les 2 minutes.
+let cacheTickets = { at: 0, parNumero: {} };
+function etatsTickets() {
+  if (Date.now() - cacheTickets.at < 2 * 60000) return cacheTickets.parNumero;
+  try {
+    const liste = JSON.parse(execFileSync(gh(), ['issue', 'list', '-R', DEPOT_DEMANDES, '--state', 'all', '--limit', '100', '--json', 'number,state,labels,comments'], { encoding: 'utf8', timeout: 15000 }));
+    cacheTickets = {
+      at: Date.now(),
+      parNumero: Object.fromEntries(
+        liste.map((t) => {
+          const labels = t.labels.map((l) => l.name);
+          const etat = t.state === 'CLOSED' || labels.includes('réglé') ? 'regle' : labels.includes('à toi') ? 'a-toi' : t.comments.length ? 'repondu' : 'en-cours';
+          return [t.number, etat];
+        }),
+      ),
+    };
+  } catch {
+    cacheTickets = { ...cacheTickets, at: Date.now() };
+  }
+  return cacheTickets.parNumero;
+}
+const avecEtat = (t) => ({ ...t, etat: etatsTickets()[t.numero] || 'en-cours' });
+
+export function envoyerGithub(ids) {
+  if (!ids.length) throw new Error('Aucune ligne cochée');
+  const { elements } = listeAfaire();
+  const choisis = ids.map((id) => elements.find((e) => e.id === id)).filter(Boolean);
+  if (!choisis.length) throw new Error('Lignes introuvables (déjà réglées ?)');
+  const points = choisis.map((e, i) =>
+    [
+      `## Point ${i + 1} — ${e.site || 'Général'} : ${e.texte}`,
+      e.detail ? `**Détail** : ${e.detail}` : '',
+      e.compteRendu ? `**Ce que Claude a déjà essayé / pourquoi ça bloque** : ${e.compteRendu}` : '',
+      e.consigne ? `**Ce qu'il faudrait faire** : ${e.consigne}` : '',
+      e.dossier ? `**Dépôt** : teiki5320/${path.basename(e.dossier.replace(/\/+$/, ''))}` : '',
+      e.lien && /^https?:/.test(e.lien) ? `**Lien** : ${e.lien}` : '',
+      `<sub>Studio · ${e.source} · ${e.id}</sub>`,
+    ]
+      .filter(Boolean)
+      .join('\n\n'),
+  );
+  const titre = choisis.length === 1 ? `${choisis[0].site || 'Général'} : ${choisis[0].texte}`.slice(0, 120) : `${choisis.length} points à régler (${[...new Set(choisis.map((e) => e.site || 'Général'))].join(', ')})`.slice(0, 120);
+  const corps = `Envoyé par Jean depuis le Studio le ${new Date().toLocaleString('fr-FR', { timeZone: 'Europe/Paris' })}.\n\n${points.join('\n\n---\n\n')}`;
+  const url = execFileSync(gh(), ['issue', 'create', '-R', DEPOT_DEMANDES, '--title', titre, '--body-file', '-'], { input: corps, encoding: 'utf8', timeout: 30000 }).trim();
+  const numero = Number(url.split('/').pop());
+  const d = lire();
+  for (const e of choisis) d.tickets[e.id] = { numero, url, le: maintenant() };
+  ecrire(d);
+  cacheTickets.at = 0;
+  return listeAfaire();
 }
 
 // ---------- Déposé par une tâche ----------

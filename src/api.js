@@ -93,6 +93,7 @@ export const api = {
   point: () => request('/api/point'),
   afaire: () => request('/api/afaire'),
   envoyerAfaire: (id, choix = 'oui') => request('/api/afaire/envoyer', { method: 'POST', body: JSON.stringify({ id, choix }) }),
+  envoyerGithub: (ids) => request('/api/afaire/github', { method: 'POST', body: JSON.stringify({ ids }) }),
   corbeillePoint: (groupes) => request('/api/point/corbeille', { method: 'POST', body: JSON.stringify({ groupes }) }),
   occasionsGoogle: (site) => request(`/api/indexation/occasions?site=${encodeURIComponent(site)}`),
   deconnecterIndexation: () => request('/api/indexation/deconnecter', { method: 'POST' }),
