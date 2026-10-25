@@ -1,6 +1,6 @@
 # INFRA — fiche technique
 
-Mis à jour le 24 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
+Mis à jour le 25 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
 ## En bref
@@ -15,7 +15,7 @@ uniquement des noms de variables et de consoles.
 ## Parcours
 
 - 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build [ok] → ☁️ Cloudflare Workers — Worker keurfoot [ok] → 🌍 keurfoot.com — en ligne, réponse 200 [ok]
-- 📝 **Contenu** : ✍️ Conseils — 7 publiés, 14 programmés jusqu'au 25 novembre 2026 [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — indexation à vérifier dans la console [à faire]
+- 📝 **Contenu** : ✍️ Conseils — 7 publiés, 14 programmés jusqu'au 25 novembre 2026 [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — 95 pages sur 97 indexées [ok]
 - 🛒 **Affiliation** : 🛍️ Boutique et fiches — boutons Amazon [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurfootfr-21 [ok] → 🌐 Site déclaré chez Amazon — à vérifier dans la console [à faire] → 🔗 Liens directs — aucun ASIN, recherches seulement [pas encore]
 - 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en place [ok] → ✅ Examen du site — demandé le 20 octobre [à faire] → 🧱 Blocs d'annonces — aucun identifiant renseigné [pas encore]
 

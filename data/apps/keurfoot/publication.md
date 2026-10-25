@@ -1,6 +1,6 @@
 # PUBLICATION — état de la mise en ligne
 
-> Mis à jour le 24 octobre 2026, d'après le site en ligne et les exécutions GitHub Actions.
+> Mis à jour le 25 octobre 2026, d'après le site en ligne et les exécutions GitHub Actions.
 >
 > Aucun secret ici — uniquement des références.
 
@@ -8,7 +8,7 @@
 
 - **Production** : en ligne sur keurfoot.com depuis le 20 octobre 2026
 - **Domaine & SSL** : Cloudflare, certificat valide jusqu'au 18 janvier 2027, renouvelé seul
-- **Visibilité** : sitemap de 97 adresses ; indexation Google à vérifier dans la console
+- **Visibilité** : sitemap de 97 adresses ; 95 pages indexées par Google
 - **Contact** : keurfoot@toakeur.com
 
 ## Boutiques
@@ -19,7 +19,7 @@
 | Hébergement | [ok] Worker de fichiers statiques Cloudflare « keurfoot » |
 | Domaine | [ok] keurfoot.com, www sert le même site |
 | SSL | [ok] Certificat Cloudflare, HSTS actif |
-| Indexation | [à faire] Search Console à vérifier dans la console |
+| Indexation | [ok] Search Console : 95 pages sur 97 indexées |
 | Mesure d'audience | [pas encore] Aucune balise constatée |
 
 ## Ce qui reste, dans l'ordre
@@ -27,7 +27,7 @@
 1. ✅ **Version provisoire** : site publié sur GitHub Pages, non indexé, le 17 octobre 2026.
 2. ✅ **Mise en ligne** : site publié sur keurfoot.com par un Worker Cloudflare le 20 octobre 2026.
 3. ✅ **Ancienne adresse redirigée** : GitHub Pages renvoie chaque visiteur vers keurfoot.com.
-4. **Search Console** : vérifier la propriété keurfoot.com et envoyer le sitemap à Google.
+4. ✅ **Search Console** : propriété keurfoot.com vérifiée et sitemap envoyé à Google le 20 octobre 2026.
 5. **Mesure d'audience** : activer Cloudflare Web Analytics, déjà permis par `public/_headers`.
 6. **Validation AdSense** : suivre l'examen demandé le 20 octobre, puis créer les blocs d'annonces.
 
@@ -35,7 +35,7 @@
 
 | | |
 |---|---|
-| Adresse | **En ligne** sur https://keurfoot.com (vérifié le 24 octobre 2026 : réponse 200) |
+| Adresse | **En ligne** sur https://keurfoot.com (vérifié le 25 octobre 2026 : réponse 200) |
 | Hébergeur | Cloudflare, Worker de fichiers statiques `keurfoot` (`wrangler.jsonc`), workflow `deploy.yml` |
 | Dernière publication | 24 octobre 2026, publication réussie |
 | Mise en ligne | 20 octobre 2026 (version provisoire sur GitHub Pages depuis le 17 octobre) |
@@ -58,8 +58,9 @@
 
 - **Sitemap** : https://keurfoot.com/sitemap.xml répond (97 adresses, dont 7 articles Conseils, le 24 octobre 2026) ; `robots.txt` autorise tout
   et cite le sitemap.
-- **Google Search Console** : propriété, envoi du sitemap et pages indexées à vérifier dans la
-  console.
+- **Google Search Console** : propriété `keurfoot.com` vérifiée ; sitemap envoyé le 20 octobre 2026,
+  sans erreur, relu par Google le 25 octobre ; 95 pages sur 97 indexées, 1 explorée mais pas encore
+  indexée, 1 encore inconnue de Google (relevé du Studio, 25 octobre 2026).
 - **IndexNow** : clé publique servie à la racine du site et script `scripts/indexnow.mjs` (24 octobre 2026),
   lancé à la main après une publication ; journal du référencement dans `docs/referencement.md`.
 - **Mesure d'audience** : aucune balise Cloudflare Web Analytics constatée sur le site le
