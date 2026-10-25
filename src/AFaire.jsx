@@ -2,8 +2,7 @@
 // Chaque ligne se règle d'ici : « Envoyer à Claude » (ou « Oui » / « Non »
 // pour une décision) la met dans la file commune, que la routine « Sites du
 // jour » (5 h 05) applique ; elle rend compte et la ligne passe à ✅ fait ou
-// ❌ bloqué (avec ce que Jean doit faire). « Laisser en attente » la met de
-// côté sans rien faire (elle ne compte plus), « Remettre à faire » l'en sort. Les deux colonnes de l'Accueil
+// ❌ bloqué (avec ce que Jean doit faire). Les deux colonnes de l'Accueil
 // (AccueilPage.jsx) utilisent cette ligne.
 import React, { useState } from 'react';
 import { api, followJob } from './api.js';
@@ -24,7 +23,7 @@ export const ouvert = (e) => e.etat === 'a-faire' || e.etat === 'bloque';
 
 function Etat({ e }) {
   if (e.etat === 'envoye') return <span className="af-etat run">⏳ Chez Claude · réglé demain matin (5 h 05)</span>;
-  if (e.etat === 'attente') return <span className="af-etat run">{e.parJean ? '⏸ Laissé en attente' : '⏳ En attente · rien à faire pour l’instant'}</span>;
+  if (e.etat === 'attente') return <span className="af-etat run">⏳ En attente · rien à faire pour l’instant</span>;
   if (e.etat === 'fait') return <span className="af-etat ok">✅ {e.compteRendu || 'Fait'}</span>;
   if (e.etat === 'bloque')
     return (
@@ -110,15 +109,6 @@ export function Ligne({ e, onAgir, avecSite = false }) {
               {e.etat === 'bloque' ? '📤 Renvoyer à Claude' : '📤 Envoyer à Claude'}
             </button>
           )}
-          <button className="clay-btn ghost small" disabled={occupe} title="Ne rien faire pour l’instant : la ligne passe en bas et ne compte plus" onClick={() => agir(() => api.envoyerAfaire(e.id, 'attente'))}>
-            ⏸ Laisser en attente
-          </button>
-        </div>
-      ) : e.parJean ? (
-        <div className="af-boutons">
-          <button className="clay-btn ghost small" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'reprendre'))}>
-            ↩ Remettre à faire
-          </button>
         </div>
       ) : null}
     </div>
