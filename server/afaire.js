@@ -679,11 +679,24 @@ const idPoint = (id) => {
 };
 
 // ---------- « Envoyer à Claude », « Oui », « Non » ----------
+// « fait » : Jean l'a réglé lui-même. Si la source le signale de nouveau
+// plus tard (problème revenu), la ligne réapparaît d'elle-même.
 export function envoyer(id, choix = 'oui') {
-  if (!['oui', 'non'].includes(choix)) throw new Error('Réponse attendue : oui ou non');
+  if (!['oui', 'non', 'fait'].includes(choix)) throw new Error('Réponse attendue : oui, non ou fait');
   const e = listeAfaire().elements.find((x) => x.id === id);
   if (!e) throw new Error('Élément introuvable (déjà réglé ?)');
   if (e.etat === 'fait') throw new Error('Déjà fait');
+  if (choix === 'fait') {
+    if (e.source === 'indexation') throw new Error('Un problème Google disparaît tout seul quand Google revoit la page réparée');
+    const p = idPoint(id);
+    if (p) retourAction(p.id, true, 'Réglé par Jean.');
+    else {
+      const d = lire();
+      d.suivi[id] = { statut: 'fait', le: maintenant(), retour: maintenant(), compteRendu: 'Réglé par Jean.', copie: copie(e) };
+      ecrire(d);
+    }
+    return listeAfaire();
+  }
   if (e.source === 'point') {
     const p = idPoint(id);
     if (pointDuMatin()?.date !== p.date) throw new Error('Ce point du matin a été remplacé');

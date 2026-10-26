@@ -1,5 +1,5 @@
 // « À faire » (Accueil) : une ligne de la liste de ce qu'il reste à faire.
-// Chaque ligne se règle d'ici : « Envoyer à Claude » (ou « Oui » / « Non »
+// Chaque ligne se règle d'ici : « Claude le règle demain matin » (ou « Oui » / « Non »
 // pour une décision) la met dans la file commune, que la routine « Sites du
 // jour » (5 h 05) applique ; elle rend compte et la ligne passe à ✅ fait ou
 // ❌ bloqué (avec ce que Jean doit faire). Une ligne cochée peut aussi partir
@@ -114,7 +114,7 @@ export function Ligne({ e, onAgir, avecSite = false, coche, onCocher }) {
                 ✓ C’est fait
               </button>
               <button className="clay-btn ghost small" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'oui'))}>
-                {e.etat === 'bloque' ? '📤 Renvoyer à Claude' : '📤 Demander à Claude'}
+                {e.etat === 'bloque' ? '🤖 Claude réessaie demain matin' : '🤖 Claude le règle demain matin'}
               </button>
             </>
           ) : e.action === 'plan' ? (
@@ -122,9 +122,16 @@ export function Ligne({ e, onAgir, avecSite = false, coche, onCocher }) {
               {occupe ? '⏳ Envoi…' : '✓ Renvoyer le plan à Google'}
             </button>
           ) : (
-            <button className="clay-btn small" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'oui'))}>
-              {e.etat === 'bloque' ? '📤 Renvoyer à Claude' : '📤 Envoyer à Claude'}
-            </button>
+            <>
+              {e.source !== 'indexation' ? (
+                <button className="clay-btn small" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'fait'))}>
+                  ✓ C’est fait
+                </button>
+              ) : null}
+              <button className="clay-btn ghost small" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'oui'))}>
+                {e.etat === 'bloque' ? '🤖 Claude réessaie demain matin' : '🤖 Claude le règle demain matin'}
+              </button>
+            </>
           )}
         </div>
       ) : null}
