@@ -522,7 +522,7 @@ function appliquerSuivi(e, s) {
   return { ...e, etat: s.statut, compteRendu: s.compteRendu || '', le: s.le };
 }
 
-const ORDRE_ETAT = { 'a-faire': 0, bloque: 1, envoye: 2, attente: 2, fait: 3 };
+const ORDRE_ETAT = { 'a-faire': 0, bloque: 1, envoye: 2, attente: 2, encours: 2, fait: 3 };
 const rang = (e) => (e.etat === 'fait' ? 9 : e.type === 'decision' ? 0 : e.grave ? 1 : 2);
 
 export function listeAfaire() {
@@ -549,7 +549,11 @@ export function listeAfaire() {
     if (s.statut === 'envoye') visibles.push({ ...s.copie, id, etat: 'fait', compteRendu: 'Réglé tout seul avant le passage de Claude.' });
     else if (s.statut === 'fait') visibles.push({ ...s.copie, id, etat: 'fait', compteRendu: s.compteRendu || '' });
   }
+  // « ⏳ En cours » (Jean et Claude y travaillent dans une conversation) : vaut
+  // pour toutes les sources ; la routine du matin n'y touche pas.
+  const enCours = (e) => (d.suivi[e.id]?.statut === 'encours' && ['a-faire', 'bloque', 'encours'].includes(e.etat) ? { ...e, etat: 'encours', compteRendu: '' } : e);
   const tout = [...dePoint(), ...deIndexation(), ...visibles]
+    .map(enCours)
     // eslint-disable-next-line no-unused-vars
     .map(({ depuis, majLe, attente, ...e }) => ({ detail: '', consigne: '', dossier: '', compteRendu: '', ...e }))
     .sort((a, b) => rang(a) - rang(b) || ORDRE_ETAT[a.etat] - ORDRE_ETAT[b.etat] || a.site.localeCompare(b.site, 'fr'));
@@ -562,6 +566,7 @@ export function listeAfaire() {
       graves: compte((e) => e.grave && e.type !== 'decision' && (e.etat === 'a-faire' || e.etat === 'bloque')),
       envoyes: compte((e) => e.etat === 'envoye'),
       enAttente: compte((e) => e.etat === 'attente'),
+      enCours: compte((e) => e.etat === 'encours'),
       bloques: compte((e) => e.etat === 'bloque'),
       faits: compte((e) => e.etat === 'fait'),
     },
@@ -679,13 +684,21 @@ const idPoint = (id) => {
 };
 
 // ---------- « Envoyer à Claude », « Oui », « Non » ----------
+// « encours » / « reprendre » : Jean le marque « en cours avec Claude » ou l'en sort.
 // « fait » : Jean l'a réglé lui-même. Si la source le signale de nouveau
 // plus tard (problème revenu), la ligne réapparaît d'elle-même.
 export function envoyer(id, choix = 'oui') {
-  if (!['oui', 'non', 'fait'].includes(choix)) throw new Error('Réponse attendue : oui, non ou fait');
+  if (!['oui', 'non', 'fait', 'encours', 'reprendre'].includes(choix)) throw new Error('Réponse attendue : oui, non, fait, encours ou reprendre');
   const e = listeAfaire().elements.find((x) => x.id === id);
   if (!e) throw new Error('Élément introuvable (déjà réglé ?)');
   if (e.etat === 'fait') throw new Error('Déjà fait');
+  if (choix === 'encours' || choix === 'reprendre') {
+    const d = lire();
+    if (choix === 'encours') d.suivi[id] = { statut: 'encours', le: maintenant(), copie: copie(e) };
+    else if (d.suivi[id]?.statut === 'encours') delete d.suivi[id];
+    ecrire(d);
+    return listeAfaire();
+  }
   if (choix === 'fait') {
     if (e.source === 'indexation') throw new Error('Un problème Google disparaît tout seul quand Google revoit la page réparée');
     const p = idPoint(id);

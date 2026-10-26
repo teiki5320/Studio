@@ -332,7 +332,7 @@ function Chiffres({ apps, ext }) {
 
 // ---------- Deux colonnes : À décider · À faire ----------
 
-const RANG_TACHE = (e) => (e.etat === 'bloque' ? 0 : e.grave ? 1 : e.etat === 'envoye' || e.etat === 'attente' ? 3 : 2);
+const RANG_TACHE = (e) => (e.etat === 'encours' ? 4 : e.etat === 'bloque' ? 0 : e.grave ? 1 : e.etat === 'envoye' || e.etat === 'attente' ? 3 : 2);
 const MAX_TACHES = 8;
 
 function Tache({ e, onAgir }) {

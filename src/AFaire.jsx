@@ -25,6 +25,7 @@ export const ouvert = (e) => e.etat === 'a-faire' || e.etat === 'bloque';
 
 function Etat({ e }) {
   if (e.etat === 'envoye') return <span className="af-etat run">⏳ Chez Claude · réglé demain matin (5 h 05)</span>;
+  if (e.etat === 'encours') return <span className="af-etat run">⏳ En cours avec toi</span>;
   if (e.etat === 'attente') return <span className="af-etat run">⏳ En attente · rien à faire pour l’instant</span>;
   if (e.etat === 'fait') return <span className="af-etat ok">✅ {e.compteRendu || 'Fait'}</span>;
   if (e.etat === 'bloque')
@@ -46,15 +47,17 @@ function Ticket({ t }) {
   );
 }
 
-// Trois boutons-icônes, chacun avec un mot dessous (pas de survol sur iPad) :
+// Quatre boutons-icônes, chacun avec un mot dessous (pas de survol sur iPad) :
 // ✓ réglé par Jean · 🤖 Claude s'en charge demain à 5 h 05 sur le Mac (il a
 // le navigateur : Amazon, consoles…) · 🎫 ticket GitHub, Claude répond tout
-// de suite (code, explications ; pas d'Amazon, d'où son absence là).
-function Trois({ e, occupe, fait, demain, ticket }) {
+// de suite (code, explications ; pas d'Amazon, d'où son absence là) ·
+// ⏳ en cours : Jean et Claude y travaillent déjà dans une conversation.
+function Trois({ e, occupe, fait, demain, ticket, encours }) {
   const boutons = [
     e.source !== 'indexation' && ['fait', '✓', 'C’est fait', fait],
     ['demain', '🤖', e.etat === 'bloque' ? 'Réessayer demain' : 'Claude demain', demain],
     !e.ticket && e.source !== 'produits-amazon' && ['ticket', '🎫', 'Ticket', ticket],
+    ['encours', '⏳', 'En cours', encours],
   ].filter(Boolean);
   return boutons.map(([cle, ic, mot, f]) => (
     <button key={cle} type="button" className={`af-ico ${cle}`} disabled={occupe} onClick={f}>
@@ -132,8 +135,20 @@ export function Ligne({ e, onAgir, avecSite = false }) {
               fait={() => agir(() => (e.action === 'comptes' ? api.etatCompte(e.compte, 'fait') : api.envoyerAfaire(e.id, 'fait')))}
               demain={() => agir(() => api.envoyerAfaire(e.id, 'oui'))}
               ticket={() => agir(() => api.envoyerGithub([e.id]))}
+              encours={() => agir(() => api.envoyerAfaire(e.id, 'encours'))}
             />
           )}
+        </div>
+      ) : e.etat === 'encours' ? (
+        <div className="af-boutons">
+          <button type="button" className="af-ico fait" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'fait'))}>
+            <span className="i">✓</span>
+            <span className="m">C’est fait</span>
+          </button>
+          <button type="button" className="af-ico" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'reprendre'))}>
+            <span className="i">↩</span>
+            <span className="m">Reprendre</span>
+          </button>
         </div>
       ) : null}
     </div>
