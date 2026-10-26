@@ -499,7 +499,8 @@ function EreaAdControls({ projectId, project, onQueued }) {
       .catch((e) => setError(e.message));
   }, [projectId]);
   // Crédits OpenArt par vidéo (images + clips économiques), à titre indicatif.
-  const credits = { anachronisme: ' · ≈ 150 crédits', avantapres: ' · ≈ 80 crédits', famille: ' · ≈ 150 crédits', interro: ' · 0 crédit' };
+  // Coûts réels relevés le 26/10 : une image ≈ 40 crédits, un clip ≈ 60.
+  const credits = { anachronisme: ' · ≈ 200 crédits', avantapres: ' · ≈ 100 crédits', famille: ' · ≈ 200 crédits', interro: ' · 0 crédit' };
   return (
     <div className="clay-block">
       <h3>⏳ Nouvelle pub Erea</h3>
