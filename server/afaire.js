@@ -553,8 +553,17 @@ export function listeAfaire() {
   // « ⏳ En cours » (Jean et Claude y travaillent dans une conversation) : vaut
   // pour toutes les sources ; la routine du matin n'y touche pas.
   const enCours = (e) => (d.suivi[e.id]?.statut === 'encours' && ['a-faire', 'bloque', 'encours'].includes(e.etat) ? { ...e, etat: 'encours', compteRendu: '', le: d.suivi[e.id].le } : e);
+  // « Attendre » (sur une décision) : la carte se met de côté et revient
+  // d'elle-même à la date choisie ; la routine du matin n'y touche pas.
+  const enAttenteJean = (e) => {
+    const s = d.suivi[e.id];
+    if (s?.statut !== 'attendre' || !['a-faire', 'bloque', 'attendre'].includes(e.etat)) return e;
+    if (Date.now() >= new Date(s.jusqua).getTime()) return e.etat === 'attendre' ? { ...e, etat: 'a-faire' } : e;
+    return { ...e, etat: 'attente', attendJusqua: s.jusqua, le: s.le };
+  };
   const tout = [...dePoint(), ...deIndexation(), ...visibles]
     .map(enCours)
+    .map(enAttenteJean)
     // eslint-disable-next-line no-unused-vars
     .map(({ depuis, majLe, attente, ...e }) => ({ detail: '', consigne: '', dossier: '', compteRendu: '', ...e }))
     .sort((a, b) => rang(a) - rang(b) || ORDRE_ETAT[a.etat] - ORDRE_ETAT[b.etat] || a.site.localeCompare(b.site, 'fr'));
@@ -688,10 +697,18 @@ const idPoint = (id) => {
 // « encours » / « reprendre » : Jean le marque « en cours avec Claude » ou l'en sort.
 // « fait » : Jean l'a réglé lui-même. Si la source le signale de nouveau
 // plus tard (problème revenu), la ligne réapparaît d'elle-même.
+// « attendre » : une décision mise de côté, qui revient seule dans 2 jours.
 // « annuler » : Jean change d'avis avant le passage de Claude (5 h 05) — la
 // réponse s'efface et l'élément redevient à trancher.
 const PAR_JEAN = ['Réglé par Jean.', 'Noté : on ne fait rien.'];
+const ATTENTE_JOURS = 2; // « Attendre » : la décision revient en carte 2 jours plus tard
 function annuler(e) {
+  const d0 = lire();
+  if (d0.suivi[e.id]?.statut === 'attendre') {
+    delete d0.suivi[e.id];
+    ecrire(d0);
+    return;
+  }
   if (e.source === 'point') {
     annulerReponse(idPoint(e.id).id);
     return;
@@ -714,7 +731,7 @@ function annuler(e) {
 }
 
 export function envoyer(id, choix = 'oui') {
-  if (!['oui', 'non', 'fait', 'encours', 'reprendre', 'annuler'].includes(choix)) throw new Error('Réponse attendue : oui, non, fait, encours, reprendre ou annuler');
+  if (!['oui', 'non', 'fait', 'encours', 'reprendre', 'annuler', 'attendre'].includes(choix)) throw new Error('Réponse attendue : oui, non, fait, encours, reprendre, annuler ou attendre');
   const e = listeAfaire().elements.find((x) => x.id === id);
   if (!e) throw new Error('Élément introuvable (déjà réglé ?)');
   if (choix === 'annuler') {
@@ -722,6 +739,12 @@ export function envoyer(id, choix = 'oui') {
     return listeAfaire();
   }
   if (e.etat === 'fait') throw new Error('Déjà fait');
+  if (choix === 'attendre') {
+    const d = lire();
+    d.suivi[id] = { statut: 'attendre', le: maintenant(), jusqua: new Date(Date.now() + ATTENTE_JOURS * JOUR).toISOString(), copie: copie(e) };
+    ecrire(d);
+    return listeAfaire();
+  }
   if (choix === 'encours' || choix === 'reprendre') {
     const d = lire();
     if (choix === 'encours') d.suivi[id] = { statut: 'encours', le: maintenant(), copie: copie(e) };

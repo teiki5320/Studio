@@ -40,6 +40,7 @@ function choixDe(e) {
   if (e.type === 'decision') {
     c.droite = { mot: 'Oui', court: 'OUI', fait: 'La routine l’applique demain à 5 h 05, sur le Mac, puis rend compte.', f: () => api.envoyerAfaire(e.id, 'oui') };
     c.gauche = { mot: 'Non', court: 'NON', fait: 'Rien n’est fait. La carte passe en « fait » avec « on ne fait rien ».', f: () => api.envoyerAfaire(e.id, 'non') };
+    c.bas = { mot: 'Attendre', court: 'ATTENDRE', fait: 'Rien n’est fait pour l’instant : la carte se met de côté et revient toute seule dans 2 jours.', f: () => api.envoyerAfaire(e.id, 'attendre') };
     return c;
   }
   if (e.action === 'planning') {
@@ -350,6 +351,7 @@ function Rond({ lab, taille, d, couleur, principal, ...props }) {
 function reponseDe(e) {
   if (e.ticket) return ['Claude', 'ticket'];
   if (e.etat === 'encours') return ['Ensemble', 'ens'];
+  if (e.attendJusqua) return ['Attendre', 'ens'];
   if (e.source === 'point' && e.choix) return e.choix === 'oui' ? ['Oui', 'oui'] : ['Non', ''];
   if (e.compteRendu === 'Noté : on ne fait rien.') return ['Non', ''];
   if (e.compteRendu === 'Réglé par Jean.') return ['C’est fait', ''];
@@ -360,6 +362,7 @@ function etatDe(e) {
   if (e.ticket) return [{ 'en-cours': 'Claude regarde', repondu: 'Claude a répondu', 'a-toi': 'Claude a répondu : à toi', regle: 'Réglé par Claude' }[e.ticket.etat] || 'Claude regarde', e.ticket.etat === 'regle' ? 'ok' : 'run'];
   if (e.etat === 'envoye') return ['Routine demain 5 h 05', 'run'];
   if (e.etat === 'encours') return ['En cours avec toi', 'ens'];
+  if (e.attendJusqua) return [`Revient le ${new Date(e.attendJusqua).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', timeZone: 'Europe/Paris' })}`, 'ens'];
   if (e.etat === 'bloque') return ['Bloqué : revenu en carte', 'ko'];
   if (e.etat === 'fait' && e.compteRendu === 'Noté : on ne fait rien.') return ['Noté, rien à faire', ''];
   if (e.etat === 'fait') return [e.compteRendu && !['Réglé par Jean.', 'Noté : on ne fait rien.'].includes(e.compteRendu) ? `Fait · ${court(e.compteRendu, 70)}` : 'Fait', 'ok'];
@@ -367,7 +370,7 @@ function etatDe(e) {
 }
 const modifiable = (e) =>
   !e.ticket &&
-  (e.etat === 'envoye' || e.etat === 'encours' || (e.etat === 'fait' && ['Réglé par Jean.', 'Noté : on ne fait rien.'].includes(e.compteRendu) && e.source !== 'comptes'));
+  (e.etat === 'envoye' || e.etat === 'encours' || e.attendJusqua || (e.etat === 'fait' && ['Réglé par Jean.', 'Noté : on ne fait rien.'].includes(e.compteRendu) && e.source !== 'comptes'));
 
 // Ce qui a été tranché aujourd'hui (par Jean ou appliqué par Claude), plus ce
 // qui attend encore Claude ou une conversation, même décidé un autre jour.
@@ -380,7 +383,7 @@ export function DecidesDuJour({ elements, onAgir }) {
     .filter((e) => {
       const q = quand(e);
       const duJour = q && jourParis(new Date(q)) === auj;
-      if (e.etat === 'envoye' || e.etat === 'encours') return true;
+      if (e.etat === 'envoye' || e.etat === 'encours' || e.attendJusqua) return true;
       if (e.ticket && e.ticket.le && jourParis(new Date(e.ticket.le)) === auj) return true;
       return duJour && (e.etat === 'fait' || e.etat === 'bloque');
     })
