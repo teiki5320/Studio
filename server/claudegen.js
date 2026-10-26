@@ -1425,11 +1425,12 @@ Erea fait placer des ÉVÉNEMENTS sur une frise (inventions, batailles, découve
 }
 
 // ---------- Pub Erea : les trois autres formats ----------
-// Avant ou après ? (une comparaison de dates VRAIE et surprenante) et
-// l'interro surprise (3 questions, la frise cherche, puis la réponse). Les
+// Avant ou après ? (une comparaison de dates VRAIE et surprenante),
+// l'interro surprise (3 questions, la frise cherche, puis la réponse) et la
+// petite histoire (la vraie histoire derrière une carte du jeu). Les
 // premières versions validées par Jean servent d'exemple (EREA_PREMIERES
 // dans pipeline.js) ; ici, Claude en invente une nouvelle sur le même modèle.
-export function buildEreaFormatPrompt({ format, exemple, deja = [], idees = [] }) {
+export function buildEreaFormatPrompt({ format, exemple, deja = [], idees = [], cartes = [] }) {
   const regles = `RÈGLES ABSOLUES :
 - Uniquement des faits d'histoire VRAIS, classiques et vérifiables (dates des manuels scolaires) : au moindre doute sur une date, choisis-en une autre.
 - Ton TikTok, phrases très courtes et orales, on tutoie. Aucune phrase de vente, jamais « disponible sur… » : on invite à jouer (l'appli est gratuite).
@@ -1443,6 +1444,16 @@ ${JSON.stringify(exemple, null, 2)}`;
     return `Tu écris une pub TikTok d'environ 15 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise de -3000 à aujourd'hui. Format « AVANT OU APRÈS ? » : une question piège sur le temps, un compte à rebours de 3 secondes, la réponse surprenante.
 Le principe : un personnage ou un événement célèbre (« sujet ») a-t-il vécu plus près de A ou de B ? La bonne réponse doit SURPRENDRE (l'intuition se trompe) et être mathématiquement juste : compare les écarts en années entre anneeSujet et chaque année (« bonne » = "a" ou "b", celle dont l'écart est le plus PETIT ; les deux écarts doivent différer d'au moins 100 ans).
 Les années sont des entiers (négatifs avant J.-C.), entre -3000 et 2026. « reponse » énonce la bonne réponse et le chiffre qui la prouve, sans erreur de calcul.
+${json}
+${regles}`;
+  }
+  if (format === 'petitehistoire') {
+    return `Tu écris une pub TikTok d'environ 30 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise. Format « PETITE HISTOIRE » : on raconte, comme un conteur, la vraie histoire derrière UNE carte du jeu.
+DÉROULÉ (monté par le studio) : logo ; ACCROCHE (~3 s) : une phrase qui intrigue, avec la date et le lieu ; RÉCIT en 2 moments (~10 s chacun), chacun sur UNE image animée : « moment1 » = le moment lui-même, au plus près des personnages ; « moment2 » = ce qu'il a changé, plus large et spectaculaire ; CHUTE (~3 s) : un détail étonnant et VRAI (tu peux t'appuyer sur l'anecdote de la carte) ; puis la carte se pose sur la frise et le narrateur dit « Retrouve cette histoire dans Erea ! » (rien à écrire pour cette fin).
+Ton : sérieux et touchant, phrases courtes, à l'oral, on raconte (pas de « tu » dans le récit). Longueurs : accroche 18 mots maximum, chaque « voix » 26 mots maximum, chute 16 mots maximum.
+CHOISIS UNE SEULE CARTE dans cette liste (et AUCUNE autre), en recopiant son « id » ; choisis-en une qui fait une belle histoire humaine, connue et vérifiable :
+${cartes.map((c) => `- id ${c.id} — ${c.annee} — ${c.emoji || ''} ${c.titre} : ${c.desc || ''}${c.fun ? ` (anecdote : ${c.fun})` : ''}`).join('\n')}
+« ecran » : la date et le lieu à l'écran, 2 lignes courtes séparées par \\n. « ecranChute » : le détail en 6 mots maximum, à l'écran. Images : photo réaliste cinématographique de SON époque (tenues, décor, objets justes), personne ne parle (bouches fermées), rien de choquant (ni sang ni blessure).
 ${json}
 ${regles}`;
   }

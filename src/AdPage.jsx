@@ -485,8 +485,8 @@ function PalabreAdControls({ projectId, onQueued }) {
   );
 }
 
-// Erea : trois formats — l'anachronisme (un personnage projeté dans une
-// mauvaise époque), avant ou après ?, l'interro surprise.
+// Erea : quatre formats — l'anachronisme (un personnage projeté dans une
+// mauvaise époque), avant ou après ?, l'interro surprise, la petite histoire.
 function EreaAdControls({ projectId, project, onQueued }) {
   const [plan, setPlan] = useState(null);
   const [format, setFormat] = useState('anachronisme');
@@ -500,7 +500,7 @@ function EreaAdControls({ projectId, project, onQueued }) {
   }, [projectId]);
   // Crédits OpenArt par vidéo (images + clips économiques), à titre indicatif.
   // Coûts réels relevés le 26/10 : une image ≈ 40 crédits, un clip ≈ 60.
-  const credits = { anachronisme: ' · ≈ 200 crédits', avantapres: ' · ≈ 100 crédits', interro: ' · 0 crédit' };
+  const credits = { anachronisme: ' · ≈ 200 crédits', avantapres: ' · ≈ 100 crédits', interro: ' · 0 crédit', petitehistoire: ' · ≈ 200 crédits' };
   return (
     <div className="clay-block">
       <h3>⏳ Nouvelle pub Erea</h3>

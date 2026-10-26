@@ -188,7 +188,7 @@ export const EreaComparaison = ({ sujet, a, b, bonne, fonts }) => {
 };
 
 // ---- Interro surprise : le carton d'ouverture ----
-export const EreaCarton = ({ etiquette, texte, fonts }) => {
+export const EreaCarton = ({ etiquette, texte, fonts, taille = 140 }) => {
   usePolicesErea(fonts);
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -221,7 +221,7 @@ export const EreaCarton = ({ etiquette, texte, fonts }) => {
           marginTop: 50,
           fontFamily: 'Baloo2',
           fontWeight: 800,
-          fontSize: 140,
+          fontSize: taille,
           lineHeight: 1.02,
           color: INK,
           textAlign: 'center',

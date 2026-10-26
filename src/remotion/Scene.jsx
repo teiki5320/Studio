@@ -518,7 +518,7 @@ export const Scene = ({ scene, characters, assetBase, isFirst, episodeTitle, epi
   if (scene.carton) {
     return (
       <AbsoluteFill>
-        <EreaCarton etiquette={scene.carton.etiquette} texte={scene.carton.texte} fonts={ereaFonts(scene.carton)} />
+        <EreaCarton etiquette={scene.carton.etiquette} texte={scene.carton.texte} taille={scene.carton.taille} fonts={ereaFonts(scene.carton)} />
         {pistes}
       </AbsoluteFill>
     );

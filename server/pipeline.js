@@ -62,7 +62,7 @@ import { chargeArticles, logoKeurDeco, VUES } from './keurdeco.js';
 import { composeMusic, composeSfx } from './music.js';
 import { chargeLivres, logoKeurbook } from './keurbook.js';
 import { chargeCultures, optiledRepo } from './optiled.js';
-import { iconeErea, evenementsCelebres, fichiersFrise } from './erea.js';
+import { iconeErea, evenementsCelebres, fichiersFrise, cartesDuJeu } from './erea.js';
 import { cartesJouables, carteSerment, finsDuJeu, palais, fichiersPalabre, sonDeLaReponse, applique, JAUGES, palabreRepo } from './palabre.js';
 import { chargeEspeces, aSemer, tamassi, fondPastel, iconeKultiva, REGIONS, MOIS } from './kultiva.js';
 import { applyVoicePreset } from './voicepresets.js';
@@ -742,9 +742,8 @@ async function generateEpisodeAssets(project, episode, update) {
 // IMPORTANT : bouches immobiles — la voix off n'est pas synchronisée,
 // des lèvres qui bougent au hasard casseraient l'illusion.
 function videoMotionPrompt(scene) {
-  // Pub Erea « le défi en famille » (format retiré, gardé pour réparer les
-  // clips des pubs déjà faites) : des gens qui jouent et rient, en voix off —
-  // bouches fermées (sourires et fous rires silencieux).
+  // Pub Erea « petite histoire » (et « le défi en famille », format retiré) :
+  // des personnes en action, en voix off — bouches fermées.
   if (scene.motionPrompt && scene.motionPersonnes) {
     return (
       `Bring this scene to life with natural, lively motion: ${scene.motionPrompt}. Realistic, warm, gentle handheld camera. ` +
@@ -2067,6 +2066,7 @@ export const EREA_FORMATS = {
   anachronisme: "⏳ L'anachronisme",
   avantapres: '🤔 Avant ou après ?',
   interro: '📝 Interro surprise',
+  petitehistoire: '📜 Petite histoire',
 };
 export function ereaAdPlan(project) {
   const deja = (project.ereaTour && project.ereaTour.deja) || [];
@@ -2081,6 +2081,9 @@ export const EREA_VOIX = {
   historien: { voice: 'aQROLel5sQbj1vuIVi6B', settings: { stability: 0.68, similarity_boost: 0.8, style: 0.3, speed: 0.95 } },
   panique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
   dynamique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
+  // Petite histoire : toujours Troy, mais sérieux et touchant pour le récit.
+  recit: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[serious]' } },
+  touchant: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[warm]' } },
 };
 export const ACCROCHE_EREA = 'Avec Erea, devenez les maîtres du temps.';
 export function accrocheErea(fonts) {
@@ -2331,6 +2334,28 @@ export const EREA_PREMIERES = {
     ],
     fin: 'Tu les avais toutes ? Révise-les en jouant, avec Erea !',
   },
+  // Petite histoire : pas de version imposée, ceci n'est que l'exemple donné
+  // à Claude (la carte n° 76 du jeu).
+  petitehistoire: {
+    title: 'Rosa Parks, le siège du bus',
+    id: 76,
+    ecran: '1er décembre 1955\nMontgomery',
+    accroche: '1er décembre 1955, à Montgomery. Une femme refuse de se lever de son siège de bus.',
+    moment1: {
+      voix: "Elle s'appelle Rosa Parks. Le chauffeur exige qu'elle laisse sa place à un passager blanc. Elle reste assise, calme. La police l'arrête.",
+      imagePrompt:
+        'Montgomery, Alabama, December 1955, inside a 1950s city bus: Rosa Parks, a dignified African-American woman in her forties (round glasses, hair pinned up, dark wool coat, small hat), sits calmly by the window, hands on her handbag, looking straight ahead with quiet determination; the bus driver stands in the aisle; warm dim winter light, realistic cinematic photo, close shot, everyone with closed mouths, vertical 9:16, no text, no logo, no watermark',
+      motionPrompt: 'Rosa Parks stays perfectly still and calm, she slowly turns her head toward the window; the driver gestures in the aisle; slow push-in on her face',
+    },
+    moment2: {
+      voix: "Alors toute la communauté noire de la ville boycotte les bus. Pendant plus d'un an, des milliers de gens vont à pied au travail.",
+      imagePrompt:
+        'Montgomery, Alabama, 1956: a wide street at dawn, hundreds of African-American men and women in 1950s coats walking together to work along the sidewalks while an empty city bus passes by, dignified and determined, realistic cinematic wide shot, vertical 9:16, no text, no logo, no watermark',
+      motionPrompt: 'the crowd walks steadily forward along the street, the empty bus drives slowly past, gentle crane shot rising above the marchers',
+    },
+    chute: 'Et en 1956, la Cour suprême déclare la ségrégation dans les bus contraire à la Constitution.',
+    ecranChute: 'La Cour suprême lui donne raison',
+  },
 };
 
 // Ce que la voix doit LIRE (l'écran garde l'écriture d'origine) : pas de
@@ -2371,9 +2396,23 @@ export function verifieAvantApres(raw) {
   return '';
 }
 
-function verifieFormatErea(fmt, raw) {
+function verifieFormatErea(fmt, raw, cartes = []) {
   if (fmt === 'avantapres') {
     return verifieAvantApres(raw);
+  }
+  if (fmt === 'petitehistoire') {
+    if (!cartes.some((c) => c.id === Number(raw.id))) {
+      return "l'événement choisi n'est pas une des cartes proposées (donne son « id » exact)";
+    }
+    const m1 = raw.moment1 || {};
+    const m2 = raw.moment2 || {};
+    if (!raw.accroche || !raw.chute || !m1.voix || !m2.voix || !m1.imagePrompt || !m2.imagePrompt) {
+      return 'textes ou images manquants';
+    }
+    if (/brevet|disponible sur/i.test(JSON.stringify(raw))) {
+      return 'mot interdit (« brevet » ou « disponible sur »)';
+    }
+    return '';
   }
   const q = raw.questions || [];
   if (q.length !== 3 || q.some((x) => !x || !Number.isFinite(Number(x.annee)) || Number(x.annee) < -3000 || Number(x.annee) > 2026 || !x.question || !x.reponse)) {
@@ -2389,6 +2428,9 @@ function verifieFormatErea(fmt, raw) {
 function resumeErea(fmt, raw) {
   if (fmt === 'avantapres') {
     return `${raw.sujet} : ${raw.a.court || raw.a.nom} ou ${raw.b.court || raw.b.nom}`;
+  }
+  if (fmt === 'petitehistoire') {
+    return String(raw.title || raw.id);
   }
   return `${raw.theme || ''} (${raw.questions.map((d) => d.affichage || d.annee).join(', ')})`;
 }
@@ -2458,7 +2500,17 @@ export async function createEreaFormatAd(project, fmt, update) {
 
   // La première pub du format reprend le texte validé par Jean ; les
   // suivantes sont écrites par Claude (vérifiées, une relance au besoin).
-  const premiere = !(project.episodes || []).some((e) => e.ereaFormat === fmt);
+  // (Petite histoire : pas de version imposée, Claude écrit dès la 1re.)
+  const premiere = fmt !== 'petitehistoire' && !(project.episodes || []).some((e) => e.ereaFormat === fmt);
+  // Petite histoire : 40 vraies cartes du jeu, jamais racontées, au choix de Claude.
+  const histoires = state.histoires || (state.histoires = []);
+  const cartes =
+    fmt === 'petitehistoire'
+      ? cartesDuJeu()
+          .filter((c) => (c.niveau || 3) <= 2 && !histoires.includes(c.id))
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 40)
+      : [];
   let raw;
   if (premiere) {
     raw = JSON.parse(JSON.stringify(EREA_PREMIERES[fmt]));
@@ -2467,11 +2519,11 @@ export async function createEreaFormatAd(project, fmt, update) {
     let motif = '';
     for (let essai = 0; essai < 2; essai++) {
       raw = await askClaudeForJson(
-        buildEreaFormatPrompt({ format: fmt, exemple: EREA_PREMIERES[fmt], deja: faits.slice(-30), idees: evenementsCelebres(30) }) +
+        buildEreaFormatPrompt({ format: fmt, exemple: EREA_PREMIERES[fmt], deja: faits.slice(-30), idees: fmt === 'petitehistoire' ? [] : evenementsCelebres(30), cartes }) +
           (motif ? `\n\nATTENTION, ta proposition précédente était fausse : ${motif}. Recommence.` : ''),
       );
       ensureUsage(project).claudeCalls += 1;
-      motif = verifieFormatErea(fmt, raw);
+      motif = verifieFormatErea(fmt, raw, cartes);
       if (!motif) {
         break;
       }
@@ -2561,6 +2613,53 @@ export async function createEreaFormatAd(project, fmt, update) {
       })),
       fin(4, raw.fin),
     ];
+  } else if (fmt === 'petitehistoire') {
+    // La carte du jeu fait foi pour le titre, l'année et l'emoji.
+    const carte = cartes.find((c) => c.id === Number(raw.id));
+    const annee = Math.round(Number(carte.annee));
+    const visuel = (m) => ({
+      imagePrompt: String(m.imagePrompt || '').trim(),
+      motionPrompt: String(m.motionPrompt || '').trim().slice(0, 300),
+      motionPersonnes: true,
+      clip: true,
+      fixedDuration: true,
+      durationSec: 9,
+    });
+    sujet = carte.titre;
+    raw.title = raw.title || carte.titre;
+    scenes = [
+      logo,
+      // L'accroche : la date et le lieu, en carton.
+      base(1, ecran({
+        carton: { etiquette: '📜 PETITE HISTOIRE', texte: String(raw.ecran || annee).slice(0, 60), taille: 96, fonts },
+        durationSec: 3,
+        lines: role('recit', raw.accroche),
+      })),
+      // Le moment lui-même, au plus près des personnages.
+      base(2, { ...visuel(raw.moment1), lines: role('recit', raw.moment1.voix) }),
+      // Ce qu'il a changé, en plus large.
+      base(3, { ...visuel(raw.moment2), lines: role('recit', raw.moment2.voix) }),
+      // La chute : le détail étonnant.
+      base(4, ecran({
+        carton: { etiquette: '🤯 LE DÉTAIL', texte: String(raw.ecranChute || '').slice(0, 60), taille: 80, fonts },
+        durationSec: 3,
+        lines: role('touchant', raw.chute),
+      })),
+      // La carte se pose sur la frise du jeu, à sa date.
+      base(5, ecran({
+        reperes: {
+          depart: Math.max(-3000, annee - 200),
+          dates: [{ annee, affichage: annee < 0 ? `${-annee} av. J.-C.` : String(annee), legende: `${carte.emoji || ''} ${carte.titre}`.trim().slice(0, 70) }],
+          mouvement: 2,
+          ...friseAssets,
+        },
+        durationSec: 4,
+        sfx: sonBonne ? [{ file: sonBonne, at: 2.1, volume: 0.6 }] : [],
+        lines: role('dynamique', 'Retrouve cette histoire dans Erea !'),
+      })),
+    ];
+    histoires.push(carte.id);
+    state.histoires = histoires.slice(-400);
   } else {
     const questions = raw.questions.map((d) => ({
       annee: Math.round(Number(d.annee)),

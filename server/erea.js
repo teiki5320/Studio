@@ -80,3 +80,10 @@ export function fichiersFrise() {
     },
   };
 }
+
+// Les cartes du jeu (id, année, titre, description, anecdote, emoji), pour
+// les pubs « Petite histoire » : le sujet est TOUJOURS une vraie carte d'Erea.
+export function cartesDuJeu() {
+  const ev = JSON.parse(fs.readFileSync(path.join(ereaRepo(), 'erea_flutter/assets/events.json'), 'utf8'));
+  return (Array.isArray(ev) ? ev : ev.events || []).filter((e) => Number.isFinite(Number(e.annee)) && e.titre);
+}
