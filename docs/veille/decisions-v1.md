@@ -65,8 +65,17 @@ Tests du 26/10/2026 :
 - **Pays :** surtout l'Afrique francophone (Sénégal, Côte d'Ivoire, Cameroun, Maroc, Mali, Guinée, RD Congo…), plus les grandes équipes (Nigeria, Égypte, Algérie, Ghana, Afrique du Sud…).
 - **Emplacement :** un bloc sur l'accueil (bandeau pour la 1re actu, puis des vignettes), une page « Actus », et les actus du pays sur chaque fiche sélection.
 - **Nombre d'actus :** 4 sur l'accueil (1 bandeau + 3 vignettes), 20 sur la page « Actus », 3 sur chaque fiche sélection.
-- **Flux RSS :** proposés dans `flux-keurfoot-v1.html` (14 flux testés le 26/10/2026), en attente de validation par Jean.
-- **Encore à faire :** les mots-clés de filtre.
+- **Flux RSS (14, tous validés par Jean le 26/10/2026, liste dans `flux-keurfoot-v1.html`) :** Afrik-Foot, Africa Top Sports, L'Équipe Football Afrique, Camfoot, Wiwsport, Senego Sport, Kawowo Sports (EN), RFI Sports, L'Équipe Football, Foot Mercato, ESPN FC (EN), BBC Afrique, France 24 Afrique, Jeune Afrique Sport. Les sources en anglais sont résumées en français.
+- **Tri :** Claude trie en lisant (pas de liste de mots-clés). Il garde un article s'il parle d'une sélection, d'un joueur ou d'un club africain, ou de la CAN et des qualifications au Mondial. **Exclusions :** paris sportifs, faits divers violents, rumeurs non confirmées, autres sports.
+- **Keur Foot : complet.**
 
-### Keurbook, Keur Cook, Keur Déco, Keur Kado, Kultiled, Solelis
+### Keurbook
+- **Sujets :** prix littéraires, sorties de livres d'auteurs africains et afrodescendants, auteurs (interviews, portraits, hommages), BD africaine, salons et festivals du livre.
+- **Zone :** surtout l'Afrique francophone, avec les grands noms anglophones (Adichie, Ngũgĩ…).
+- **Emplacement :** un bloc sur l'accueil, une page « Actus », et les actus de l'auteur sur chaque fiche auteur.
+- **Format, nombre et carte : comme Keur Foot.** Bandeau pour la 1re actu puis vignettes ; 4 sur l'accueil, 20 sur la page, 3 par fiche auteur ; carte aux couleurs de Keurbook, avec le drapeau du pays de l'auteur et un livre comme icône.
+- **Tri :** Claude trie en lisant. Exclusions : polémiques politiques, faits divers.
+- **Flux RSS :** 10 proposés dans `flux-keurbook-v1.html` (testés le 26/10/2026), en attente de validation par Jean.
+
+### Keur Cook, Keur Déco, Keur Kado, Kultiled, Solelis
 À définir.

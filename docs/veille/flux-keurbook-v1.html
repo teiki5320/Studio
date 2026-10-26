@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flux Keurbook</title>
+<style>
+/* Validation des flux RSS de Keurbook (v1) : OK / Retirer / Corriger pour chaque
+   flux, puis un récapitulatif à recopier. Flux vérifiés le 26/10/2026. */
+:root { --fond: #f3f1ec; --carte: #fff; --encre: #15181b; --doux: #5d646b; --ligne: #dcd8cf; --ok: #0f8a43; --ko: #c0392b; --cor: #b88a00; --accent: #0f8a43; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --fond: #0f1113; --carte: #1d2126; --encre: #eceae4; --doux: #9aa1a9; --ligne: #363c43; --ok: #3ccf7c; --ko: #ff6b5b; --cor: #f2b705; --accent: #3ccf7c; }
+}
+:root[data-theme="dark"] { --fond: #0f1113; --carte: #1d2126; --encre: #eceae4; --doux: #9aa1a9; --ligne: #363c43; --ok: #3ccf7c; --ko: #ff6b5b; --cor: #f2b705; --accent: #3ccf7c; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fond); color: var(--encre); font: 15px/1.45 -apple-system, system-ui, sans-serif; padding: 20px 16px 48px; }
+main { max-width: 820px; margin: 0 auto; }
+h1 { font-size: 24px; margin: 0 0 4px; }
+.sous { color: var(--doux); margin: 0 0 18px; }
+h2 { font-size: 17px; margin: 26px 0 8px; color: var(--doux); text-transform: uppercase; letter-spacing: .04em; }
+.flux { background: var(--carte); border: 1px solid var(--ligne); border-radius: 14px; padding: 12px 14px; margin-bottom: 10px; }
+.flux.ok { border-color: var(--ok); }
+.flux.retirer { opacity: .55; border-color: var(--ko); }
+.flux.corriger { border-color: var(--cor); }
+.tete { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.nom { font-weight: 700; font-size: 16px; }
+.info { color: var(--doux); font-size: 13px; }
+.url { font-size: 12px; color: var(--doux); word-break: break-all; margin-top: 2px; }
+.url a { color: inherit; }
+.choix { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.choix button { font: inherit; font-size: 14px; font-weight: 600; padding: 7px 14px; border-radius: 10px; border: 1.5px solid var(--ligne); background: transparent; color: var(--encre); cursor: pointer; }
+.choix button.on[data-v="ok"] { background: var(--ok); border-color: var(--ok); color: #fff; }
+.choix button.on[data-v="retirer"] { background: var(--ko); border-color: var(--ko); color: #fff; }
+.choix button.on[data-v="corriger"] { background: var(--cor); border-color: var(--cor); color: #111; }
+textarea { width: 100%; margin-top: 8px; font: inherit; font-size: 14px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--ligne); background: var(--fond); color: var(--encre); min-height: 56px; display: none; }
+.flux.corriger textarea { display: block; }
+.ajout { background: var(--carte); border: 1.5px dashed var(--ligne); border-radius: 14px; padding: 12px 14px; }
+.ajout textarea { display: block; }
+.recap { position: sticky; bottom: 10px; margin-top: 24px; background: var(--carte); border: 2px solid var(--accent); border-radius: 14px; padding: 12px 14px; box-shadow: 0 6px 24px rgba(0,0,0,.18); }
+.recap pre { white-space: pre-wrap; font-size: 13px; margin: 8px 0; max-height: 180px; overflow: auto; background: var(--fond); padding: 8px 10px; border-radius: 8px; }
+.recap button { font: inherit; font-weight: 700; padding: 8px 14px; border-radius: 10px; border: 0; background: var(--accent); color: #fff; cursor: pointer; }
+.compte { font-size: 13px; color: var(--doux); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Keurbook — flux RSS à valider</h1>
+  <p class="sous">Pour chaque flux : <b>OK</b>, <b>Retirer</b> ou <b>Corriger</b> (dis ce qu'il faut changer). Tous ont été testés le 26/10/2026 et répondent. Le récapitulatif en bas se remplit tout seul : copie-le et colle-le-moi.</p>
+  <div id="liste"></div>
+  <h2>Ajouter un flux</h2>
+  <div class="ajout"><textarea id="ajout" placeholder="Nom du site et adresse, si tu en connais un autre (un par ligne)"></textarea></div>
+  <div class="recap">
+    <b>Récapitulatif</b> <span class="compte" id="compte"></span>
+    <pre id="texte"></pre>
+    <button type="button" id="copier">Copier le récapitulatif</button>
+  </div>
+</main>
+<script>
+const FLUX = [
+  ['Littérature et culture africaines', [
+    ['Africultures', 'https://africultures.com/feed/', 'FR · revue des cultures africaines (livres, auteurs)', '24 articles'],
+    ['Jeune Afrique — Culture', 'https://www.jeuneafrique.com/rubriques/culture/feed/', 'FR · culture en Afrique, filtré livres', '30 articles'],
+    ['RFI — Culture', 'https://www.rfi.fr/fr/culture/rss', 'FR · culture, fort sur l\'Afrique, filtré livres', '15 articles'],
+    ['France 24 — Culture', 'https://www.france24.com/fr/culture/rss', 'FR · culture, filtré livres', '30 articles'],
+    ['Le Monde — Afrique', 'https://www.lemonde.fr/afrique/rss_full.xml', 'FR · généraliste Afrique, filtré livres', 'actif'],
+    ['SenePlus', 'https://www.seneplus.com/rss.xml', 'FR · Sénégal, généraliste, filtré livres', '10 articles'],
+  ]],
+  ['Monde du livre (prix, sorties, salons)', [
+    ['Livres Hebdo', 'https://www.livreshebdo.fr/rss.xml', 'FR · le journal des professionnels du livre', '100 articles'],
+    ['Le Monde des livres', 'https://www.lemonde.fr/livres/rss_full.xml', 'FR · critiques et sorties, filtré auteurs africains', 'actif'],
+  ]],
+  ['Bande dessinée', [
+    ['ActuaBD', 'https://www.actuabd.com/spip.php?page=backend', 'FR · actualité BD, filtré BD africaine', '37 articles'],
+    ['BDZoom', 'https://www.bdzoom.com/feed/', 'FR · actualité BD, filtré BD africaine', '10 articles'],
+  ]],
+];
+const etat = {};
+const ajout = document.getElementById('ajout');
+let stock = {};
+try { stock = JSON.parse(localStorage.getItem('flux-keurbook-v1') || '{}'); } catch (e) { stock = {}; }
+const liste = document.getElementById('liste');
+FLUX.forEach(([groupe, items]) => {
+  const h = document.createElement('h2'); h.textContent = groupe; liste.appendChild(h);
+  items.forEach(([nom, url, info, nb]) => {
+    etat[nom] = stock[nom] || { v: '', note: '' };
+    const d = document.createElement('div'); d.className = 'flux';
+    d.innerHTML = `<div class="tete"><span class="nom"></span><span class="info"></span></div>
+      <div class="url"><a target="_blank" rel="noreferrer"></a></div>
+      <div class="choix"><button type="button" data-v="ok">✓ OK</button><button type="button" data-v="retirer">✕ Retirer</button><button type="button" data-v="corriger">✎ Corriger</button></div>
+      <textarea placeholder="Qu'est-ce qu'il faut corriger ?"></textarea>`;
+    d.querySelector('.nom').textContent = nom;
+    d.querySelector('.info').textContent = `${info} · ${nb}`;
+    const a = d.querySelector('a'); a.href = url; a.textContent = url;
+    const ta = d.querySelector('textarea'); ta.value = etat[nom].note;
+    const maj = () => { d.className = `flux ${etat[nom].v}`; d.querySelectorAll('.choix button').forEach((b) => b.classList.toggle('on', b.dataset.v === etat[nom].v)); recap(); };
+    d.querySelectorAll('.choix button').forEach((b) => b.addEventListener('click', () => { etat[nom].v = etat[nom].v === b.dataset.v ? '' : b.dataset.v; maj(); }));
+    ta.addEventListener('input', () => { etat[nom].note = ta.value; recap(); });
+    liste.appendChild(d); maj();
+  });
+});
+try { ajout.value = localStorage.getItem('flux-keurbook-v1-ajout') || ''; } catch (e) {}
+ajout.addEventListener('input', recap);
+function recap() {
+  const noms = Object.keys(etat);
+  const lignes = ['Flux Keurbook (v1) :'];
+  const fait = noms.filter((n) => etat[n].v).length;
+  for (const n of noms) {
+    const e = etat[n];
+    if (!e.v) continue;
+    lignes.push(`- ${n} : ${e.v === 'ok' ? 'OK' : e.v === 'retirer' ? 'RETIRER' : `CORRIGER — ${e.note.trim() || '(préciser)'}`}`);
+  }
+  const reste = noms.filter((n) => !etat[n].v);
+  if (reste.length) lignes.push(`- Pas encore choisis : ${reste.join(', ')}`);
+  if (ajout.value.trim()) lignes.push(`- À ajouter : ${ajout.value.trim().replace(/\n+/g, ' ; ')}`);
+  document.getElementById('texte').textContent = lignes.join('\n');
+  document.getElementById('compte').textContent = `· ${fait}/${noms.length} choisis`;
+  try { localStorage.setItem('flux-keurbook-v1', JSON.stringify(etat)); localStorage.setItem('flux-keurbook-v1-ajout', ajout.value); } catch (e) {}
+}
+document.getElementById('copier').addEventListener('click', async () => {
+  const t = document.getElementById('texte').textContent;
+  try { await navigator.clipboard.writeText(t); document.getElementById('copier').textContent = 'Copié ✓'; }
+  catch (e) { const r = document.createRange(); r.selectNodeContents(document.getElementById('texte')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); document.getElementById('copier').textContent = 'Sélectionné : fais Copier'; }
+});
+recap();
+</script>
+</body>
+</html>
