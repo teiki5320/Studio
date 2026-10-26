@@ -1,6 +1,6 @@
 # MARKETING — plan marketing & rémunération
 
-Mis à jour le 24 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
+Mis à jour le 26 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
 publications réelles, ou routine qui publie).
 
 ## Positionnement
@@ -31,7 +31,7 @@ publications réelles, ou routine qui publie).
 
 - ✅ Site en ligne sur `keurkado.com` depuis le 20 octobre 2026.
 - ✅ Référencement naturel : propriété `keurkado.com` dans Google Search Console, sitemap envoyé le
-  20 octobre 2026 ; 12 articles Conseils, dont 4 publiés et 8 programmés jusqu'au 14 décembre,
+  20 octobre 2026 ; 12 articles Conseils, dont 5 publiés et 7 programmés jusqu'au 14 décembre,
   republiés chaque lundi, mercredi et vendredi. Depuis le 25 octobre 2026, pages signalées aussi à
   Bing et aux autres moteurs par IndexNow (`scripts/indexnow.mjs`).
 - ✅ Pinterest : compte Keur Kado créé, domaine revendiqué, 21 épingles programmées dans Pinterest
@@ -47,7 +47,7 @@ publications réelles, ou routine qui publie).
 - **Pages indexées par Google** : 9 sur 61 (Search Console, 21 octobre 2026)
 - **Pages pas encore indexées** : 52, dont 34 inconnues de Google et 18 détectées non explorées
 - **Liens Amazon directs** : 53 cadeaux sur 95
-- **Articles Conseils** : 4 publiés, 8 programmés
+- **Articles Conseils** : 5 publiés, 7 programmés
 - **Visites** : à instrumenter
 - **Clics et revenus Amazon** : à vérifier dans la console
 - **Revenus AdSense** : aucun tant que les blocs d'annonces ne sont pas créés

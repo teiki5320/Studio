@@ -1,6 +1,6 @@
 # INFRA — fiche technique
 
-Mis à jour le 25 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
+Mis à jour le 26 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
 ## En bref
@@ -9,13 +9,13 @@ uniquement des noms de variables et de consoles.
 - **Stack** : Next.js 16 en export statique, React 19, Tailwind CSS 4
 - **Backend** : aucun — site statique, sans base ni compte
 - **Distribution** : Worker de fichiers statiques Cloudflare, publié par GitHub Actions
-- **Site** : keurfoot.com (97 adresses dans le sitemap)
+- **Site** : keurfoot.com (98 adresses dans le sitemap)
 - **IA et outils** : illustrations faites avec OpenArt, épingles générées au build
 
 ## Parcours
 
 - 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build [ok] → ☁️ Cloudflare Workers — Worker keurfoot [ok] → 🌍 keurfoot.com — en ligne, réponse 200 [ok]
-- 📝 **Contenu** : ✍️ Conseils — 7 publiés, 14 programmés jusqu'au 25 novembre 2026 [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — 95 pages sur 97 indexées [ok]
+- 📝 **Contenu** : ✍️ Conseils — 8 publiés, 13 programmés jusqu'au 25 novembre 2026 [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — 95 sur 97 indexées au 25 octobre [ok]
 - 🛒 **Affiliation** : 🛍️ Boutique et fiches — boutons Amazon [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurfootfr-21 [ok] → 🌐 Site déclaré chez Amazon — à vérifier dans la console [à faire] → 🔗 Liens directs — aucun ASIN, recherches seulement [pas encore]
 - 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en place [ok] → ✅ Examen du site — demandé le 20 octobre [à faire] → 🧱 Blocs d'annonces — aucun identifiant renseigné [pas encore]
 
@@ -31,8 +31,8 @@ uniquement des noms de variables et de consoles.
 - **Backend** : aucun. Site entièrement statique (dossier `out/`), sans base de données ni compte.
   Seuls cookies possibles : ceux de Google AdSense, après accord dans le bandeau de consentement de
   Google (lien « Cookies » en pied de page).
-- **Taille** : 97 adresses dans le sitemap au 24 octobre 2026 (54 sélections, 15 joueurs,
-  10 Top 10, 2 pages CAN, 7 articles Conseils publiés, boutique, pages de liste et pages légales).
+- **Taille** : 98 adresses dans le sitemap au 26 octobre 2026 (54 sélections, 15 joueurs,
+  10 Top 10, 2 pages CAN, 8 articles Conseils publiés, boutique, pages de liste et pages légales).
 - **Images** : illustrations originales créées avec OpenArt puis découpées par
   `scripts/decouper-planche.mjs` (voir docs/ILLUSTRATIONS.md) ; épingles Pinterest des Top 10
   générées avant chaque build par `scripts/epingles.mts` (satori et resvg), dans `public/epingles/`.

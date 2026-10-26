@@ -1,6 +1,6 @@
 # MARKETING — plan marketing & rémunération
 
-Mis à jour le 25 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
+Mis à jour le 26 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
 publications réelles, ou routine qui publie).
 
 ## Positionnement
@@ -30,7 +30,7 @@ publications réelles, ou routine qui publie).
 
 - ✅ Site en ligne sur `keurfoot.com` depuis le 20 octobre 2026.
 - ✅ Contenu régulier : articles Conseils publiés automatiquement le lundi, le mercredi et le
-  vendredi (7 publiés et 14 programmés jusqu'au 25 novembre 2026, au 24 octobre 2026).
+  vendredi (8 publiés et 13 programmés jusqu'au 25 novembre 2026, au 26 octobre 2026).
 - ✅ Référencement naturel : propriété keurfoot.com vérifiée dans la Search Console, sitemap envoyé
   le 20 octobre 2026 et relu par Google le 25 octobre ; 95 pages sur 97 indexées (relevé du Studio,
   25 octobre 2026) ; Google montre déjà des pages joueurs ; signalement IndexNow
@@ -44,9 +44,9 @@ publications réelles, ou routine qui publie).
 
 ## Mesures
 
-- **Adresses dans le sitemap** : 97 (24 octobre 2026)
+- **Adresses dans le sitemap** : 98 (26 octobre 2026)
 - **Pages indexées par Google** : 95 sur 97 (relevé du Studio, 25 octobre 2026)
-- **Articles Conseils** : 7 publiés, 14 programmés jusqu'au 25 novembre 2026 (24 octobre 2026)
+- **Articles Conseils** : 8 publiés, 13 programmés jusqu'au 25 novembre 2026 (26 octobre 2026)
 - **Liens Amazon directs** : aucun, tous les liens ouvrent une recherche Amazon
 - **Visites** : à instrumenter
 - **Clics et revenus Amazon** : à vérifier dans la console

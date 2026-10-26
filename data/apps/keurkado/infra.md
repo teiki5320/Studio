@@ -1,6 +1,6 @@
 # INFRA — fiche technique
 
-Mis à jour le 25 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
+Mis à jour le 26 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
 ## En bref
@@ -9,7 +9,7 @@ uniquement des noms de variables et de consoles.
 - **Stack** : Next.js 16 en export statique, React 19, Tailwind CSS 4
 - **Backend** : aucun — site statique, sans base ni compte
 - **Distribution** : Worker de fichiers statiques Cloudflare, publié par GitHub Actions
-- **Site** : keurkado.com (61 adresses dans le sitemap)
+- **Site** : keurkado.com (62 adresses dans le sitemap)
 - **IA et outils** : 95 illustrations créées par IA (OpenArt), épingles Pinterest générées au build
 
 ## Parcours
@@ -17,7 +17,7 @@ uniquement des noms de variables et de consoles.
 - 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build [ok] → ☁️ Hébergement web — Worker Cloudflare « keurkado » [ok] → 🌍 keurkado.com — en ligne, réponse 200 [ok]
 - 🛒 **Affiliation** : 🎁 Fiche cadeau — bouton « Voir sur Amazon » [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurkadofr-21 [ok] → 🔗 Liens directs — 53 ASIN sur 95 cadeaux [à faire]
 - 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en ligne [ok] → 🧱 Blocs d'annonces — pas encore créés [à faire] → 💶 Revenus — aucun constaté [pas encore]
-- 📝 **Contenu** : ✍️ Articles Conseils — 4 publiés, 8 programmés [ok] → ⚙️ GitHub Actions — republie lun., mer., ven. [ok] → 🔍 Google — 9 pages indexées sur 61 [à faire]
+- 📝 **Contenu** : ✍️ Articles Conseils — 5 publiés, 7 programmés [ok] → ⚙️ GitHub Actions — republie lun., mer., ven. [ok] → 🔍 Google — 9 pages indexées sur 61 [à faire]
 
 ## Vue d'ensemble
 
@@ -46,7 +46,7 @@ uniquement des noms de variables et de consoles.
 - **Rôle** : dépôt du code et des contenus, et trois workflows :
   - `deploy.yml` (« Publier le site ») : lint, types, tests, build, puis publication par
     `npx wrangler deploy` à chaque push sur `main`, chaque lundi, mercredi et vendredi (0 h 15 heure de Paris, pour les
-    articles programmés) et à la main ; dernière exécution réussie le 25 octobre 2026 ;
+    articles programmés) et à la main ; dernière exécution réussie le 26 octobre 2026 ;
   - `pages.yml` : publie sur l'ancienne adresse GitHub Pages une page qui renvoie vers keurkado.com ;
   - `pinterest.yml` (« Publier les épingles Pinterest ») : chaque jour à 4 h 17 UTC, au plus 5 épingles
     du manifeste (`config/pinterest.json`), jamais deux du même Top le même jour, dans le tableau de sa

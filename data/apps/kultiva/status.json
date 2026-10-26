@@ -3,11 +3,10 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-25T04:34:12Z",
-    "url": "https://github.com/teiki5320/Kultiva/actions/runs/40161815733",
-    "enCours": true
+    "updatedAt": "2026-10-25T05:52:21Z",
+    "url": "https://github.com/teiki5320/Kultiva/actions/runs/40166603146"
   },
-  "fetchedAt": "2026-10-25T05:44:59.721Z",
+  "fetchedAt": "2026-10-25T06:14:20.711Z",
   "boutiques": {
     "appStore": null,
     "googlePlay": null
