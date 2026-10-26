@@ -29,3 +29,13 @@
 .af-ticket { display: inline-block; margin-top: 6px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--c-muted); }
 .af-ticket.a-toi, .af-ticket.repondu { color: var(--accent); }
 .af-ticket.regle { color: var(--ok); }
+
+/* Colonne « À faire » de l'Accueil : le texte prend toute la largeur, les
+   boutons passent dessous, petits et sur une ligne ; la case à cocher se
+   met à gauche ; le ticket est une pastille comme l'état (demande de Jean, 26/10). */
+html:root .accueil .ac-col.faire .af-ligne { flex-wrap: wrap; align-items: flex-start; column-gap: 10px; row-gap: 8px; }
+html:root .accueil .ac-col.faire .af-coche { order: -1; padding-top: 2px; }
+html:root .accueil .ac-col.faire .af-coche input { width: 18px; height: 18px; }
+html:root .accueil .ac-col.faire .af-boutons { order: 3; width: 100%; max-width: none; justify-content: flex-start; flex-wrap: nowrap; gap: 8px; padding-left: 50px; }
+html:root .accueil .ac-col.faire .af-boutons .clay-btn { min-height: 30px; padding: 0 12px; font-size: 13px; white-space: nowrap; border-radius: 9px; }
+html:root .accueil .af-ticket { display: inline-flex; align-self: flex-start; align-items: center; min-height: 24px; padding: 0 9px; border-radius: 7px; font-size: 12px; margin-top: 6px; background: var(--carte-2, rgba(127, 127, 127, 0.12)); white-space: nowrap; }
