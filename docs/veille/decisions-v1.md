@@ -75,7 +75,16 @@ Tests du 26/10/2026 :
 - **Emplacement :** un bloc sur l'accueil, une page « Actus », et les actus de l'auteur sur chaque fiche auteur.
 - **Format, nombre et carte : comme Keur Foot.** Bandeau pour la 1re actu puis vignettes ; 4 sur l'accueil, 20 sur la page, 3 par fiche auteur ; carte aux couleurs de Keurbook, avec le drapeau du pays de l'auteur et un livre comme icône.
 - **Tri :** Claude trie en lisant. Exclusions : polémiques politiques, faits divers.
-- **Flux RSS :** 10 proposés dans `flux-keurbook-v1.html` (testés le 26/10/2026), en attente de validation par Jean.
+- **Flux RSS (10, tous validés par Jean le 26/10/2026) :** Africultures, Jeune Afrique Culture, RFI Culture, France 24 Culture, Le Monde Afrique, SenePlus, Livres Hebdo, Le Monde des livres, ActuaBD, BDZoom.
+- **Keurbook : complet.**
 
 ### Keur Cook, Keur Déco, Keur Kado, Kultiled, Solelis
-À définir.
+À définir **après** avoir vu le résultat sur Keur Foot et Keurbook (demande de Jean).
+
+## Mise en œuvre technique (précisée dans les prompts)
+
+- Les fichiers sont servis par GitHub Pages : `https://teiki5320.github.io/veille/actus/<site>.json`.
+- Les photos libres sont **copiées** dans le dépôt veille (WebP, 16:9 et carré), pour ne dépendre d'aucun serveur tiers. La CSP des sites n'autorise donc que `teiki5320.github.io`.
+- Schéma v3 : 7 sites, champ `tags` (ex. `auteur:<slug>`), image obligatoire.
+- Contrôle anti-copie automatique : 6 mots consécutifs repris = actu rejetée.
+- Prompts : `prompts/00-socle-v1.md`, `prompts/keurfoot-v1.md`, `prompts/keurbook-v1.md`.
