@@ -2052,13 +2052,14 @@ export function ereaAdPlan(project) {
   return { deja };
 }
 
-// Voix des pubs Erea : l'historien grave (Nicolas) ; le narrateur, vif et
-// expressif (Léo) — il panique à la catastrophe, il entraîne à la frise et à
-// l'accroche.
+// Voix des pubs Erea : l'historien grave (Nicolas) ; le narrateur, héros de
+// dessin animé très expressif (Troy, joué par eleven_v3 — choisi par Jean le
+// 26/10 : Léo en v2 manquait de dynamisme) — il panique à la catastrophe, il
+// entraîne à la frise et à l'accroche.
 export const EREA_VOIX = {
   historien: { voice: 'aQROLel5sQbj1vuIVi6B', settings: { stability: 0.68, similarity_boost: 0.8, style: 0.3, speed: 0.95 } },
-  panique: { voice: 'AfbuxQ9DVtS4azaxN1W7', settings: { stability: 0.15, similarity_boost: 0.8, style: 0.95, speed: 1.18 } },
-  dynamique: { voice: 'AfbuxQ9DVtS4azaxN1W7', settings: { stability: 0.22, similarity_boost: 0.8, style: 0.85, speed: 1.15 } },
+  panique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
+  dynamique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
 };
 export const ACCROCHE_EREA = 'Avec Erea, devenez les maîtres du temps.';
 export function accrocheErea(fonts) {
@@ -2173,7 +2174,7 @@ export async function createEreaAd(project, { personnage = '' } = {}, update) {
   if (logoIntro) {
     project.ctaLogo = logoIntro;
   }
-  // Deux voix : l'historien posé (Nicolas), puis le narrateur qui panique (Léo).
+  // Deux voix : l'historien posé (Nicolas), puis le narrateur qui panique (Troy).
   project.voixRoles = EREA_VOIX;
   const role = (who, t) => (t ? [{ speaker: who, text: String(t).trim().slice(0, 220), audio: null, audioDurationSec: null }] : []);
   const hi = raw.historien || {};

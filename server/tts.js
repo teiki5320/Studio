@@ -160,16 +160,27 @@ async function synthesizeEleven(text, voiceId, outPath, settings = null) {
   if (!key) {
     throw new Error('ELEVENLABS_API_KEY absente du .env');
   }
-  const model = process.env.ELEVEN_MODEL || 'eleven_multilingual_v2';
+  // Un rôle peut demander son propre modèle (settings.model). eleven_v3 « joue »
+  // le texte (surprise, enthousiasme) : on lui donne une balise d'émotion en
+  // tête (settings.tag, ex. « [excited] »), jamais lue ni sous-titrée ; sa
+  // stabilité ne prend que 0, 0,5 ou 1, et il n'accepte pas previous_text.
+  const model = settings?.model || process.env.ELEVEN_MODEL || 'eleven_multilingual_v2';
   const isV25 = /turbo_v2_5|flash_v2_5/.test(model);
-  const body = {
-    text,
-    model_id: model,
-    voice_settings: voiceSettingsFor(isV25, settings),
-    // Ancre la détection de langue : la réplique est lue comme la suite
-    // d'un dialogue français, plus de bascule vers l'anglais.
-    previous_text: 'La conversation continue, toujours en français. Il répondit alors :',
-  };
+  const isV3 = model === 'eleven_v3';
+  const body = isV3
+    ? {
+        text: settings?.tag ? `${settings.tag} ${text}` : text,
+        model_id: model,
+        voice_settings: { stability: [0, 0.5, 1].reduce((a, b) => (Math.abs(b - (settings?.stability ?? 0.5)) < Math.abs(a - (settings?.stability ?? 0.5)) ? b : a)) },
+      }
+    : {
+        text,
+        model_id: model,
+        voice_settings: voiceSettingsFor(isV25, settings),
+        // Ancre la détection de langue : la réplique est lue comme la suite
+        // d'un dialogue français, plus de bascule vers l'anglais.
+        previous_text: 'La conversation continue, toujours en français. Il répondit alors :',
+      };
   // Seuls turbo/flash v2.5 acceptent language_code (rejeté par multilingual_v2).
   if (isV25) {
     body.language_code = 'fr';
