@@ -64,7 +64,9 @@ Tests du 26/10/2026 :
 - **Sujets :** sélections nationales ; CAN et qualifications au Mondial ; joueurs africains en Europe ; championnats et clubs africains.
 - **Pays :** surtout l'Afrique francophone (Sénégal, Côte d'Ivoire, Cameroun, Maroc, Mali, Guinée, RD Congo…), plus les grandes équipes (Nigeria, Égypte, Algérie, Ghana, Afrique du Sud…).
 - **Emplacement :** un bloc sur l'accueil (bandeau pour la 1re actu, puis des vignettes), une page « Actus », et les actus du pays sur chaque fiche sélection.
-- **Encore à faire :** les flux RSS (page à cocher), les mots-clés de filtre, le nombre d'actus affichées.
+- **Nombre d'actus :** 4 sur l'accueil (1 bandeau + 3 vignettes), 20 sur la page « Actus », 3 sur chaque fiche sélection.
+- **Flux RSS :** proposés dans `flux-keurfoot-v1.html` (14 flux testés le 26/10/2026), en attente de validation par Jean.
+- **Encore à faire :** les mots-clés de filtre.
 
 ### Keurbook, Keur Cook, Keur Déco, Keur Kado, Kultiled, Solelis
 À définir.
