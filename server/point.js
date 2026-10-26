@@ -72,6 +72,23 @@ export function repondre(id, choix) {
   return p;
 }
 
+// « Changer d'avis » (Accueil) : tant que la routine n'est pas passée, une réponse
+// Oui / Non (ou « réglé par Jean ») s'efface et la décision redevient à trancher.
+export function annulerReponse(id) {
+  const p = lire();
+  if (!p) throw new Error('Aucun point du matin');
+  const x = [...p.decisions, ...p.problemes].find((y) => y.id === id);
+  if (!x) throw new Error('Élément introuvable');
+  const parJean = x.etat === 'fait' && ['Noté : on ne fait rien.', 'Réglé par Jean.'].includes(x.compteRendu);
+  if (x.etat !== 'demande' && !parJean) throw new Error('Trop tard : Claude est déjà passé');
+  delete x.choix;
+  delete x.etat;
+  x.compteRendu = '';
+  x.le = null;
+  ecrire(p);
+  return p;
+}
+
 // Groupes de mails cochés : leurs conversations partent à la corbeille (récupérables 30 jours).
 export function demanderCorbeille(groupes) {
   const p = lire();

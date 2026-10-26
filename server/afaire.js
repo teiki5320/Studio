@@ -25,9 +25,9 @@ import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { ROOT } from './config.js';
 import { STUDIO_DIR } from './studio.js';
-import { etatIndexation, envoyerAClaude, fileClaude, retourClaude, consigneClaude, depotDe } from './indexation.js';
+import { etatIndexation, envoyerAClaude, retirerDeClaude, fileClaude, retourClaude, consigneClaude, depotDe } from './indexation.js';
 import { routines, passageManque } from './routines.js';
-import { pointDuMatin, repondre, fileActions, retourAction } from './point.js';
+import { pointDuMatin, repondre, annulerReponse, fileActions, retourAction } from './point.js';
 import { comptes } from './comptes.js';
 import { applis } from './applis.js';
 import { planning } from './planning.js';
@@ -497,6 +497,7 @@ function dePoint() {
     dossier: tilde(x.dossier) || dossierDe(nomSite(x.site)),
     etat: etatPoint(x),
     compteRendu: x.compteRendu || '',
+    choix: x.choix || '',
     le: x.le || null,
   });
   return [...(p.decisions || []).map((x) => el(x, 'decision')), ...(p.problemes || []).map((x) => el(x, 'probleme'))].filter(
@@ -519,7 +520,7 @@ function appliquerSuivi(e, s) {
   const depuis = e.depuis || e.majLe;
   if (s.statut !== 'envoye' && depuis && s.retour && new Date(depuis) > new Date(s.retour)) return { ...e, etat: base, compteRendu: '' };
   if (s.statut === 'fait' && Date.now() - new Date(s.retour || s.le).getTime() > FAITS_VISIBLES) return null;
-  return { ...e, etat: s.statut, compteRendu: s.compteRendu || '', le: s.le };
+  return { ...e, etat: s.statut, compteRendu: s.compteRendu || '', le: s.le, retour: s.retour || null };
 }
 
 const ORDRE_ETAT = { 'a-faire': 0, bloque: 1, envoye: 2, attente: 2, encours: 2, fait: 3 };
@@ -546,12 +547,12 @@ export function listeAfaire() {
     if (presents.has(id) || !s.copie) continue;
     const quand = s.retour || s.le;
     if (Date.now() - new Date(quand).getTime() > FAITS_VISIBLES) continue;
-    if (s.statut === 'envoye') visibles.push({ ...s.copie, id, etat: 'fait', compteRendu: 'Réglé tout seul avant le passage de Claude.' });
-    else if (s.statut === 'fait') visibles.push({ ...s.copie, id, etat: 'fait', compteRendu: s.compteRendu || '' });
+    if (s.statut === 'envoye') visibles.push({ ...s.copie, id, etat: 'fait', compteRendu: 'Réglé tout seul avant le passage de Claude.', le: s.le, retour: s.retour || null });
+    else if (s.statut === 'fait') visibles.push({ ...s.copie, id, etat: 'fait', compteRendu: s.compteRendu || '', le: s.le, retour: s.retour || null });
   }
   // « ⏳ En cours » (Jean et Claude y travaillent dans une conversation) : vaut
   // pour toutes les sources ; la routine du matin n'y touche pas.
-  const enCours = (e) => (d.suivi[e.id]?.statut === 'encours' && ['a-faire', 'bloque', 'encours'].includes(e.etat) ? { ...e, etat: 'encours', compteRendu: '' } : e);
+  const enCours = (e) => (d.suivi[e.id]?.statut === 'encours' && ['a-faire', 'bloque', 'encours'].includes(e.etat) ? { ...e, etat: 'encours', compteRendu: '', le: d.suivi[e.id].le } : e);
   const tout = [...dePoint(), ...deIndexation(), ...visibles]
     .map(enCours)
     // eslint-disable-next-line no-unused-vars
@@ -687,10 +688,39 @@ const idPoint = (id) => {
 // « encours » / « reprendre » : Jean le marque « en cours avec Claude » ou l'en sort.
 // « fait » : Jean l'a réglé lui-même. Si la source le signale de nouveau
 // plus tard (problème revenu), la ligne réapparaît d'elle-même.
+// « annuler » : Jean change d'avis avant le passage de Claude (5 h 05) — la
+// réponse s'efface et l'élément redevient à trancher.
+const PAR_JEAN = ['Réglé par Jean.', 'Noté : on ne fait rien.'];
+function annuler(e) {
+  if (e.source === 'point') {
+    annulerReponse(idPoint(e.id).id);
+    return;
+  }
+  if (e.source === 'indexation') {
+    if (e.etat !== 'envoye') throw new Error('Rien à annuler');
+    retirerDeClaude(e.id);
+    return;
+  }
+  if (e.source === 'comptes' && e.etat === 'fait') throw new Error('À rouvrir depuis Comptes & adresses');
+  const d = lire();
+  const s = d.suivi[e.id];
+  if (!s) throw new Error('Rien à annuler');
+  if (s.statut === 'envoye' || s.statut === 'encours' || (s.statut === 'fait' && PAR_JEAN.includes(s.compteRendu))) {
+    delete d.suivi[e.id];
+    ecrire(d);
+    return;
+  }
+  throw new Error('Trop tard : Claude est déjà passé');
+}
+
 export function envoyer(id, choix = 'oui') {
-  if (!['oui', 'non', 'fait', 'encours', 'reprendre'].includes(choix)) throw new Error('Réponse attendue : oui, non, fait, encours ou reprendre');
+  if (!['oui', 'non', 'fait', 'encours', 'reprendre', 'annuler'].includes(choix)) throw new Error('Réponse attendue : oui, non, fait, encours, reprendre ou annuler');
   const e = listeAfaire().elements.find((x) => x.id === id);
   if (!e) throw new Error('Élément introuvable (déjà réglé ?)');
+  if (choix === 'annuler') {
+    annuler(e);
+    return listeAfaire();
+  }
   if (e.etat === 'fait') throw new Error('Déjà fait');
   if (choix === 'encours' || choix === 'reprendre') {
     const d = lire();

@@ -5,12 +5,13 @@
 // la Fraîcheur des infos, les chiffres et raccourcis, puis les deux colonnes
 // « À décider » (Oui / Non) et « À faire » (graves d'abord) — ordre choisi
 // par Jean les 23 et 24/10. Agenda et mails viennent du Point du matin (7 h).
+// Depuis le 26/10, le bas est la maquette « Page H » : une pile de cartes recto /
+// verso à glisser (« À trier ») et, dessous, « Décidé aujourd'hui ».
 import React, { useEffect, useRef, useState } from 'react';
 import { api } from './api.js';
 import { useApplis, ageFiches, FICHE_PERIMEE_JOURS } from './MesApplisPage.jsx';
 import { pire } from './Temoins.jsx';
-import { LogoAppli } from './LogoAppli.jsx';
-import { Ligne, ouvert as estOuvert } from './AFaire.jsx';
+import { TriCartes, DecidesDuJour } from './TriCartes.jsx';
 import './accueil.css';
 import './afaire.css';
 import './point.css';
@@ -330,21 +331,7 @@ function Chiffres({ apps, ext }) {
   );
 }
 
-// ---------- Deux colonnes : À décider · À faire ----------
-
-const RANG_TACHE = (e) => (e.etat === 'encours' ? 4 : e.etat === 'bloque' ? 0 : e.grave ? 1 : e.etat === 'envoye' || e.etat === 'attente' ? 3 : 2);
-const MAX_TACHES = 8;
-
-function Tache({ e, onAgir }) {
-  return (
-    <div className="ac-tache">
-      <span className="ac-logo">
-        <LogoAppli de={e.site} taille={28} seul />
-      </span>
-      <Ligne e={e} onAgir={onAgir} avecSite />
-    </div>
-  );
-}
+// ---------- En bas : « À trier » en cartes, puis « Décidé aujourd'hui » (TriCartes.jsx) ----------
 
 export function AccueilPage() {
   const { data, error } = useApplis();
@@ -353,8 +340,6 @@ export function AccueilPage() {
   const [af, setAf] = useState(null);
   const [erreur, setErreur] = useState('');
   const [ouvert, setOuvert] = useState(null);
-  const [toutVoir, setToutVoir] = useState(false);
-  const [voirFaits, setVoirFaits] = useState(false);
   const [maintenant, setMaintenant] = useState(minutesMaintenant);
   const deja = useRef(false);
   const chargerAf = () =>
@@ -432,13 +417,8 @@ export function AccueilPage() {
         .join(' · ')}${aVoir.length > 3 ? ` +${aVoir.length - 3}` : ''} à voir`
     : 'tout va';
 
-  // À décider · À faire
+  // À trier · Décidé aujourd'hui
   const elements = af?.elements || [];
-  const decisions = elements.filter((e) => e.type === 'decision' && e.etat !== 'fait');
-  const taches = elements.filter((e) => e.type !== 'decision' && e.etat !== 'fait').sort((a, b) => RANG_TACHE(a) - RANG_TACHE(b));
-  const listeFaits = elements.filter((e) => e.etat === 'fait');
-  const faits = listeFaits.length;
-  const visibles = toutVoir ? taches : taches.slice(0, MAX_TACHES);
   const onAgir = (f) =>
     f()
       .catch((e) => setErreur(e.message))
@@ -491,56 +471,8 @@ export function AccueilPage() {
 
       {erreur ? <p className="error small">{erreur}</p> : null}
 
-      <div className="ac-cols">
-        <section className="ac-col decider">
-          <div className="ac-col-t">
-            <h3>
-              À décider <span>· {decisions.filter(estOuvert).length}</span>
-            </h3>
-            <small>Oui / Non · Claude applique à 5 h 05</small>
-          </div>
-          {!af ? <p className="af-vide">Chargement…</p> : null}
-          {af && !decisions.length ? <p className="af-vide">✓ Aucune décision en attente.</p> : null}
-          {decisions.map((e) => (
-            <Tache key={e.id} e={e} onAgir={onAgir} />
-          ))}
-        </section>
-
-        <section className="ac-col faire">
-          <div className="ac-col-t">
-            <h3>
-              À faire <span>· {taches.filter(estOuvert).length}</span>
-            </h3>
-            <small>
-              grave d’abord{af?.compteurs?.envoyes ? ` · ${af.compteurs.envoyes} chez Claude` : ''}
-              {faits ? (
-                <>
-                  {' · '}
-                  <button type="button" className="ac-plus ac-faits" onClick={() => setVoirFaits(!voirFaits)}>
-                    {voirFaits ? 'cacher les faits ▴' : `voir les ${faits} fait${faits > 1 ? 's' : ''} récemment ▾`}
-                  </button>
-                </>
-              ) : null}
-            </small>
-          </div>
-          {af && !taches.length ? <p className="af-vide">✓ Rien à faire pour l’instant : tout roule.</p> : null}
-          {visibles.map((e) => (
-            <Tache key={e.id} e={e} onAgir={onAgir} />
-          ))}
-          {voirFaits && faits ? (
-            <div className="ac-faits-liste">
-              {listeFaits.map((e) => (
-                <Tache key={e.id} e={e} onAgir={onAgir} />
-              ))}
-            </div>
-          ) : null}
-          {taches.length > MAX_TACHES ? (
-            <button type="button" className="ac-plus" onClick={() => setToutVoir(!toutVoir)}>
-              {toutVoir ? 'Voir moins ▴' : `Voir les ${taches.length - MAX_TACHES} autres ▾`}
-            </button>
-          ) : null}
-        </section>
-      </div>
+      <TriCartes elements={elements} onAgir={onAgir} chargement={!af} />
+      <DecidesDuJour elements={elements} onAgir={onAgir} />
     </div>
   );
 }

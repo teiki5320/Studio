@@ -561,6 +561,14 @@ export function envoyerAClaude(id) {
   ecrireJson(ETAT, etat);
 }
 
+// « Changer d'avis » : retire un problème de la file avant le passage de Claude.
+export function retirerDeClaude(id) {
+  const etat = lireEtat();
+  if (etat.fileClaude?.[id]?.statut !== 'envoye') throw new Error('Ce problème n’est pas dans la file de Claude');
+  delete etat.fileClaude[id];
+  ecrireJson(ETAT, etat);
+}
+
 export function fileClaude() {
   const etat = lireEtat();
   return Object.entries(etat.fileClaude || {})

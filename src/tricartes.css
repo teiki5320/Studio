@@ -1,0 +1,93 @@
+/* Accueil — « À trier » en cartes recto / verso et « Décidé aujourd'hui »
+   (maquette Page H, 26/10). Mêmes jetons que clay.css. */
+.tc-bloc { background: var(--carte); border-radius: 26px; padding: 20px 24px 22px; box-shadow: var(--clay); display: flex; flex-direction: column; gap: 14px; }
+.tc-entete { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.tc-entete h3 { margin: 0; font-size: 21px; font-weight: 800; }
+.tc-entete h3 span { color: var(--run); }
+.tc-entete h3 small { font-size: 13px; color: var(--c-muted); font-weight: 700; }
+.tc-entete > small { font-size: 12.5px; color: var(--c-muted); }
+.tc-entete b.run { color: var(--run); } .tc-entete b.ok { color: var(--ok); }
+
+.tc-scene { position: relative; height: 380px; max-width: 620px; width: 100%; margin: 4px auto 0; }
+.tc-derriere { position: absolute; border-radius: 26px; background: var(--carte-2); opacity: .55; }
+.tc-derriere.d1 { inset: 12px 14px -30px; display: flex; align-items: flex-end; padding: 0 24px 8px; opacity: .8; }
+.tc-derriere.d1 span { font-size: 12.5px; font-weight: 700; color: var(--c-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tc-derriere.d2 { inset: 24px 28px -40px; opacity: .45; }
+
+.tc-carte { position: absolute; inset: 0 0 12px; perspective: 1600px; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; transition: transform .25s ease; outline: none; border-radius: 26px; }
+.tc-carte.glisse { transition: none; cursor: grabbing; }
+.tc-carte.occupe { opacity: .6; pointer-events: none; }
+.tc-carte:focus-visible { box-shadow: 0 0 0 3px var(--accent); }
+.tc-tourne { position: absolute; inset: 0; transform-style: preserve-3d; transition: transform .45s ease; }
+.tc-tourne.verso { transform: rotateY(180deg); }
+.tc-face { position: absolute; inset: 0; box-sizing: border-box; border-radius: 26px; padding: 22px 24px; display: flex; flex-direction: column; gap: 11px; backface-visibility: hidden; -webkit-backface-visibility: hidden; background: var(--carte-2); box-shadow: 0 22px 54px rgba(0, 0, 0, .45), 0 0 0 1px var(--ligne); overflow: hidden; }
+.tc-face.verso { transform: rotateY(180deg); box-shadow: 0 22px 54px rgba(0, 0, 0, .45), 0 0 0 2px var(--accent); }
+.tc-tete { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.tc-tete .tc-qui { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.tc-tete .tc-qui b { font-size: 15px; }
+.tc-tete .tc-qui small { font-size: 12px; color: var(--c-muted); }
+.tc-logo { flex: none; display: inline-flex; }
+.tc-puce { flex: none; padding: 5px 11px; border-radius: 999px; font-size: 11.5px; font-weight: 800; letter-spacing: .04em; background: var(--fond); color: var(--c-muted); }
+.tc-puce.dec { background: var(--run-tint); color: var(--run); }
+.tc-puce.ko { background: var(--ko-tint); color: var(--ko); }
+.tc-puce.verso { background: var(--fond); color: var(--accent); }
+.tc-titre { margin: 6px 0 0; font-size: 25px; line-height: 1.24; font-weight: 800; overflow-wrap: anywhere; }
+.tc-texte { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--c-muted); white-space: pre-line; overflow-wrap: anywhere; }
+.tc-bloque { margin: 0; font-size: 14px; line-height: 1.5; color: var(--ko); }
+.tc-lien, .accueil .tc-lien { font-size: 13px; font-weight: 700; color: var(--accent); align-self: flex-start; }
+.tc-vide { flex: 1; }
+.tc-retourner { align-self: center; display: inline-flex; gap: 8px; align-items: center; font-size: 12.5px; font-weight: 700; color: var(--accent); }
+.tc-etape { display: flex; gap: 12px; align-items: flex-start; font-size: 14px; line-height: 1.45; }
+.tc-etape > b { flex: none; width: 26px; height: 26px; border-radius: 999px; background: var(--fond); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+.tc-consigne { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border-radius: 12px; background: var(--fond); font-size: 13px; line-height: 1.45; color: var(--c-muted); overflow-wrap: anywhere; }
+.tc-consigne small { font-size: 10.5px; font-weight: 800; letter-spacing: .08em; }
+.tc-tampon { position: absolute; top: 22px; padding: 5px 12px; border-radius: 10px; border: 3px solid currentColor; font-size: 19px; font-weight: 900; letter-spacing: .04em; pointer-events: none; background: var(--carte-2); }
+.tc-tampon.droite { right: 22px; color: var(--accent); transform: rotate(8deg); }
+.tc-tampon.gauche { left: 22px; color: var(--ok); transform: rotate(-8deg); }
+.tc-tampon.haut { left: 50%; top: 18px; color: #9fc3f0; transform: translateX(-50%); }
+.tc-tampon.bas { left: 50%; top: auto; bottom: 22px; color: #c7a6ef; transform: translateX(-50%); }
+
+.tc-boutons { display: flex; justify-content: center; align-items: flex-start; gap: 18px; flex-wrap: wrap; padding-top: 34px; }
+.tc-lab { display: flex; flex-direction: column; align-items: center; gap: 7px; font-size: 12px; font-weight: 700; color: var(--c-muted); min-width: 64px; text-align: center; }
+.tc-rond { all: unset; box-sizing: border-box; cursor: pointer; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: var(--carte-2); color: var(--texte, inherit); box-shadow: 0 0 0 1px var(--ligne), 0 8px 20px rgba(0, 0, 0, .3); transition: transform .12s; }
+.tc-rond:hover { transform: scale(1.06); }
+.tc-rond.principal { background: var(--accent); box-shadow: 0 10px 24px rgba(239, 154, 131, .3); }
+.tc-rond:disabled { opacity: .3; cursor: default; transform: none; }
+.tc-rond:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+.tc-fini { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 40px 16px; text-align: center; }
+.tc-fini b { font-size: 22px; }
+.tc-fini span { color: var(--c-muted); font-size: 14px; }
+
+.tc-decides { gap: 0; }
+.tc-decides .tc-entete { margin-bottom: 8px; }
+.tc-dj { display: flex; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--ligne); font-size: 14px; line-height: 1.35; }
+.tc-dj .hr { width: 46px; flex: none; font-size: 12px; font-weight: 700; color: var(--c-muted); font-variant-numeric: tabular-nums; }
+.tc-dj .tc-logo { width: 28px; justify-content: center; }
+.tc-dj .tx { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.tc-dj .tx small { display: block; font-size: 11.5px; font-weight: 700; color: var(--c-muted); }
+.tc-dj .rep { flex: none; width: 88px; text-align: center; font-size: 12px; font-weight: 800; padding: 4px 0; border-radius: 999px; background: var(--carte-2); color: var(--c-muted); }
+.tc-dj .rep.oui { background: var(--accent); color: var(--accent-ink); }
+.tc-dj .rep.ticket { background: rgba(159, 195, 240, .16); color: #9fc3f0; }
+.tc-dj .rep.ens { background: rgba(199, 166, 239, .16); color: #c7a6ef; }
+.tc-dj .st { flex: none; width: 190px; font-size: 12.5px; font-weight: 700; overflow-wrap: anywhere; }
+.tc-dj .st a { color: inherit; }
+.tc-dj .st.run { color: var(--run); } .tc-dj .st.ok { color: var(--ok); } .tc-dj .st.ko { color: var(--ko); } .tc-dj .st.ens { color: #c7a6ef; }
+.tc-chg { all: unset; box-sizing: border-box; cursor: pointer; flex: none; width: 128px; min-height: 36px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; background: var(--carte-2); box-shadow: 0 0 0 1px var(--ligne); }
+.tc-chg.vide { background: none; box-shadow: none; cursor: default; }
+.tc-chg:disabled { opacity: .5; }
+.tc-chg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+html[data-theme='clair'] .tc-dj .rep.ticket { color: #2f5f96; }
+html[data-theme='clair'] .tc-dj .rep.ens, html[data-theme='clair'] .tc-dj .st.ens { color: #6a43a0; }
+html[data-theme='clair'] .tc-tampon.haut { color: #2f5f96; }
+html[data-theme='clair'] .tc-tampon.bas { color: #6a43a0; }
+
+@media (max-width: 760px) {
+  .tc-scene { height: 470px; }
+  .tc-titre { font-size: 21px; }
+  .tc-dj { flex-wrap: wrap; }
+  .tc-dj .tx { flex-basis: calc(100% - 100px); }
+  .tc-dj .st { width: auto; flex: 1; }
+  .tc-dj .rep { margin-left: 58px; }
+}
