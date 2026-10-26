@@ -2,8 +2,9 @@
 // artifact BNE9kfta1Eoj8FgzpxGFMW) : une pile de cartes recto / verso.
 //  - Recto : la question ou la tâche. Verso (toucher la carte ou « Retourner ») :
 //    ce que Claude fera exactement selon la réponse.
-//  - On glisse la carte : à droite = Oui / Claude demain 5 h 05, à gauche =
-//    Non / C'est fait, en haut = Ticket GitHub, en bas = On y travaille ensemble.
+//  - On glisse la carte : à droite = Oui / Routine (demain 5 h 05), à gauche =
+//    Non / C'est fait, en haut = Claude (ticket GitHub, réponse tout de suite),
+//    en bas = On y travaille ensemble. Noms choisis par Jean le 26/10.
 //    Les gros boutons ronds font la même chose (pas obligé de glisser sur l'iPad).
 //  - « Annuler » efface la dernière réponse (tant que Claude n'est pas passé).
 // En dessous, « Décidé aujourd'hui » : chaque réponse du jour, où elle en est, et
@@ -37,7 +38,7 @@ const rangCarte = (e) => (e.type === 'decision' ? 0 : e.etat === 'bloque' ? 1 : 
 function choixDe(e) {
   const c = {};
   if (e.type === 'decision') {
-    c.droite = { mot: 'Oui', court: 'OUI', fait: 'Claude l’applique demain à 5 h 05, sur le Mac, puis rend compte.', f: () => api.envoyerAfaire(e.id, 'oui') };
+    c.droite = { mot: 'Oui', court: 'OUI', fait: 'La routine l’applique demain à 5 h 05, sur le Mac, puis rend compte.', f: () => api.envoyerAfaire(e.id, 'oui') };
     c.gauche = { mot: 'Non', court: 'NON', fait: 'Rien n’est fait. La carte passe en « fait » avec « on ne fait rien ».', f: () => api.envoyerAfaire(e.id, 'non') };
     return c;
   }
@@ -51,9 +52,9 @@ function choixDe(e) {
     return c;
   }
   c.droite = {
-    mot: e.etat === 'bloque' ? 'Réessayer demain' : 'Claude demain',
-    court: 'CLAUDE',
-    fait: 'Claude s’en charge demain à 5 h 05, sur le Mac (avec le navigateur), puis rend compte ici.',
+    mot: e.etat === 'bloque' ? 'Routine (réessayer)' : 'Routine',
+    court: 'ROUTINE',
+    fait: 'La routine s’en charge demain à 5 h 05, sur le Mac (avec le navigateur : Amazon, consoles…), puis rend compte ici.',
     f: () => api.envoyerAfaire(e.id, 'oui'),
   };
   if (e.source !== 'indexation') {
@@ -65,7 +66,7 @@ function choixDe(e) {
     };
   }
   if (!e.ticket && e.source !== 'produits-amazon') {
-    c.haut = { mot: 'Ticket', court: 'TICKET', fait: 'Un ticket GitHub : un Claude en ligne répond tout de suite (code, explications, étapes pour toi).', f: () => api.envoyerGithub([e.id]) };
+    c.haut = { mot: 'Claude', court: 'CLAUDE', fait: 'Claude répond tout de suite, en ligne (code, explications, étapes pour toi) — sans accès au Mac ni au navigateur.', f: () => api.envoyerGithub([e.id]) };
   }
   c.bas = { mot: 'Ensemble', court: 'ENSEMBLE', fait: 'On y travaille dans une conversation : la carte reste en bas, ne compte plus, la routine n’y touche pas.', f: () => api.envoyerAfaire(e.id, 'encours') };
   return c;
@@ -108,11 +109,11 @@ function Recto({ e }) {
         <Puce e={e} />
       </div>
       <h1 className="tc-titre">{e.texte}</h1>
-      {e.etat === 'bloque' && e.compteRendu ? <p className="tc-bloque">Claude a bloqué : {court(e.compteRendu, 260)}</p> : null}
+      {e.etat === 'bloque' && e.compteRendu ? <p className="tc-bloque">La routine a bloqué : {court(e.compteRendu, 260)}</p> : null}
       {e.detail ? <p className="tc-texte">{court(e.detail, 260)}</p> : null}
       {e.ticket ? (
         <a className="tc-lien" href={e.ticket.url} target="_blank" rel="noreferrer" onPointerDown={(x) => x.stopPropagation()}>
-          Ticket n° {e.ticket.numero} : Claude a répondu, à toi ↗
+          Claude a répondu, à toi : lire sa réponse ↗
         </a>
       ) : null}
       <div className="tc-vide" />
@@ -275,7 +276,7 @@ export function TriCartes({ elements, onAgir, chargement }) {
         <div className="tc-fini">
           <Ic d={ICONES.check} taille={40} couleur="var(--ok)" />
           <b>Tout est trié</b>
-          <span>Claude applique tes choix demain à 5 h 05.</span>
+          <span>La routine applique tes choix demain à 5 h 05.</span>
           {dernier ? (
             <button type="button" className="clay-btn ghost small" onClick={annuler} disabled={occupe}>
               ↺ Annuler la dernière
@@ -347,17 +348,17 @@ function Rond({ lab, taille, d, couleur, principal, ...props }) {
 // ---------- Décidé aujourd'hui ----------
 
 function reponseDe(e) {
-  if (e.ticket) return ['Ticket', 'ticket'];
+  if (e.ticket) return ['Claude', 'ticket'];
   if (e.etat === 'encours') return ['Ensemble', 'ens'];
   if (e.source === 'point' && e.choix) return e.choix === 'oui' ? ['Oui', 'oui'] : ['Non', ''];
   if (e.compteRendu === 'Noté : on ne fait rien.') return ['Non', ''];
   if (e.compteRendu === 'Réglé par Jean.') return ['C’est fait', ''];
   if (e.type === 'decision') return ['Oui', 'oui'];
-  return ['Claude', 'oui'];
+  return ['Routine', 'oui'];
 }
 function etatDe(e) {
-  if (e.ticket) return [`Ticket n° ${e.ticket.numero}`, 'run'];
-  if (e.etat === 'envoye') return ['Claude demain 5 h 05', 'run'];
+  if (e.ticket) return [{ 'en-cours': 'Claude regarde', repondu: 'Claude a répondu', 'a-toi': 'Claude a répondu : à toi', regle: 'Réglé par Claude' }[e.ticket.etat] || 'Claude regarde', e.ticket.etat === 'regle' ? 'ok' : 'run'];
+  if (e.etat === 'envoye') return ['Routine demain 5 h 05', 'run'];
   if (e.etat === 'encours') return ['En cours avec toi', 'ens'];
   if (e.etat === 'bloque') return ['Bloqué : revenu en carte', 'ko'];
   if (e.etat === 'fait' && e.compteRendu === 'Noté : on ne fait rien.') return ['Noté, rien à faire', ''];
