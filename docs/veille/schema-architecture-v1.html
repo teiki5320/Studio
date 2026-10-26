@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Schéma veille actus</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--ink:#1d1d1b;--muted:#6b6a65;--line:#d9d6cc;--a:#c8553d;--b:#2f6f73;--c:#8a6d1f;--soft-a:#fbeae5;--soft-b:#e3f0f0;--soft-c:#f6efdc}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#171716;--card:#222220;--ink:#f0eee8;--muted:#a3a19a;--line:#3a3935;--soft-a:#3a2520;--soft-b:#1d3233;--soft-c:#352d18}}
+:root[data-theme="dark"]{--bg:#171716;--card:#222220;--ink:#f0eee8;--muted:#a3a19a;--line:#3a3935;--soft-a:#3a2520;--soft-b:#1d3233;--soft-c:#352d18}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 -apple-system,system-ui,sans-serif;padding:20px 16px 40px}
+main{max-width:720px;margin:0 auto}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--muted);margin:0 0 24px}
+h2{font-size:18px;margin:32px 0 6px}
+h2 small{font-weight:400;color:var(--muted);font-size:14px}
+.flow{display:flex;flex-direction:column;align-items:stretch;gap:0}
+.box{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px}
+.box b{display:block}
+.box span{color:var(--muted);font-size:13.5px}
+.a{border-color:var(--a);background:var(--soft-a)}
+.b{border-color:var(--b);background:var(--soft-b)}
+.c{border-color:var(--c);background:var(--soft-c)}
+.arrow{text-align:center;color:var(--muted);font-size:18px;line-height:28px}
+.arrow em{font-size:12.5px;font-style:normal;margin-left:6px}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:13px;color:var(--muted);margin-top:28px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.lanes{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:640px){.lanes{grid-template-columns:1fr 1fr}}
+.lane h3{font-size:14px;margin:0 0 8px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.note{background:var(--card);border-left:3px solid var(--line);padding:10px 12px;border-radius:6px;font-size:13.5px;color:var(--muted);margin-top:14px}
+</style>
+</head>
+<body>
+<main>
+<h1>Veille actus — schémas</h1>
+<p class="sub">Keur Foot, Palabre et autres sites · titre + résumé réécrit + lien source</p>
+
+<h2>1. Option A — tout-en-un <small>(recommandée pour démarrer)</small></h2>
+<div class="flow">
+  <div class="box a"><b>Tâche planifiée Claude</b><span>2 à 4 passages / jour · ton abonnement</span></div>
+  <div class="arrow">↓</div>
+  <div class="box"><b>1. Lecture des flux RSS</b><span>BBC Afrique, RFI Afrique, APS, Jeune Afrique, médias nationaux…</span></div>
+  <div class="arrow">↓</div>
+  <div class="box"><b>2. Tri</b><span>Mots-clés, pays, suppression des doublons, déjà-vus ignorés</span></div>
+  <div class="arrow">↓</div>
+  <div class="box"><b>3. Résumé réécrit</b><span>2–3 lignes, jamais de copie, source citée</span></div>
+  <div class="arrow">↓</div>
+  <div class="box c"><b>4. actus.json sur GitHub (main)</b><span>Un fichier par site : keurfoot.json, palabre.json</span></div>
+  <div class="arrow">↓ <em>lecture</em></div>
+  <div class="row">
+    <div class="box b"><b>Keur Foot</b><span>bloc « Actus »</span></div>
+    <div class="box b"><b>Palabre</b><span>fil par pays</span></div>
+    <div class="box b"><b>Autres sites / applis</b><span>même format</span></div>
+  </div>
+</div>
+<div class="note">Une seule brique. Fraîcheur : toutes les 3 à 6 h. Coût : 0 € en plus (quota abonnement).</div>
+
+<h2>2. Option hybride <small>(si besoin de fraîcheur plus tard)</small></h2>
+<div class="lanes">
+  <div class="lane">
+    <h3>Cloudflare (gratuit)</h3>
+    <div class="flow">
+      <div class="box a"><b>Worker planifié</b><span>toutes les 15–30 min</span></div>
+      <div class="arrow">↓</div>
+      <div class="box"><b>Collecte RSS + doublons</b><span>titre, lien, date, pays</span></div>
+      <div class="arrow">↓</div>
+      <div class="box c"><b>D1 · table actus</b><span>statut = « nouveau »</span></div>
+      <div class="arrow">↓</div>
+      <div class="box"><b>API du Worker</b><span>/a-resumer · /resumes (clé) · /actus (public)</span></div>
+    </div>
+  </div>
+  <div class="lane">
+    <h3>Claude (abonnement)</h3>
+    <div class="flow">
+      <div class="box a"><b>Tâche planifiée Claude</b><span>2 à 4 passages / jour</span></div>
+      <div class="arrow">↓ <em>GET /a-resumer</em></div>
+      <div class="box"><b>Résumé des nouveautés</b><span>uniquement ce qui n'est pas encore résumé</span></div>
+      <div class="arrow">↓ <em>POST /resumes</em></div>
+      <div class="box c"><b>D1 mis à jour</b><span>statut = « résumé »</span></div>
+    </div>
+  </div>
+</div>
+<div class="arrow">↓ <em>GET /actus</em></div>
+<div class="row">
+  <div class="box b"><b>Keur Foot</b><span>titres immédiats, résumé ensuite</span></div>
+  <div class="box b"><b>Palabre</b><span>idem</span></div>
+  <div class="box b"><b>Autres</b><span>idem</span></div>
+</div>
+<div class="note">Deux briques + une clé d'accès. Titres quasi temps réel, résumés au passage suivant.</div>
+
+<div class="legend">
+  <span><i class="dot" style="background:var(--a)"></i>Déclencheur</span>
+  <span><i class="dot" style="background:var(--c)"></i>Stockage</span>
+  <span><i class="dot" style="background:var(--b)"></i>Affichage</span>
+</div>
+</main>
+</body>
+</html>

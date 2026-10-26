@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "actus-schema-v1.json",
+  "title": "Fichier actus (un par site : keurfoot.json, palabre.json…)",
+  "type": "object",
+  "required": ["version", "site", "genere_le", "actus"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "site": { "type": "string", "enum": ["keurfoot", "palabre"], "description": "Site destinataire du fichier" },
+    "genere_le": { "type": "string", "format": "date-time" },
+    "actus": {
+      "type": "array",
+      "maxItems": 100,
+      "description": "Triées de la plus récente à la plus ancienne",
+      "items": {
+        "type": "object",
+        "required": ["id", "titre", "resume", "source_nom", "source_url", "publie_le"],
+        "properties": {
+          "id": { "type": "string", "description": "Hash SHA-1 de l'URL source (sert à éviter les doublons)" },
+          "titre": { "type": "string", "maxLength": 140, "description": "Titre reformulé, court" },
+          "resume": { "type": "string", "maxLength": 400, "description": "2-3 lignes réécrites, jamais copiées" },
+          "theme": { "type": "string", "enum": ["foot", "politique", "economie", "societe", "culture"] },
+          "pays": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^[A-Z]{2}$" },
+            "description": "Codes ISO : SN, TG, BJ, CI…"
+          },
+          "competition": { "type": ["string", "null"], "description": "Keur Foot : CAN, Ligue des champions CAF, championnat…" },
+          "source_nom": { "type": "string", "description": "Ex. RFI Afrique" },
+          "source_url": { "type": "string", "format": "uri" },
+          "autres_sources": {
+            "type": "array",
+            "items": { "type": "string", "format": "uri" },
+            "description": "Même info vue ailleurs (doublons fusionnés)"
+          },
+          "publie_le": { "type": "string", "format": "date-time" },
+          "collecte_le": { "type": "string", "format": "date-time" },
+          "langue": { "type": "string", "default": "fr" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

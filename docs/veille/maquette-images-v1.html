@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Maquette images actus</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;800&display=swap" rel="stylesheet">
+<style>
+/* Maquette v1 — veille actus Keur Foot : la même actu avec les 4 types d'image,
+   en vignette carrée (liste) et en bandeau 16:9. Couleurs reprises de keurfoot.com. */
+:root {
+  --fond: #f3f1ec; --carte: #ffffff; --encre: #15181b; --doux: #5d646b; --ligne: #dcd8cf;
+  --or: #b88a00; --pelouse: #0f8a43; --flamme: #e8321e;
+  --ph-a: #d9e4ea; --ph-b: #c7d3da;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --fond: #0f1113; --carte: #1d2126; --encre: #eceae4; --doux: #9aa1a9; --ligne: #363c43;
+    --or: #f2b705; --ph-a: #2c3137; --ph-b: #363c43;
+  }
+}
+:root[data-theme="dark"] {
+  --fond: #0f1113; --carte: #1d2126; --encre: #eceae4; --doux: #9aa1a9; --ligne: #363c43;
+  --or: #f2b705; --ph-a: #2c3137; --ph-b: #363c43;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--fond); color: var(--encre); font: 15px/1.5 Barlow, system-ui, sans-serif; padding: 20px 16px 48px; }
+main { max-width: 980px; margin: 0 auto; }
+h1, h2, h3 { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; letter-spacing: .01em; }
+h1 { font-size: 30px; margin: 0 0 4px; }
+.sous { color: var(--doux); margin: 0 0 22px; }
+h2 { font-size: 22px; margin: 34px 0 4px; }
+h2 + p { color: var(--doux); margin: 0 0 14px; }
+.bascule { position: fixed; top: 12px; right: 12px; border: 1px solid var(--ligne); background: var(--carte); color: var(--encre); border-radius: 10px; padding: 6px 10px; font: inherit; cursor: pointer; }
+
+/* Pastille qui dit quelle source d'image on regarde */
+.type { display: inline-block; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; background: var(--ph-a); color: var(--doux); margin-bottom: 6px; }
+
+/* --- Les images --- */
+.img { position: relative; overflow: hidden; background: linear-gradient(135deg, var(--ph-a), var(--ph-b)); display: flex; align-items: center; justify-content: center; color: var(--doux); text-align: center; font-size: 13px; }
+.img .ph { padding: 8px; }
+.img .ph b { display: block; font-size: 15px; color: var(--encre); }
+.carre { width: 112px; aspect-ratio: 1; border-radius: 12px; flex: none; }
+.bandeau { width: 100%; aspect-ratio: 16 / 9; border-radius: 14px 14px 0 0; }
+
+/* Carte générée par code : vraie, pas un placeholder */
+.genere { background: radial-gradient(120% 90% at 85% 15%, #16a85a 0%, #0f8a43 45%, #0a5e2e 100%); color: #fff; justify-content: flex-start; align-items: stretch; text-align: left; }
+.genere::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 34px, transparent 34px 68px); }
+.genere .contenu { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4%; width: 100%; padding: 7% 7%; text-align: center; }
+.genere .contenu .ballon { position: absolute; top: 7%; right: 7%; }
+.genere .contenu .drapeau { width: 42%; max-width: none; }
+.genere .contenu .marque { position: absolute; bottom: 6%; left: 0; right: 0; }
+.genere .haut { display: flex; align-items: center; gap: 8px; }
+.genere .drapeau { width: 30%; max-width: 72px; aspect-ratio: 3 / 2; border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,.35); flex: none; }
+.genere .ballon { font-size: 1.4em; margin-left: auto; opacity: .9; }
+.genere .titre { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 800; line-height: 1.02; text-transform: uppercase; text-shadow: 0 2px 10px rgba(0,0,0,.3); }
+.genere .marque { font-size: .75em; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; opacity: .85; }
+.carre.genere .contenu { padding: 10%; }
+.carre.genere .titre { font-size: 11.5cqw; }
+.carre.genere .marque { display: none; }
+.genere { container-type: inline-size; }
+.bandeau.genere .titre { font-size: 7cqw; max-width: 88%; }
+.carre.genere .contenu .drapeau { width: 62%; }
+.bandeau.genere { font-size: 4.2cqw; }
+
+/* --- Format 1 : liste avec vignette carrée --- */
+.liste { background: var(--carte); border: 1px solid var(--ligne); border-radius: 16px; padding: 4px 14px; }
+.ligne { display: flex; gap: 14px; padding: 14px 0; border-top: 1px solid var(--ligne); }
+.ligne:first-child { border-top: 0; }
+.ligne .texte { min-width: 0; }
+.ligne h3 { font-size: 19px; line-height: 1.15; margin: 0 0 4px; }
+.ligne p { margin: 0 0 6px; color: var(--doux); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* --- Format 2 : bandeau 16:9 --- */
+.grille { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.une { background: var(--carte); border: 1px solid var(--ligne); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
+.une .corps { padding: 12px 14px 14px; }
+.une h3 { font-size: 21px; line-height: 1.12; margin: 2px 0 6px; }
+.une p { margin: 0 0 8px; color: var(--doux); font-size: 14px; }
+
+/* Source (lien visible, obligatoire) et crédit de l'image (obligatoire) */
+.source { font-size: 13px; font-weight: 600; }
+.source a { color: var(--pelouse); text-decoration: none; }
+:root[data-theme="dark"] .source a { color: #3ccf7c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .source a { color: #3ccf7c; } }
+.credit { font-size: 11.5px; color: var(--doux); margin-top: 2px; }
+.credit a { color: inherit; }
+.date { font-size: 12.5px; color: var(--doux); }
+
+.note { margin-top: 30px; background: var(--carte); border: 1px solid var(--ligne); border-left: 4px solid var(--or); border-radius: 10px; padding: 12px 14px; font-size: 14px; }
+.note ol { margin: 6px 0 0; padding-left: 20px; }
+</style>
+</head>
+<body>
+<button class="bascule" type="button" onclick="basculer()">☀️ / 🌙</button>
+<main>
+  <h1>Actus Keur Foot — maquette des images</h1>
+  <p class="sous">La même actu fictive, avec les 4 types d'image possibles, en 2 formats. Les photos sont des emplacements gris ; la carte générée est le vrai rendu.</p>
+
+  <h2>Format 1 — liste avec vignette carrée</h2>
+  <p>Pour le bloc « Actus » de l'accueil et la page « Actus ».</p>
+  <div class="liste" id="liste"></div>
+
+  <h2>Format 2 — bandeau 16:9</h2>
+  <p>Pour l'actu à la une, ou une grille de cartes.</p>
+  <div class="grille" id="grille"></div>
+
+  <div class="note">
+    <b>À regarder :</b>
+    <ol>
+      <li>Quel format par endroit (vignette carrée, bandeau, ou les deux) ?</li>
+      <li>La carte générée te plaît-elle (couleur du site, drapeau, titre) ?</li>
+      <li>Le crédit sous l'image et le lien « Source » sont-ils assez visibles ?</li>
+    </ol>
+  </div>
+</main>
+
+<script>
+// Drapeau du Sénégal dessiné en SVG (vert, jaune, rouge, étoile verte).
+const DRAPEAU = '<svg class="drapeau" viewBox="0 0 30 20" aria-hidden="true"><rect width="10" height="20" x="0" fill="#00853f"/><rect width="10" height="20" x="10" fill="#fdef42"/><rect width="10" height="20" x="20" fill="#e31b23"/><polygon fill="#00853f" points="15,6.2 15.98,9.1 19.05,9.1 16.57,10.9 17.52,13.8 15,12 12.48,13.8 13.43,10.9 10.95,9.1 14.02,9.1"/></svg>';
+const ACTU = {
+  titre: 'Le Sénégal décroche son billet pour la CAN',
+  resume: "Les Lions de la Teranga ont validé leur qualification après une victoire nette lors de la dernière journée. Le sélectionneur salue un groupe « solide et patient ».",
+  source: 'RFI Afrique', date: 'il y a 3 h', competition: 'CAN 2027',
+};
+const TYPES = [
+  { cle: 'wikimedia', nom: 'Wikimedia Commons', ph: 'Photo du stade Abdoulaye-Wade', credit: 'Photo : Auteur inconnu / Wikimedia Commons · <a href="#">CC BY-SA 4.0</a>' },
+  { cle: 'pexels', nom: 'Pexels', ph: 'Photo « african football stadium »', credit: 'Photo : Prénom Nom sur <a href="#">Pexels</a>' },
+  { cle: 'banque', nom: 'Banque perso', ph: 'Image de ta banque Keur Foot', credit: 'Image : Keur Foot' },
+  { cle: 'carte', nom: 'Carte générée', ph: null, credit: 'Illustration : Keur Foot' },
+];
+function image(t, forme) {
+  if (t.cle === 'carte') {
+    // Choix de Jean (26/10) : pas de titre sur la carte (il est déjà écrit dessous) —
+    // grand drapeau du pays, ballon, nom de la compétition.
+    return `<div class="img ${forme} genere" role="img" aria-label="Illustration Keur Foot : Sénégal, ${ACTU.competition}"><div class="contenu">
+      <span class="ballon">⚽</span>${DRAPEAU}
+      <div class="titre">${ACTU.competition}</div><div class="marque">Keur Foot · Actus</div></div></div>`;
+  }
+  return `<div class="img ${forme}" role="img" aria-label="${t.ph}"><div class="ph"><b>${t.nom}</b>${t.ph}</div></div>`;
+}
+document.getElementById('liste').innerHTML = TYPES.map((t) => `
+  <article class="ligne">${image(t, 'carre')}
+    <div class="texte"><span class="type">${t.nom}</span>
+      <h3>${ACTU.titre}</h3><p>${ACTU.resume}</p>
+      <div class="source"><a href="#">Source : ${ACTU.source} ↗</a> <span class="date">· ${ACTU.date}</span></div>
+      <div class="credit">${t.credit}</div></div></article>`).join('');
+document.getElementById('grille').innerHTML = TYPES.map((t) => `
+  <article class="une">${image(t, 'bandeau')}
+    <div class="corps"><span class="type">${t.nom}</span>
+      <h3>${ACTU.titre}</h3><p>${ACTU.resume}</p>
+      <div class="source"><a href="#">Source : ${ACTU.source} ↗</a> <span class="date">· ${ACTU.date}</span></div>
+      <div class="credit">${t.credit}</div></div></article>`).join('');
+function basculer() {
+  const r = document.documentElement;
+  const sombre = r.dataset.theme ? r.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+  r.dataset.theme = sombre ? 'light' : 'dark';
+}
+</script>
+</body>
+</html>
