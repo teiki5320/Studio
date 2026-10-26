@@ -335,13 +335,13 @@ function Chiffres({ apps, ext }) {
 const RANG_TACHE = (e) => (e.etat === 'bloque' ? 0 : e.grave ? 1 : e.etat === 'envoye' || e.etat === 'attente' ? 3 : 2);
 const MAX_TACHES = 8;
 
-function Tache({ e, onAgir, coche, onCocher }) {
+function Tache({ e, onAgir }) {
   return (
     <div className="ac-tache">
       <span className="ac-logo">
         <LogoAppli de={e.site} taille={28} seul />
       </span>
-      <Ligne e={e} onAgir={onAgir} avecSite coche={coche} onCocher={onCocher} />
+      <Ligne e={e} onAgir={onAgir} avecSite />
     </div>
   );
 }
@@ -355,8 +355,6 @@ export function AccueilPage() {
   const [ouvert, setOuvert] = useState(null);
   const [toutVoir, setToutVoir] = useState(false);
   const [voirFaits, setVoirFaits] = useState(false);
-  const [coches, setCoches] = useState([]);
-  const [envoiGh, setEnvoiGh] = useState(false);
   const [maintenant, setMaintenant] = useState(minutesMaintenant);
   const deja = useRef(false);
   const chargerAf = () =>
@@ -441,19 +439,6 @@ export function AccueilPage() {
   const listeFaits = elements.filter((e) => e.etat === 'fait');
   const faits = listeFaits.length;
   const visibles = toutVoir ? taches : taches.slice(0, MAX_TACHES);
-  const cocher = (id) => setCoches((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
-  const envoyerGh = () => {
-    setEnvoiGh(true);
-    api
-      .envoyerGithub(coches)
-      .then((d) => {
-        setAf(d);
-        setCoches([]);
-        setErreur('');
-      })
-      .catch((e) => setErreur(e.message))
-      .finally(() => setEnvoiGh(false));
-  };
   const onAgir = (f) =>
     f()
       .catch((e) => setErreur(e.message))
@@ -539,21 +524,8 @@ export function AccueilPage() {
             </small>
           </div>
           {af && !taches.length ? <p className="af-vide">✓ Rien à faire pour l’instant : tout roule.</p> : null}
-          {coches.length ? (
-            <div className="af-github">
-              <span>
-                {coches.length} ligne{coches.length > 1 ? 's' : ''} cochée{coches.length > 1 ? 's' : ''}
-              </span>
-              <button className="clay-btn small" disabled={envoiGh} onClick={envoyerGh}>
-                {envoiGh ? '⏳ Envoi…' : '🎫 Envoyer sur GitHub'}
-              </button>
-              <button className="clay-btn ghost small" disabled={envoiGh} onClick={() => setCoches([])}>
-                Annuler
-              </button>
-            </div>
-          ) : null}
           {visibles.map((e) => (
-            <Tache key={e.id} e={e} onAgir={onAgir} coche={coches.includes(e.id)} onCocher={cocher} />
+            <Tache key={e.id} e={e} onAgir={onAgir} />
           ))}
           {voirFaits && faits ? (
             <div className="ac-faits-liste">

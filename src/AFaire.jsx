@@ -46,7 +46,25 @@ function Ticket({ t }) {
   );
 }
 
-export function Ligne({ e, onAgir, avecSite = false, coche, onCocher }) {
+// Trois boutons-icônes, chacun avec un mot dessous (pas de survol sur iPad) :
+// ✓ réglé par Jean · 🤖 Claude s'en charge demain à 5 h 05 sur le Mac (il a
+// le navigateur : Amazon, consoles…) · 🎫 ticket GitHub, Claude répond tout
+// de suite (code, explications ; pas d'Amazon, d'où son absence là).
+function Trois({ e, occupe, fait, demain, ticket }) {
+  const boutons = [
+    e.source !== 'indexation' && ['fait', '✓', 'C’est fait', fait],
+    ['demain', '🤖', e.etat === 'bloque' ? 'Réessayer demain' : 'Claude demain', demain],
+    !e.ticket && e.source !== 'produits-amazon' && ['ticket', '🎫', 'Ticket', ticket],
+  ].filter(Boolean);
+  return boutons.map(([cle, ic, mot, f]) => (
+    <button key={cle} type="button" className={`af-ico ${cle}`} disabled={occupe} onClick={f}>
+      <span className="i">{ic}</span>
+      <span className="m">{mot}</span>
+    </button>
+  ));
+}
+
+export function Ligne({ e, onAgir, avecSite = false }) {
   const [plus, setPlus] = useState(false);
   const [occupe, setOccupe] = useState(false);
   const agir = (f) => {
@@ -83,11 +101,6 @@ export function Ligne({ e, onAgir, avecSite = false, coche, onCocher }) {
         <Etat e={e} />
         {e.ticket ? <Ticket t={e.ticket} /> : null}
       </div>
-      {onCocher && ouvert(e) && e.type !== 'decision' ? (
-        <label className="af-coche" title="Cocher pour envoyer sur GitHub">
-          <input type="checkbox" checked={Boolean(coche)} onChange={() => onCocher(e.id)} />
-        </label>
-      ) : null}
       {ouvert(e) ? (
         <div className="af-boutons">
           {e.type === 'decision' && e.etat === 'a-faire' ? (
@@ -108,30 +121,18 @@ export function Ligne({ e, onAgir, avecSite = false, coche, onCocher }) {
                 Retirer
               </button>
             </>
-          ) : e.action === 'comptes' ? (
-            <>
-              <button className="clay-btn small" disabled={occupe} onClick={() => agir(() => api.etatCompte(e.compte, 'fait'))}>
-                ✓ C’est fait
-              </button>
-              <button className="clay-btn ghost small" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'oui'))}>
-                {e.etat === 'bloque' ? '🤖 Claude réessaie demain matin' : '🤖 Claude le règle demain matin'}
-              </button>
-            </>
           ) : e.action === 'plan' ? (
             <button className="clay-btn small" disabled={occupe} onClick={() => agir(() => api.renvoyerPlan(e.id).then(({ jobId }) => followJob(jobId)))}>
               {occupe ? '⏳ Envoi…' : '✓ Renvoyer le plan à Google'}
             </button>
           ) : (
-            <>
-              {e.source !== 'indexation' ? (
-                <button className="clay-btn small" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'fait'))}>
-                  ✓ C’est fait
-                </button>
-              ) : null}
-              <button className="clay-btn ghost small" disabled={occupe} onClick={() => agir(() => api.envoyerAfaire(e.id, 'oui'))}>
-                {e.etat === 'bloque' ? '🤖 Claude réessaie demain matin' : '🤖 Claude le règle demain matin'}
-              </button>
-            </>
+            <Trois
+              e={e}
+              occupe={occupe}
+              fait={() => agir(() => (e.action === 'comptes' ? api.etatCompte(e.compte, 'fait') : api.envoyerAfaire(e.id, 'fait')))}
+              demain={() => agir(() => api.envoyerAfaire(e.id, 'oui'))}
+              ticket={() => agir(() => api.envoyerGithub([e.id]))}
+            />
           )}
         </div>
       ) : null}
