@@ -363,3 +363,132 @@ export const EreaReperes = ({ depart, dates = [], debuts = [], mouvement = 0.7, 
   );
 };
 
+
+// ---- Interro surprise : une question, la frise qui cherche, la réponse ----
+// Avant `debut` (la question est posée) : la frise attend, l'année est un
+// « ? ». De `debut` à `fin` (≈ 3 s, sans voix) : la frise glisse d'un côté,
+// revient, hésite, au cliquetis du ruban. À `fin` : elle se pose sur la
+// bonne année, qui s'affiche en grand, et Troy donne la réponse.
+export const EreaRecherche = ({ depart, date, numero, total, debut, fin, assets = {} }) => {
+  const frame = useCurrentFrame();
+  const { fps, durationInFrames, width, height } = useVideoConfig();
+  usePolicesErea(assets.fonts);
+  const fD = yearToFrac(depart);
+  const fT = yearToFrac(date.annee);
+  const borne = (x) => Math.max(0, Math.min(1, x));
+  // L'hésitation : un grand passage au-delà, un retour trop loin, puis des
+  // corrections de plus en plus fines autour de la bonne année.
+  const sens = fT >= fD ? 1 : -1;
+  const etapes = [fD, borne(fT + sens * 0.1), borne(fT - sens * 0.065), borne(fT + sens * 0.03), borne(fT - sens * 0.01), fT];
+  const pos = (f) => {
+    if (f <= debut) {
+      return fD;
+    }
+    if (f >= fin) {
+      return fT;
+    }
+    const u = (f - debut) / Math.max(1, fin - debut);
+    return borne(interpolate(u, [0, 0.3, 0.55, 0.75, 0.9, 1], etapes, { easing: Easing.inOut(Easing.quad) }));
+  };
+  const frac = pos(frame);
+  const facingLeft = pos(frame + 1) > frac;
+  const crans = [];
+  if (assets.sons && assets.sons.tic) {
+    let parcouru = 0;
+    let dernier = -1e9;
+    for (let f = 1; f < durationInFrames; f++) {
+      parcouru += Math.abs(pos(f) - pos(f - 1)) * TAPE_W;
+      if (parcouru >= 24 && ((f - dernier) / fps) * 1000 >= 55) {
+        parcouru = 0;
+        dernier = f;
+        crans.push(f);
+      }
+    }
+  }
+  const trouve = frame >= fin;
+  const cherche = frame > debut && !trouve;
+  const annee = trouve ? date.annee : fracToYear(frac);
+  const theme = THEMES[eraIndexAt(annee)];
+  const scale = width / LOGICAL_W;
+  const logicalH = height / scale;
+  const grand = trouve ? interpolate(frame, [fin, fin + 5, fin + 11], [1, 1.25, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }) : 1;
+  const entree = interpolate(frame, [0, 8], [0, 1], { extrapolateRight: 'clamp' });
+  const clin = cherche ? 0.55 + 0.45 * Math.abs(Math.sin((frame / fps) * Math.PI * 2)) : 1;
+  return (
+    <AbsoluteFill style={{ background: theme.tint }}>
+      {crans.map((f, i) => (
+        <Sequence key={`cran-${f}`} from={f} durationInFrames={Math.round(0.12 * fps)} layout="none">
+          <Audio src={i % 2 === 0 ? assets.sons.tic : assets.sons.tac || assets.sons.tic} volume={0.4} />
+        </Sequence>
+      ))}
+      {assets.bg && assets.bg[eraIndexAt(annee)] ? (
+        <img
+          src={assets.bg[eraIndexAt(annee)]}
+          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: 200 * scale, objectFit: 'cover', objectPosition: '50% 34%', opacity: 0.3, filter: 'blur(4px)', WebkitMaskImage: 'linear-gradient(#000 0%, #000 23%, transparent 75%)' }}
+        />
+      ) : null}
+      <div style={{ position: 'absolute', left: 0, top: 0, width: LOGICAL_W, height: logicalH, transform: `scale(${scale})`, transformOrigin: '0 0' }}>
+        <div style={{ position: 'absolute', left: 0, right: 0, top: logicalH * 0.08, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {/* La question, en carte du jeu */}
+          <div
+            style={{
+              width: LOGICAL_W - 36,
+              padding: '20px 18px 16px',
+              borderRadius: 22,
+              background: '#fff',
+              boxShadow: trouve ? `0 0 0 3px ${CORAL}, 0 10px 26px rgba(53,64,107,0.12)` : '0 10px 26px rgba(53,64,107,0.12)',
+              position: 'relative',
+              textAlign: 'center',
+              opacity: entree,
+              transform: `translateY(${(1 - entree) * 16}px)`,
+            }}
+          >
+            <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', padding: '3px 12px', borderRadius: 999, background: CORAL, fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, letterSpacing: 1.2, color: '#fff', whiteSpace: 'nowrap' }}>
+              QUESTION {numero} / {total}
+            </div>
+            <div style={{ fontFamily: 'Baloo2', fontWeight: 800, fontSize: 25, lineHeight: 1.12, color: INK }}>{date.legende}</div>
+            <div style={{ marginTop: 4, fontFamily: 'Nunito', fontWeight: 800, fontSize: 15, color: INK_SOFT }}>{trouve ? '✓ Bonne réponse !' : 'En quelle année ?'}</div>
+          </div>
+          <div style={{ height: 16 }} />
+          {/* Pastille d'époque */}
+          <div style={{ height: 26, display: 'flex', alignItems: 'center' }}>
+            <div style={{ padding: '2px 12px', background: '#fff', borderRadius: 999, boxShadow: '0 6px 16px rgba(53,64,107,0.12)', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <div style={{ width: 9, height: 9, borderRadius: '50%', background: theme.tint, border: `1.5px solid ${theme.ink}`, boxSizing: 'border-box' }} />
+              <span style={{ fontFamily: 'Nunito', fontWeight: 900, fontSize: 11, letterSpacing: 1.3, color: theme.ink }}>{theme.name}</span>
+            </div>
+          </div>
+          <div style={{ height: 2 }} />
+          {/* L'année : « ? », puis les années qui défilent, puis la réponse en grand */}
+          <div
+            style={{
+              height: 80,
+              display: 'flex',
+              alignItems: 'center',
+              fontFamily: 'Baloo2',
+              fontWeight: 800,
+              fontSize: trouve ? 72 : 56,
+              lineHeight: 1.05,
+              color: trouve ? INK : INK_SOFT,
+              opacity: clin,
+              fontVariantNumeric: 'tabular-nums',
+              transform: `scale(${grand})`,
+            }}
+          >
+            {frame <= debut ? '?' : trouve ? date.affichage || formatYear(date.annee) : formatYear(annee)}
+          </div>
+          <div style={{ height: 8 }} />
+          <div style={{ position: 'relative', width: LOGICAL_W, height: TAPE_H }}>
+            <Ruban frac={frac} assets={assets} facingLeft={facingLeft} />
+            <div style={{ position: 'absolute', top: 0, left: LOGICAL_W / 2 - 2, width: 4, height: TAPE_H, borderRadius: 4, background: CORAL, boxShadow: '0 0 0 2px rgba(255,255,255,0.7)' }} />
+          </div>
+          <div style={{ height: 12 }} />
+          <div style={{ width: LOGICAL_W - 36, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Bouton glyph="−" />
+            <MiniCarte frac={frac} />
+            <Bouton glyph="+" />
+          </div>
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};

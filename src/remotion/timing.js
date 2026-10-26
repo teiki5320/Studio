@@ -65,6 +65,9 @@ export function lineOffsets(scene) {
   const offsets = [];
   let t = LINE_START_DELAY;
   for (const line of scene.lines || []) {
+    // pauseAvant : un silence voulu avant la réplique (Interro Erea : le
+    // temps de chercher pendant que la frise défile).
+    t += line.pauseAvant || 0;
     offsets.push(Math.round(t * FPS));
     t += (line.audioDurationSec || 2) + LINE_GAP;
   }

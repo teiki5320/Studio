@@ -13,7 +13,7 @@ import { SafeImg } from './SafeImg.jsx';
 import { EreaFrise, EreaQuestion } from './EreaFrise.jsx';
 import { PalabreJeu } from './PalabreJeu.jsx';
 import { EreaLogoIntro, EreaRevelation, EreaSlogan, EreaHistorien, EreaBascule, EreaCatastrophe } from './EreaPub.jsx';
-import { EreaCompteARebours, EreaComparaison, EreaCarton, EreaReperes } from './EreaFormats.jsx';
+import { EreaCompteARebours, EreaComparaison, EreaCarton, EreaReperes, EreaRecherche } from './EreaFormats.jsx';
 import { Clip, mouvementImage } from './Clip.jsx';
 import { FPS, SHOT_AUDIO_DELAY, sceneFrames, lineOffsets, shotOffsets, shotDurations } from './timing.js';
 
@@ -519,6 +519,18 @@ export const Scene = ({ scene, characters, assetBase, isFirst, episodeTitle, epi
     return (
       <AbsoluteFill>
         <EreaCarton etiquette={scene.carton.etiquette} texte={scene.carton.texte} fonts={ereaFonts(scene.carton)} />
+        {pistes}
+      </AbsoluteFill>
+    );
+  }
+  if (scene.recherche) {
+    const r = scene.recherche;
+    // La frise cherche entre la fin de la question et le début de la réponse.
+    const debut = lines[0] ? offsets[0] + Math.round((lines[0].audioDurationSec || 2) * fps) : 0;
+    const fin = lines[1] ? Math.max(debut + fps, offsets[1] - Math.round(0.15 * fps)) : debut + 3 * fps;
+    return (
+      <AbsoluteFill>
+        <EreaRecherche depart={r.depart} date={r.date} numero={r.numero} total={r.total} debut={debut} fin={fin} assets={ereaAssets(r, assetBase)} />
         {pistes}
       </AbsoluteFill>
     );

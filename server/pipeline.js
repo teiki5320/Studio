@@ -63,7 +63,6 @@ import { composeMusic, composeSfx } from './music.js';
 import { chargeLivres, logoKeurbook } from './keurbook.js';
 import { chargeCultures, optiledRepo } from './optiled.js';
 import { iconeErea, evenementsCelebres, fichiersFrise } from './erea.js';
-import { adoptLibraryVoice } from './elevenlib.js';
 import { cartesJouables, carteSerment, finsDuJeu, palais, fichiersPalabre, sonDeLaReponse, applique, JAUGES, palabreRepo } from './palabre.js';
 import { chargeEspeces, aSemer, tamassi, fondPastel, iconeKultiva, REGIONS, MOIS } from './kultiva.js';
 import { applyVoicePreset } from './voicepresets.js';
@@ -214,7 +213,7 @@ function recomputeSceneDuration(scene) {
     return;
   }
   const spoken = (scene.lines || []).reduce(
-    (sum, l) => sum + (l.audioDurationSec || 2) + LINE_GAP,
+    (sum, l) => sum + (l.pauseAvant || 0) + (l.audioDurationSec || 2) + LINE_GAP,
     0,
   );
   scene.durationSec = Math.min(
@@ -743,8 +742,9 @@ async function generateEpisodeAssets(project, episode, update) {
 // IMPORTANT : bouches immobiles — la voix off n'est pas synchronisée,
 // des lèvres qui bougent au hasard casseraient l'illusion.
 function videoMotionPrompt(scene) {
-  // Pub Erea « le défi en famille » : des gens qui jouent et rient, en voix
-  // off — bouches fermées (sourires et fous rires silencieux).
+  // Pub Erea « le défi en famille » (format retiré, gardé pour réparer les
+  // clips des pubs déjà faites) : des gens qui jouent et rient, en voix off —
+  // bouches fermées (sourires et fous rires silencieux).
   if (scene.motionPrompt && scene.motionPersonnes) {
     return (
       `Bring this scene to life with natural, lively motion: ${scene.motionPrompt}. Realistic, warm, gentle handheld camera. ` +
@@ -2059,12 +2059,13 @@ export async function createOptiledAd(project, { format = 'calcul', culture = ''
 }
 
 // ---------- Pub Erea : l'anachronisme ----------
-// Quatre formats : l'anachronisme (le premier, validé par Jean — inchangé)
-// et trois formats courts au narrateur Troy.
+// Trois formats : l'anachronisme (le premier, validé par Jean — inchangé)
+// et deux formats courts au narrateur Troy. (« Le défi en famille » a été
+// retiré le 26/10 à la demande de Jean ; ses pubs déjà faites s'affichent
+// toujours, leurs écrans sont dessinés par les mêmes composants.)
 export const EREA_FORMATS = {
   anachronisme: "⏳ L'anachronisme",
   avantapres: '🤔 Avant ou après ?',
-  famille: '👨‍👩‍👧 Le défi en famille',
   interro: '📝 Interro surprise',
 };
 export function ereaAdPlan(project) {
@@ -2080,13 +2081,6 @@ export const EREA_VOIX = {
   historien: { voice: 'aQROLel5sQbj1vuIVi6B', settings: { stability: 0.68, similarity_boost: 0.8, style: 0.3, speed: 0.95 } },
   panique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
   dynamique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
-  // Le défi en famille : le père (Thomas Santo, homme de 36 ans, naturel) et
-  // l'enfant (Anatole, voix d'ado — aucune voix d'enfant française dans la
-  // bibliothèque ElevenLabs). Une balise d'émotion par réplique.
-  pere: { voice: 'e18dMYHSYQ18rN5m989D', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
-  pereDoute: { voice: 'e18dMYHSYQ18rN5m989D', settings: { model: 'eleven_v3', stability: 0.5, tag: '[hesitant]' } },
-  enfant: { voice: 'Jrq4GqCKqYpigdQsZRkP', settings: { model: 'eleven_v3', stability: 0.5, tag: '[mischievously]' } },
-  enfantRire: { voice: 'Jrq4GqCKqYpigdQsZRkP', settings: { model: 'eleven_v3', stability: 0.5, tag: '[laughs]' } },
 };
 export const ACCROCHE_EREA = 'Avec Erea, devenez les maîtres du temps.';
 export function accrocheErea(fonts) {
@@ -2305,7 +2299,7 @@ export async function createEreaAd(project, { personnage = '', format = 'anachro
   return { number };
 }
 
-// ---------- Pub Erea : avant ou après ?, le défi en famille, l'interro ----------
+// ---------- Pub Erea : avant ou après ?, l'interro surprise ----------
 // Les toutes premières versions, validées par Jean : la première pub de
 // chaque format les reprend telles quelles ; ensuite, Claude en invente de
 // nouvelles sur le même modèle (elles servent aussi d'exemple à son prompt).
@@ -2326,52 +2320,18 @@ export const EREA_PREMIERES = {
       'A playful cinematic tabletop diorama on a long antique wooden timeline ruler: on the left a miniature golden Egyptian pyramid, in the middle a small elegant figurine of Cleopatra (black bob, golden headdress, white linen dress), on the right a modern black smartphone standing upright; warm parchment and gold tones, soft museum light, shallow depth of field, vertical 9:16, no text, no letters, no numbers, no logo, no watermark',
     motionPrompt: 'slow lateral camera dolly along the timeline ruler, from the pyramid past the Cleopatra figurine to the smartphone, dust particles floating in the warm light',
   },
-  famille: {
-    title: 'Papa contre la frise : le mur de Berlin',
-    depart: 1789,
-    evenement: { nom: 'La chute du mur de Berlin', annee: 1989, erreur: 1991 },
-    repliques: [
-      { qui: 'pere', texte: 'La prise de la Bastille ? Facile, 1789 !' },
-      { qui: 'enfant', texte: 'Et la chute du mur de Berlin ?' },
-      { qui: 'pere', texte: 'Euh… 1991 ?' },
-      { qui: 'enfant', texte: '1989 ! Encore perdu, papa !' },
-    ],
-    frise: 'Toute la famille contre la frise du temps.',
-    fin: 'Et chez vous, qui gagne ? Erea !',
-    visuel:
-      'a French family in a cosy living room: the father in his late thirties (short brown hair, light stubble, navy sweater), the mother (shoulder-length dark hair, cream cardigan) and their 11-year-old son (messy blond hair, green hoodie)',
-    imagePrompt:
-      'The family sits together on a beige sofa, the father holds a tablet and frowns with concentration, the son leans over his shoulder with a mischievous grin, the mother smiles; warm evening lamp light, candid realistic photo, medium shot, everyone with closed mouths, vertical 9:16, no text, no logo, no watermark',
-    motionPrompt: 'the father squints at the tablet, thinking hard, and taps it; the son watches him with a cheeky closed-mouth grin; gentle handheld camera',
-    imageRire:
-      'The same family on the same sofa bursting into a genuine fit of silent laughter: the son falls back holding his belly with a huge closed-mouth grin, the father facepalms smiling with the tablet on his lap, the mother laughs with her hand over her mouth; warm evening lamp light, candid realistic photo, vertical 9:16, no text, no logo, no watermark',
-    motionRire: 'everyone shakes with silent laughter, shoulders bouncing, the son rolls back on the sofa, the father hides his face behind his hand, lips closed and smiling',
-  },
   interro: {
-    title: 'Interro surprise : 5 dates de France',
+    title: 'Interro surprise : 3 dates de France',
     theme: "l'histoire de France contemporaine",
-    intro: "Interro surprise ! 5 dates, c'est parti !",
-    dates: [
-      { annee: 1789, affichage: '1789', legende: 'La Révolution française', texte: '1789, la Révolution.' },
-      { annee: 1914, affichage: '1914-1918', legende: 'La Première Guerre mondiale', texte: '1914-1918, la Première Guerre mondiale.' },
-      { annee: 1939, affichage: '1939-1945', legende: 'La Seconde Guerre mondiale', texte: '1939-1945, la Seconde.' },
-      { annee: 1944, affichage: '1944', legende: 'Les femmes votent', texte: '1944, les femmes votent.' },
-      { annee: 1958, affichage: '1958', legende: 'La Ve République', texte: '1958, la Ve République.' },
+    intro: "Interro surprise ! 3 questions, c'est parti !",
+    questions: [
+      { question: "La Révolution française… c'est en quelle année ?", annee: 1789, affichage: '1789', legende: 'La Révolution française', reponse: '1789 !' },
+      { question: 'La Première Guerre mondiale… elle commence en quelle année ?', annee: 1914, affichage: '1914', legende: 'La Première Guerre mondiale', reponse: '1914 !' },
+      { question: 'La Ve République… elle est née en quelle année ?', annee: 1958, affichage: '1958', legende: 'La Ve République', reponse: '1958 !' },
     ],
     fin: 'Tu les avais toutes ? Révise-les en jouant, avec Erea !',
   },
 };
-
-// Le père vient de la bibliothèque ElevenLabs : il faut l'ajouter au compte
-// pour que l'API accepte de le faire parler (une seule fois ; Léo en secours).
-const PERE_BIBLIOTHEQUE = {
-  publicOwnerId: '857c3aec1d3ffabd787b2f8b9fb9224d35efb670ba242098ed6819124b59f7a2',
-  voiceId: 'e18dMYHSYQ18rN5m989D',
-  name: 'Thomas Santo',
-  gender: 'homme',
-  desc: 'âge mûr, naturel et agréable (36 ans) — 🇫🇷 native',
-};
-const VOIX_SECOURS_PERE = 'AfbuxQ9DVtS4azaxN1W7'; // Léo
 
 // Ce que la voix doit LIRE (l'écran garde l'écriture d'origine) : pas de
 // « 1914-1918 » lu « moins », pas de « Ve » épelé.
@@ -2415,23 +2375,9 @@ function verifieFormatErea(fmt, raw) {
   if (fmt === 'avantapres') {
     return verifieAvantApres(raw);
   }
-  if (fmt === 'famille') {
-    const r = raw.repliques || [];
-    const ev = raw.evenement || {};
-    if (r.length !== 4 || r.some((x) => !x || !String(x.texte || '').trim())) {
-      return 'il faut 4 répliques';
-    }
-    if (!Number.isFinite(Number(ev.annee)) || !Number.isFinite(Number(raw.depart)) || !raw.visuel || !raw.imagePrompt || !raw.imageRire) {
-      return 'événement ou images manquants';
-    }
-    return '';
-  }
-  const d = raw.dates || [];
-  if (d.length !== 5 || d.some((x) => !x || !Number.isFinite(Number(x.annee)) || Number(x.annee) < -3000 || Number(x.annee) > 2026 || !x.texte)) {
-    return 'il faut 5 dates valides';
-  }
-  if (d.some((x, i) => i > 0 && Number(x.annee) < Number(d[i - 1].annee))) {
-    return 'les dates ne sont pas dans l’ordre';
+  const q = raw.questions || [];
+  if (q.length !== 3 || q.some((x) => !x || !Number.isFinite(Number(x.annee)) || Number(x.annee) < -3000 || Number(x.annee) > 2026 || !x.question || !x.reponse)) {
+    return 'il faut 3 questions valides';
   }
   if (/brevet/i.test(JSON.stringify(raw))) {
     return 'le mot « brevet » est interdit';
@@ -2444,10 +2390,7 @@ function resumeErea(fmt, raw) {
   if (fmt === 'avantapres') {
     return `${raw.sujet} : ${raw.a.court || raw.a.nom} ou ${raw.b.court || raw.b.nom}`;
   }
-  if (fmt === 'famille') {
-    return `${raw.repliques[0].texte} / ${raw.evenement.nom}`;
-  }
-  return `${raw.theme || ''} (${raw.dates.map((d) => d.affichage || d.annee).join(', ')})`;
+  return `${raw.theme || ''} (${raw.questions.map((d) => d.affichage || d.annee).join(', ')})`;
 }
 
 // Les fichiers communs aux pubs Erea : polices, décors et sons de l'appli,
@@ -2500,9 +2443,15 @@ async function preparerErea(project, dir, update) {
   return { friseAssets, sonLogo, sonBonne, logoIntro };
 }
 
+// Interro surprise : le temps laissé au public pour chercher (sans voix).
+const RECHERCHE_SEC = 3;
+
 export async function createEreaFormatAd(project, fmt, update) {
   applyVoicePreset(project);
   const state = project.ereaTour || (project.ereaTour = { deja: [] });
+  if (!EREA_FORMATS[fmt] || fmt === 'anachronisme') {
+    throw new Error('Format de pub Erea inconnu.');
+  }
   const faits = (state.formats || (state.formats = {}))[fmt] || (state.formats[fmt] = []);
   const number = (project.episodes || []).reduce((m, e) => Math.max(m, e.number), 0) + 1;
   const dir = assetsDir(project.id);
@@ -2535,18 +2484,7 @@ export async function createEreaFormatAd(project, fmt, update) {
   const { friseAssets, sonLogo, sonBonne, logoIntro } = await preparerErea(project, dir, update);
   const fonts = friseAssets.fonts;
 
-  // Le père vient de la bibliothèque : on l'ajoute au compte ElevenLabs.
   project.voixRoles = EREA_VOIX;
-  if (fmt === 'famille' && !state.pereAdopte) {
-    try {
-      await adoptLibraryVoice(PERE_BIBLIOTHEQUE);
-      state.pereAdopte = true;
-    } catch (e) {
-      console.error('Voix du père :', e.message);
-      const leo = { voice: VOIX_SECOURS_PERE, settings: EREA_VOIX.pere.settings };
-      project.voixRoles = { ...EREA_VOIX, pere: leo, pereDoute: { ...leo, settings: EREA_VOIX.pereDoute.settings } };
-    }
-  }
 
   const role = (who, t) => {
     const texte = pourLaVoixErea(String(t || '').slice(0, 220));
@@ -2623,76 +2561,42 @@ export async function createEreaFormatAd(project, fmt, update) {
       })),
       fin(4, raw.fin),
     ];
-  } else if (fmt === 'famille') {
-    const r = raw.repliques;
-    const ev = raw.evenement;
-    const visuel = String(raw.visuel || '').trim();
-    sujet = String(ev.nom || '').slice(0, 60);
-    scenes = [
-      logo,
-      // Sur le canapé : le père répond, l'enfant le piège, le père hésite.
-      base(1, {
-        imagePrompt: `${String(raw.imagePrompt || '').trim()} The family: ${visuel}`,
-        motionPrompt: String(raw.motionPrompt || '').trim().slice(0, 300),
-        motionPersonnes: true,
-        clip: true,
-        fixedDuration: true,
-        durationSec: 7,
-        lines: [...role('pere', r[0].texte), ...role('enfant', r[1].texte), ...role('pereDoute', r[2].texte)],
-      }),
-      // Le fou rire (visages bien visibles : la bonne date vient juste après, sur la frise).
-      base(2, {
-        memeQue: 's2',
-        imagePrompt: `${String(raw.imageRire || '').trim()} The family (same people as in the reference image): ${visuel}`,
-        motionPrompt: String(raw.motionRire || '').trim().slice(0, 300),
-        motionPersonnes: true,
-        clip: true,
-        fixedDuration: true,
-        durationSec: 4,
-        lines: role('enfantRire', r[3].texte),
-      }),
-      // La frise du jeu file jusqu'à la bonne date.
-      base(3, ecran({
-        reperes: {
-          depart: Math.round(Number(raw.depart)),
-          dates: [{ annee: Math.round(Number(ev.annee)), affichage: String(Math.round(Number(ev.annee))), legende: String(ev.nom || '').slice(0, 40) }],
-          mouvement: 2.2,
-          ...friseAssets,
-        },
-        durationSec: 4,
-        lines: role('dynamique', raw.frise),
-      })),
-      fin(4, raw.fin),
-    ];
   } else {
-    const dates = raw.dates.map((d) => ({
+    const questions = raw.questions.map((d) => ({
       annee: Math.round(Number(d.annee)),
       affichage: String(d.affichage || d.annee).slice(0, 20),
       legende: String(d.legende || '').slice(0, 40),
-      texte: String(d.texte || '').slice(0, 80),
+      question: String(d.question || '').slice(0, 120),
+      reponse: String(d.reponse || d.affichage || d.annee).slice(0, 40),
     }));
-    sujet = dates.map((d) => d.affichage).join(', ');
+    sujet = questions.map((d) => d.affichage).join(', ');
     scenes = [
       logo,
       base(1, ecran({
-        carton: { etiquette: '📝 INTERRO SURPRISE', texte: '5 dates,\nc’est parti !', fonts },
+        carton: { etiquette: '📝 INTERRO SURPRISE', texte: '3 questions,\nc’est parti !', fonts },
         durationSec: 3,
         lines: role('dynamique', raw.intro),
       })),
-      // Les 5 dates d'affilée : la frise saute de l'une à l'autre au rythme de la voix.
-      base(2, ecran({
-        reperes: {
-          depart: Math.max(-3000, dates[0].annee - 150),
-          dates: dates.map(({ texte, ...d }) => d),
-          suitLaVoix: true,
-          compteur: true,
-          mouvement: 0.7,
-          ...friseAssets,
-        },
-        durationSec: 10,
-        lines: dates.flatMap((d) => role('dynamique', d.texte)),
-      })),
-      fin(3, raw.fin),
+      // Une question par plan : Troy la pose, la frise du jeu « cherche »
+      // ~3 s en silence (tic-tac du ruban), se pose sur la bonne année, et
+      // Troy donne la réponse.
+      ...questions.map((d, k) =>
+        base(2 + k, ecran({
+          recherche: {
+            depart: k === 0 ? Math.max(-3000, d.annee - 300) : questions[k - 1].annee,
+            date: { annee: d.annee, affichage: d.affichage, legende: d.legende },
+            numero: k + 1,
+            total: questions.length,
+            ...friseAssets,
+          },
+          durationSec: 7,
+          lines: [
+            ...role('dynamique', d.question),
+            ...role('dynamique', d.reponse).map((l) => ({ ...l, pauseAvant: RECHERCHE_SEC })),
+          ],
+        })),
+      ),
+      fin(2 + questions.length, raw.fin),
     ];
   }
 
@@ -3414,7 +3318,10 @@ export async function ensureEpisodeScript(project, number, update) {
 // Écrans dessinés par le studio lui-même (frise d'Erea, écrans de Palabre) :
 // aucune image à générer, donc aucun crédit dépensé.
 const dessineeParLeStudio = (scene) =>
-  Boolean(scene.frise || scene.palabre || scene.ereaLogo || scene.slogan || scene.bascule || scene.reperes || scene.compteARebours || scene.comparaison || scene.carton);
+  Boolean(
+    scene.frise || scene.palabre || scene.ereaLogo || scene.slogan || scene.bascule ||
+      scene.reperes || scene.recherche || scene.compteARebours || scene.comparaison || scene.carton,
+  );
 
 export async function produceEpisode(project, number, update) {
   const episode = await ensureEpisodeScript(project, number, update);

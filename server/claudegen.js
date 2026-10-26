@@ -1425,8 +1425,8 @@ Erea fait placer des ÉVÉNEMENTS sur une frise (inventions, batailles, découve
 }
 
 // ---------- Pub Erea : les trois autres formats ----------
-// Avant ou après ? (une comparaison de dates VRAIE et surprenante), le défi
-// en famille (un dialogue père / enfant), l'interro surprise (5 dates). Les
+// Avant ou après ? (une comparaison de dates VRAIE et surprenante) et
+// l'interro surprise (3 questions, la frise cherche, puis la réponse). Les
 // premières versions validées par Jean servent d'exemple (EREA_PREMIERES
 // dans pipeline.js) ; ici, Claude en invente une nouvelle sur le même modèle.
 export function buildEreaFormatPrompt({ format, exemple, deja = [], idees = [] }) {
@@ -1446,17 +1446,9 @@ Les années sont des entiers (négatifs avant J.-C.), entre -3000 et 2026. « re
 ${json}
 ${regles}`;
   }
-  if (format === 'famille') {
-    return `Tu écris une pub TikTok d'environ 20 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise. Format « LE DÉFI EN FAMILLE » : sur le canapé, un père et son enfant (10-12 ans) jouent à Erea sur une tablette. Le père trouve facilement une première date, puis se trompe sur la seconde ; l'enfant le corrige en riant. Puis le narrateur conclut.
-Dialogue en 4 répliques EXACTEMENT, dans cet ordre : père (sûr de lui, bonne date), enfant (pose la 2e question), père (hésite et se trompe, à quelques années près), enfant (en riant : la bonne date, et il chambre son père). Répliques très courtes et naturelles.
-« evenement » est la 2e question (celle où le père se trompe) : « annee » = sa vraie date, « erreur » = la date donnée par le père. « depart » = l'année de la 1re question (la frise part de là).
-Les images : la MÊME famille (décris-la pareil dans « visuel »), personne ne parle à l'image (bouches fermées, la voix est ajoutée après), vraie complicité, vrai fou rire sur la 2e image.
-${json}
-${regles}`;
-  }
   // interro
-  return `Tu écris une pub TikTok d'environ 20 secondes, rythme RAPIDE, pour Erea, le jeu d'histoire où l'on place des événements sur une frise. Format « INTERRO SURPRISE » : le narrateur enchaîne 5 grandes dates d'histoire, chacune s'affiche en grand sur la frise du jeu.
-Choisis un THÈME cohérent (ex. la France contemporaine, l'Antiquité, les grandes inventions, le Moyen Âge, les explorateurs…) et 5 repères CLASSIQUES et JUSTES, dans l'ordre chronologique. Chaque « texte » est ultra court (« 1789, la Révolution. »). « affichage » est la date telle qu'on l'écrit à l'écran (« 1914-1918 », « 52 av. J.-C. ») ; « annee » est l'année de début (entier, négatif avant J.-C.) ; « legende » = l'événement, 5 mots maximum.
+  return `Tu écris une pub TikTok d'environ 20-25 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise. Format « INTERRO SURPRISE » en 3 QUESTIONS : pour chacune, le narrateur pose la question (« La Révolution française… c'est en quelle année ? »), la frise du jeu fait semblant de chercher pendant 3 secondes (le public cherche aussi), puis elle se pose sur la bonne année et le narrateur donne la réponse, ultra courte (« 1789 ! »).
+Choisis un THÈME cohérent (ex. la France contemporaine, l'Antiquité, les grandes inventions, le Moyen Âge, les explorateurs…) et 3 repères CLASSIQUES et JUSTES, que tout le monde a vus à l'école. « question » : orale, 12 mots maximum, elle nomme l'événement et finit par « en quelle année ? » (ou une tournure proche). « annee » : l'année exacte (entier, négatif avant J.-C.) ; « affichage » : la date telle qu'on l'écrit à l'écran (« 1789 », « 52 av. J.-C. ») ; « legende » : l'événement, 5 mots maximum ; « reponse » : la date seule, suivie de « ! » (ex. « 1789 ! »).
 ${json}
 ${regles}`;
 }
