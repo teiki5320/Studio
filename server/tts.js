@@ -155,6 +155,40 @@ function voiceSettingsFor(isV25, custom) {
   return out;
 }
 
+// eleven_v3 lit mal les nombres (« 1515 » devient « 515 ») : pour lui, on
+// les écrit en toutes lettres (« mille cinq cent quinze ») ; l'écran et les
+// sous-titres gardent les chiffres.
+const UNITES = ['zéro', 'un', 'deux', 'trois', 'quatre', 'cinq', 'six', 'sept', 'huit', 'neuf', 'dix', 'onze', 'douze', 'treize', 'quatorze', 'quinze', 'seize'];
+const DIZAINES = ['', '', 'vingt', 'trente', 'quarante', 'cinquante', 'soixante'];
+function moinsDeCent(n) {
+  if (n < 17) return UNITES[n];
+  if (n < 20) return `dix-${UNITES[n - 10]}`;
+  if (n < 70) {
+    const d = DIZAINES[Math.floor(n / 10)];
+    const u = n % 10;
+    return u === 0 ? d : u === 1 ? `${d} et un` : `${d}-${UNITES[u]}`;
+  }
+  if (n < 80) return n === 71 ? 'soixante et onze' : `soixante-${moinsDeCent(n - 60)}`;
+  return n === 80 ? 'quatre-vingts' : `quatre-vingt-${moinsDeCent(n - 80)}`;
+}
+function moinsDeMille(n) {
+  const c = Math.floor(n / 100);
+  const r = n % 100;
+  const cent = c === 0 ? '' : c === 1 ? 'cent' : `${UNITES[c]} cent${r === 0 ? 's' : ''}`;
+  return [cent, r || !cent ? moinsDeCent(r) : ''].filter(Boolean).join(' ');
+}
+export function nombreEnLettres(n) {
+  if (n < 1000) return moinsDeMille(n);
+  const m = Math.floor(n / 1000);
+  const r = n % 1000;
+  return [m === 1 ? 'mille' : `${moinsDeMille(m)} mille`, r ? moinsDeMille(r) : ''].filter(Boolean).join(' ');
+}
+export function nombresEnLettres(t) {
+  return String(t)
+    .replace(/\b(\d{1,3})[ \u00a0\u202f](\d{3})\b/g, '$1$2') // « 2 500 » → 2500
+    .replace(/(?<![\d,.])\d{1,6}(?![\d,.]?\d)/g, (x) => nombreEnLettres(Number(x)));
+}
+
 async function synthesizeEleven(text, voiceId, outPath, settings = null) {
   const key = process.env.ELEVENLABS_API_KEY;
   if (!key) {
@@ -169,7 +203,7 @@ async function synthesizeEleven(text, voiceId, outPath, settings = null) {
   const isV3 = model === 'eleven_v3';
   const body = isV3
     ? {
-        text: settings?.tag ? `${settings.tag} ${text}` : text,
+        text: `${settings?.tag ? `${settings.tag} ` : ''}${nombresEnLettres(text)}`,
         model_id: model,
         voice_settings: { stability: [0, 0.5, 1].reduce((a, b) => (Math.abs(b - (settings?.stability ?? 0.5)) < Math.abs(a - (settings?.stability ?? 0.5)) ? b : a)) },
       }
