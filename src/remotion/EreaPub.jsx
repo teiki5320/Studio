@@ -195,7 +195,7 @@ export const EreaRevelation = ({ image, video, clipSec, focus = { x: 50, y: 28 }
 };
 
 // ---- 3. La phrase choc, sur fond noir, après une coupure nette ----
-export const EreaSlogan = ({ texte, fonts }) => {
+export const EreaSlogan = ({ texte, fonts, taille = 108 }) => {
   usePolicesErea(fonts);
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -212,7 +212,7 @@ export const EreaSlogan = ({ texte, fonts }) => {
         style={{
           fontFamily: BALOO,
           fontWeight: 800,
-          fontSize: 108,
+          fontSize: taille,
           lineHeight: 1.05,
           color: '#fff8e8',
           textAlign: 'center',

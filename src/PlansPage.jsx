@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { api, followJob } from './api.js';
 
 // Écrans dessinés par le studio (frise, jeu, logo…) : pas d'image à refaire.
-const dessine = (sc) => Boolean(sc.frise || sc.palabre || sc.ereaLogo || sc.slogan);
+const dessine = (sc) => Boolean(sc.frise || sc.palabre || sc.ereaLogo || sc.slogan || sc.reperes || sc.compteARebours || sc.comparaison || sc.carton);
 
 export function PlansPage({ projectId }) {
   const [project, setProject] = useState(null);

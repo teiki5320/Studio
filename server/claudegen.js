@@ -1424,6 +1424,43 @@ CONTRAINTES : rien de choquant (pas de sang, pas de blessure). Aucune phrase de 
 Erea fait placer des ÉVÉNEMENTS sur une frise (inventions, batailles, découvertes, règnes…) : n'emploie JAMAIS le mot « héros ».`;
 }
 
+// ---------- Pub Erea : les trois autres formats ----------
+// Avant ou après ? (une comparaison de dates VRAIE et surprenante), le défi
+// en famille (un dialogue père / enfant), l'interro surprise (5 dates). Les
+// premières versions validées par Jean servent d'exemple (EREA_PREMIERES
+// dans pipeline.js) ; ici, Claude en invente une nouvelle sur le même modèle.
+export function buildEreaFormatPrompt({ format, exemple, deja = [], idees = [] }) {
+  const regles = `RÈGLES ABSOLUES :
+- Uniquement des faits d'histoire VRAIS, classiques et vérifiables (dates des manuels scolaires) : au moindre doute sur une date, choisis-en une autre.
+- Ton TikTok, phrases très courtes et orales, on tutoie. Aucune phrase de vente, jamais « disponible sur… » : on invite à jouer (l'appli est gratuite).
+- N'emploie JAMAIS les mots « brevet » ni « héros ».
+- Les champs « imagePrompt » et « motionPrompt » sont EN ANGLAIS ; jamais de texte, de lettres ni de chiffres dans les images.
+${deja.length ? `- DÉJÀ FAIT (à ne pas reprendre) : ${deja.join(' ; ')}` : ''}
+${idees.length ? `Pour t'inspirer, quelques événements du jeu Erea : ${idees.join(' ; ')}` : ''}`;
+  const json = `Réponds UNIQUEMENT avec un objet JSON valide (aucun texte autour), EXACTEMENT de la même forme que cet exemple (la toute première version, validée — fais-en une NOUVELLE, sur un autre sujet) :
+${JSON.stringify(exemple, null, 2)}`;
+  if (format === 'avantapres') {
+    return `Tu écris une pub TikTok d'environ 15 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise de -3000 à aujourd'hui. Format « AVANT OU APRÈS ? » : une question piège sur le temps, un compte à rebours de 3 secondes, la réponse surprenante.
+Le principe : un personnage ou un événement célèbre (« sujet ») a-t-il vécu plus près de A ou de B ? La bonne réponse doit SURPRENDRE (l'intuition se trompe) et être mathématiquement juste : compare les écarts en années entre anneeSujet et chaque année (« bonne » = "a" ou "b", celle dont l'écart est le plus PETIT ; les deux écarts doivent différer d'au moins 100 ans).
+Les années sont des entiers (négatifs avant J.-C.), entre -3000 et 2026. « reponse » énonce la bonne réponse et le chiffre qui la prouve, sans erreur de calcul.
+${json}
+${regles}`;
+  }
+  if (format === 'famille') {
+    return `Tu écris une pub TikTok d'environ 20 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise. Format « LE DÉFI EN FAMILLE » : sur le canapé, un père et son enfant (10-12 ans) jouent à Erea sur une tablette. Le père trouve facilement une première date, puis se trompe sur la seconde ; l'enfant le corrige en riant. Puis le narrateur conclut.
+Dialogue en 4 répliques EXACTEMENT, dans cet ordre : père (sûr de lui, bonne date), enfant (pose la 2e question), père (hésite et se trompe, à quelques années près), enfant (en riant : la bonne date, et il chambre son père). Répliques très courtes et naturelles.
+« evenement » est la 2e question (celle où le père se trompe) : « annee » = sa vraie date, « erreur » = la date donnée par le père. « depart » = l'année de la 1re question (la frise part de là).
+Les images : la MÊME famille (décris-la pareil dans « visuel »), personne ne parle à l'image (bouches fermées, la voix est ajoutée après), vraie complicité, vrai fou rire sur la 2e image.
+${json}
+${regles}`;
+  }
+  // interro
+  return `Tu écris une pub TikTok d'environ 20 secondes, rythme RAPIDE, pour Erea, le jeu d'histoire où l'on place des événements sur une frise. Format « INTERRO SURPRISE » : le narrateur enchaîne 5 grandes dates d'histoire, chacune s'affiche en grand sur la frise du jeu.
+Choisis un THÈME cohérent (ex. la France contemporaine, l'Antiquité, les grandes inventions, le Moyen Âge, les explorateurs…) et 5 repères CLASSIQUES et JUSTES, dans l'ordre chronologique. Chaque « texte » est ultra court (« 1789, la Révolution. »). « affichage » est la date telle qu'on l'écrit à l'écran (« 1914-1918 », « 52 av. J.-C. ») ; « annee » est l'année de début (entier, négatif avant J.-C.) ; « legende » = l'événement, 5 mots maximum.
+${json}
+${regles}`;
+}
+
 // ---------- Pub Kultiva : « le potager kawaii dans ta poche » ----------
 // mois : que semer ce mois-ci (3 légumes du calendrier de l'appli, région
 //   France ou Afrique de l'Ouest) — illustrations de l'appli ;

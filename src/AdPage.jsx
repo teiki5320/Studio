@@ -485,33 +485,59 @@ function PalabreAdControls({ projectId, onQueued }) {
   );
 }
 
-// Erea : l'anachronisme — un personnage projeté dans une mauvaise époque.
+// Erea : quatre formats — l'anachronisme (un personnage projeté dans une
+// mauvaise époque), avant ou après ?, le défi en famille, l'interro surprise.
 function EreaAdControls({ projectId, project, onQueued }) {
+  const [plan, setPlan] = useState(null);
+  const [format, setFormat] = useState('anachronisme');
   const [personnage, setPersonnage] = useState('');
   const [error, setError] = useState('');
+  useEffect(() => {
+    api
+      .ereaPlan(projectId)
+      .then(setPlan)
+      .catch((e) => setError(e.message));
+  }, [projectId]);
+  // Crédits OpenArt par vidéo (images + clips économiques), à titre indicatif.
+  const credits = { anachronisme: ' · ≈ 150 crédits', avantapres: ' · ≈ 80 crédits', famille: ' · ≈ 150 crédits', interro: ' · 0 crédit' };
   return (
     <div className="clay-block">
-      <h3>⏳ Nouvelle pub Erea — l'anachronisme</h3>
-      <input
-        className="rp-input"
-        value={personnage}
-        placeholder="Personnage (facultatif) — sinon Claude en choisit un nouveau"
-        onChange={(e) => setPersonnage(e.target.value)}
-      />
-      <button
-        className="clay-btn rp-generate"
-        onClick={() =>
-          api
-            .addToQueue({ kind: 'erea', projectId, personnage })
-            .then(() => {
-              setPersonnage('');
-              onQueued();
-            })
-            .catch((e) => setError(e.message))
-        }
-      >
-        🎬 Générer la pub
-      </button>
+      <h3>⏳ Nouvelle pub Erea</h3>
+      {!plan && !error && <p className="clay-muted small">Chargement des formats…</p>}
+      {plan && (
+        <>
+          <select className="rp-input" value={format} onChange={(e) => setFormat(e.target.value)}>
+            {plan.formats.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.label}
+                {credits[f.id] || ''}
+              </option>
+            ))}
+          </select>
+          {format === 'anachronisme' && (
+            <input
+              className="rp-input"
+              value={personnage}
+              placeholder="Personnage (facultatif) — sinon Claude en choisit un nouveau"
+              onChange={(e) => setPersonnage(e.target.value)}
+            />
+          )}
+          <button
+            className="clay-btn rp-generate"
+            onClick={() =>
+              api
+                .addToQueue({ kind: 'erea', projectId, format, personnage: format === 'anachronisme' ? personnage : '' })
+                .then(() => {
+                  setPersonnage('');
+                  onQueued();
+                })
+                .catch((e) => setError(e.message))
+            }
+          >
+            🎬 Générer la pub
+          </button>
+        </>
+      )}
       {error && <p className="error small">{error}</p>}
     </div>
   );

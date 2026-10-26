@@ -35,7 +35,7 @@ export function yearToFrac(y) {
   }
   return 1;
 }
-function fracToYear(f) {
+export function fracToYear(f) {
   const v = Math.max(0, Math.min(1, f));
   let acc = 0;
   for (let i = 0; i < SEGMENTS.length; i++) {
@@ -47,10 +47,10 @@ function fracToYear(f) {
   }
   return 2026;
 }
-const formatYear = (y) => (y < 0 ? `${-y} av. J.-C.` : `${y}`);
+export const formatYear = (y) => (y < 0 ? `${-y} av. J.-C.` : `${y}`);
 
 // ---- era_theme.dart / era_art.dart ----
-const THEMES = [
+export const THEMES = [
   { name: 'ÂGE DU BRONZE', tint: '#F9EAC9', ink: '#A97B36' },
   { name: 'ÂGE DU FER', tint: '#F2EDCF', ink: '#6E7A3A' },
   { name: 'ANTIQUITÉ', tint: '#E6DFF0', ink: '#7A5FA8' },
@@ -69,7 +69,7 @@ const TRAVELERS = [
 ];
 const BG_W = 1493;
 const BG_H = 640;
-const eraIndexAt = (year) => {
+export const eraIndexAt = (year) => {
   for (let i = 0; i < ERAS.length; i++) {
     if (year <= ERAS[i][1]) {
       return i;
@@ -79,13 +79,13 @@ const eraIndexAt = (year) => {
 };
 
 // ---- sticker_widgets.dart ----
-const INK = '#35406B';
-const INK_SOFT = '#5F6890';
-const CORAL = '#F25B4D';
+export const INK = '#35406B';
+export const INK_SOFT = '#5F6890';
+export const CORAL = '#F25B4D';
 
-const LOGICAL_W = 390; // largeur d'un iPhone, en points
-const TAPE_W = 3200; // TapeWidget.tapeW
-const TAPE_H = 282; // tapeHeightFor() sur iPhone (0,44 × ~640 pt disponibles)
+export const LOGICAL_W = 390; // largeur d'un iPhone, en points
+export const TAPE_W = 3200; // TapeWidget.tapeW
+export const TAPE_H = 282; // tapeHeightFor() sur iPhone (0,44 × ~640 pt disponibles)
 
 // Polices de l'appli, chargées avant le rendu.
 export function usePolicesErea(fonts) {
@@ -109,7 +109,7 @@ function useFonts(fonts) {
 }
 
 // Le ruban : portage de _TapePainter.paint().
-function Ruban({ frac, assets, facingLeft }) {
+export function Ruban({ frac, assets, facingLeft }) {
   const H = TAPE_H;
   const bigFont = Math.min(18, Math.max(13, H * 0.087));
   const smallFont = Math.min(14.5, Math.max(10.5, H * 0.07));
@@ -291,7 +291,7 @@ function Ruban({ frac, assets, facingLeft }) {
 }
 
 // Mini-carte des époques (MiniMap) avec son repère corail.
-function MiniCarte({ frac }) {
+export function MiniCarte({ frac }) {
   const stops = [];
   let from = 0;
   ERAS.forEach(([, to], i) => {
@@ -307,7 +307,7 @@ function MiniCarte({ frac }) {
   );
 }
 
-const Bouton = ({ glyph }) => (
+export const Bouton = ({ glyph }) => (
   <div style={{ width: 46, height: 46, borderRadius: 15, background: '#fff', boxShadow: '0 6px 14px rgba(53,64,107,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Baloo2', fontWeight: 800, fontSize: 26, color: INK }}>
     {glyph}
   </div>
@@ -399,7 +399,7 @@ export const EreaFrise = ({ depart, arrivee, assets = {} }) => {
 };
 
 // Carte question, au style des cartes d'événement du jeu.
-export const EreaQuestion = ({ titre, texte, fonts }) => {
+export const EreaQuestion = ({ titre, texte, fonts, haut = false }) => {
   const frame = useCurrentFrame();
   const { fps, width } = useVideoConfig();
   useFonts(fonts);
@@ -407,8 +407,8 @@ export const EreaQuestion = ({ titre, texte, fonts }) => {
   const opacity = interpolate(frame, [0, 0.35 * fps], [0, 1], { extrapolateRight: 'clamp' });
   const scale = width / LOGICAL_W;
   return (
-    <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'center', opacity }}>
-      <div style={{ width: LOGICAL_W - 36, transform: `translateY(${y}px) scale(${scale})`, background: '#fff', borderRadius: 26, padding: '26px 22px 22px', boxShadow: '0 10px 26px rgba(53,64,107,0.12)', position: 'relative' }}>
+    <AbsoluteFill style={{ alignItems: 'center', justifyContent: haut ? 'flex-start' : 'center', paddingTop: haut ? 300 : 0, opacity }}>
+      <div style={{ width: LOGICAL_W - 36, transform: `translateY(${y}px) scale(${scale})`, transformOrigin: haut ? '50% 0' : undefined, background: '#fff', borderRadius: 26, padding: '26px 22px 22px', boxShadow: '0 10px 26px rgba(53,64,107,0.12)', position: 'relative' }}>
         <div style={{ position: 'absolute', top: -10, left: 18, padding: '3px 12px', borderRadius: 999, background: '#9B7BF7', fontFamily: 'Nunito', fontWeight: 900, fontSize: 10.5, letterSpacing: 0.84, color: '#fff' }}>
           QUESTION
         </div>

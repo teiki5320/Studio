@@ -36,6 +36,7 @@ import {
   optiledAdPlan,
   kultivaAdPlan,
   palabreAdPlan,
+  ereaAdPlan,
   createRecipeProject,
   createRecipeVideo,
   saveScreenshot,
@@ -1771,6 +1772,19 @@ app.get('/api/palabre/ad-plan/:id', (req, res) => {
   }
   try {
     res.json(palabreAdPlan(p));
+  } catch (e) {
+    res.status(502).json({ error: e.message });
+  }
+});
+
+app.get('/api/erea/ad-plan/:id', (req, res) => {
+  const p = loadProject(req.params.id);
+  if (!p) {
+    res.status(404).json({ error: 'Projet introuvable' });
+    return;
+  }
+  try {
+    res.json(ereaAdPlan(p));
   } catch (e) {
     res.status(502).json({ error: e.message });
   }

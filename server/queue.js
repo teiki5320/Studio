@@ -31,6 +31,7 @@ import {
   createPalabreAd,
   PALABRE_FORMATS,
   createEreaAd,
+  EREA_FORMATS,
   produceEpisode,
   retryFailedAssets,
 } from './pipeline.js';
@@ -192,12 +193,22 @@ export function addToQueue(raw) {
       label: `Pub Kultiva — ${KULTIVA_FORMATS[format].replace(/^\S+\s/, '')}${raw.label ? `, ${String(raw.label).slice(0, 40)}` : ''}`,
     };
   } else if (raw.kind === 'erea') {
-    // Pub Erea : l'anachronisme (personnage imposé ou choisi par Claude).
+    // Pub Erea : l'anachronisme (personnage imposé ou choisi par Claude),
+    // avant ou après ?, le défi en famille, l'interro surprise.
     if (project.kind !== 'pub') {
       throw new Error('Ce projet n’est pas une campagne de pub.');
     }
-    const personnage = String(raw.personnage || '').trim().slice(0, 60);
-    item = { kind: 'erea', personnage, label: `Pub Erea — ${personnage || 'anachronisme surprise'}` };
+    const format = EREA_FORMATS[raw.format] ? raw.format : 'anachronisme';
+    const personnage = format === 'anachronisme' ? String(raw.personnage || '').trim().slice(0, 60) : '';
+    item = {
+      kind: 'erea',
+      format,
+      personnage,
+      label:
+        format === 'anachronisme'
+          ? `Pub Erea — ${personnage || 'anachronisme surprise'}`
+          : `Pub Erea — ${EREA_FORMATS[format].replace(/^\S+\s/, '')}`,
+    };
   } else if (raw.kind === 'recette') {
     if (project.mode !== 'recette') {
       throw new Error('Ce projet n’est pas un atelier de recettes.');
@@ -265,7 +276,7 @@ async function produceItem(it, update) {
   // 1. Script
   const { number } =
     it.kind === 'erea'
-      ? await createEreaAd(p, { personnage: it.personnage }, step('Script', 0, 0.05))
+      ? await createEreaAd(p, { personnage: it.personnage, format: it.format }, step('Script', 0, 0.05))
       : it.kind === 'palabre'
       ? await createPalabreAd(p, { format: it.format, carte: it.carte }, step('Script', 0, 0.05))
       : it.kind === 'kultiva'

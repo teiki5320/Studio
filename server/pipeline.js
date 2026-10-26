@@ -47,6 +47,7 @@ import {
   buildKeurbookAdPrompt,
   buildOptiledAdPrompt,
   buildEreaAdPrompt,
+  buildEreaFormatPrompt,
   buildKultivaAdPrompt,
   buildPalabreAdPrompt,
   KITCHEN_REFERENCE_PROMPT,
@@ -62,6 +63,7 @@ import { composeMusic, composeSfx } from './music.js';
 import { chargeLivres, logoKeurbook } from './keurbook.js';
 import { chargeCultures, optiledRepo } from './optiled.js';
 import { iconeErea, evenementsCelebres, fichiersFrise } from './erea.js';
+import { adoptLibraryVoice } from './elevenlib.js';
 import { cartesJouables, carteSerment, finsDuJeu, palais, fichiersPalabre, sonDeLaReponse, applique, JAUGES, palabreRepo } from './palabre.js';
 import { chargeEspeces, aSemer, tamassi, fondPastel, iconeKultiva, REGIONS, MOIS } from './kultiva.js';
 import { applyVoicePreset } from './voicepresets.js';
@@ -741,6 +743,16 @@ async function generateEpisodeAssets(project, episode, update) {
 // IMPORTANT : bouches immobiles — la voix off n'est pas synchronisée,
 // des lèvres qui bougent au hasard casseraient l'illusion.
 function videoMotionPrompt(scene) {
+  // Pub Erea « le défi en famille » : des gens qui jouent et rient, en voix
+  // off — bouches fermées (sourires et fous rires silencieux).
+  if (scene.motionPrompt && scene.motionPersonnes) {
+    return (
+      `Bring this scene to life with natural, lively motion: ${scene.motionPrompt}. Realistic, warm, gentle handheld camera. ` +
+      `CRITICAL: nobody speaks — mouths stay CLOSED (closed-mouth smiles and silent laughter only), absolutely NO lip ` +
+      `movement or talking (the voices are added separately and are not lip-synced). ` +
+      `Faces, clothing and background stay EXACTLY as in the source image. Scene: ${scene.imagePrompt}`
+    );
+  }
   // Pub d'ambiance : le mouvement est décrit par le script (rideau, vagues,
   // flamme de bougie, travelling lent) — une pièce sans personne.
   if (scene.motionPrompt) {
@@ -2047,9 +2059,17 @@ export async function createOptiledAd(project, { format = 'calcul', culture = ''
 }
 
 // ---------- Pub Erea : l'anachronisme ----------
+// Quatre formats : l'anachronisme (le premier, validé par Jean — inchangé)
+// et trois formats courts au narrateur Troy.
+export const EREA_FORMATS = {
+  anachronisme: "⏳ L'anachronisme",
+  avantapres: '🤔 Avant ou après ?',
+  famille: '👨‍👩‍👧 Le défi en famille',
+  interro: '📝 Interro surprise',
+};
 export function ereaAdPlan(project) {
   const deja = (project.ereaTour && project.ereaTour.deja) || [];
-  return { deja };
+  return { deja, formats: Object.entries(EREA_FORMATS).map(([id, label]) => ({ id, label })) };
 }
 
 // Voix des pubs Erea : l'historien grave (Nicolas) ; le narrateur, héros de
@@ -2060,6 +2080,13 @@ export const EREA_VOIX = {
   historien: { voice: 'aQROLel5sQbj1vuIVi6B', settings: { stability: 0.68, similarity_boost: 0.8, style: 0.3, speed: 0.95 } },
   panique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
   dynamique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
+  // Le défi en famille : le père (Thomas Santo, homme de 36 ans, naturel) et
+  // l'enfant (Anatole, voix d'ado — aucune voix d'enfant française dans la
+  // bibliothèque ElevenLabs). Une balise d'émotion par réplique.
+  pere: { voice: 'e18dMYHSYQ18rN5m989D', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
+  pereDoute: { voice: 'e18dMYHSYQ18rN5m989D', settings: { model: 'eleven_v3', stability: 0.5, tag: '[hesitant]' } },
+  enfant: { voice: 'Jrq4GqCKqYpigdQsZRkP', settings: { model: 'eleven_v3', stability: 0.5, tag: '[mischievously]' } },
+  enfantRire: { voice: 'Jrq4GqCKqYpigdQsZRkP', settings: { model: 'eleven_v3', stability: 0.5, tag: '[laughs]' } },
 };
 export const ACCROCHE_EREA = 'Avec Erea, devenez les maîtres du temps.';
 export function accrocheErea(fonts) {
@@ -2082,9 +2109,12 @@ function lieuxErea(project) {
   return [...new Set([...((project.ereaTour && project.ereaTour.lieux) || []), ...vus])].slice(-40);
 }
 
-export async function createEreaAd(project, { personnage = '' } = {}, update) {
+export async function createEreaAd(project, { personnage = '', format = 'anachronisme' } = {}, update) {
   if (project.kind !== 'pub') {
     throw new Error('Réservé à la campagne de pub Erea.');
+  }
+  if (EREA_FORMATS[format] && format !== 'anachronisme') {
+    return createEreaFormatAd(project, format, update);
   }
   applyVoicePreset(project);
   const state = project.ereaTour || (project.ereaTour = { deja: [] });
@@ -2271,6 +2301,428 @@ export async function createEreaAd(project, { personnage = '' } = {}, update) {
   project.episodeCount = project.episodes.length;
   state.deja.push(nom);
   state.lieux = [...(state.lieux || []), String(raw.epoqueFrise || anneeFrise)].slice(-60);
+  saveProject(project);
+  return { number };
+}
+
+// ---------- Pub Erea : avant ou après ?, le défi en famille, l'interro ----------
+// Les toutes premières versions, validées par Jean : la première pub de
+// chaque format les reprend telles quelles ; ensuite, Claude en invente de
+// nouvelles sur le même modèle (elles servent aussi d'exemple à son prompt).
+export const EREA_PREMIERES = {
+  avantapres: {
+    title: "Cléopâtre : les pyramides ou l'iPhone ?",
+    sujet: 'Cléopâtre',
+    emojiSujet: '👑',
+    anneeSujet: -69,
+    a: { nom: 'la construction des pyramides', court: 'Les pyramides', emoji: '🔺', annee: -2560 },
+    b: { nom: "l'iPhone", court: "L'iPhone", emoji: '📱', annee: 2007 },
+    bonne: 'b',
+    ecran: 'Cléopâtre a vécu plus près…',
+    question: "Question rapide ! Cléopâtre a vécu plus près… de la construction des pyramides… ou de l'iPhone ?",
+    reponse: "… De l'iPhone ! Les pyramides avaient déjà 2 500 ans quand elle est née.",
+    fin: "Tu te serais trompé ? Joue à Erea, et remets le temps à l'endroit.",
+    imagePrompt:
+      'A playful cinematic tabletop diorama on a long antique wooden timeline ruler: on the left a miniature golden Egyptian pyramid, in the middle a small elegant figurine of Cleopatra (black bob, golden headdress, white linen dress), on the right a modern black smartphone standing upright; warm parchment and gold tones, soft museum light, shallow depth of field, vertical 9:16, no text, no letters, no numbers, no logo, no watermark',
+    motionPrompt: 'slow lateral camera dolly along the timeline ruler, from the pyramid past the Cleopatra figurine to the smartphone, dust particles floating in the warm light',
+  },
+  famille: {
+    title: 'Papa contre la frise : le mur de Berlin',
+    depart: 1789,
+    evenement: { nom: 'La chute du mur de Berlin', annee: 1989, erreur: 1991 },
+    repliques: [
+      { qui: 'pere', texte: 'La prise de la Bastille ? Facile, 1789 !' },
+      { qui: 'enfant', texte: 'Et la chute du mur de Berlin ?' },
+      { qui: 'pere', texte: 'Euh… 1991 ?' },
+      { qui: 'enfant', texte: '1989 ! Encore perdu, papa !' },
+    ],
+    frise: 'Toute la famille contre la frise du temps.',
+    fin: 'Et chez vous, qui gagne ? Erea !',
+    visuel:
+      'a French family in a cosy living room: the father in his late thirties (short brown hair, light stubble, navy sweater), the mother (shoulder-length dark hair, cream cardigan) and their 11-year-old son (messy blond hair, green hoodie)',
+    imagePrompt:
+      'The family sits together on a beige sofa, the father holds a tablet and frowns with concentration, the son leans over his shoulder with a mischievous grin, the mother smiles; warm evening lamp light, candid realistic photo, medium shot, everyone with closed mouths, vertical 9:16, no text, no logo, no watermark',
+    motionPrompt: 'the father squints at the tablet, thinking hard, and taps it; the son watches him with a cheeky closed-mouth grin; gentle handheld camera',
+    imageRire:
+      'The same family on the same sofa bursting into a genuine fit of silent laughter: the son falls back holding his belly with a huge closed-mouth grin, the father facepalms smiling with the tablet on his lap, the mother laughs with her hand over her mouth; warm evening lamp light, candid realistic photo, vertical 9:16, no text, no logo, no watermark',
+    motionRire: 'everyone shakes with silent laughter, shoulders bouncing, the son rolls back on the sofa, the father hides his face behind his hand, lips closed and smiling',
+  },
+  interro: {
+    title: 'Interro surprise : 5 dates de France',
+    theme: "l'histoire de France contemporaine",
+    intro: "Interro surprise ! 5 dates, c'est parti !",
+    dates: [
+      { annee: 1789, affichage: '1789', legende: 'La Révolution française', texte: '1789, la Révolution.' },
+      { annee: 1914, affichage: '1914-1918', legende: 'La Première Guerre mondiale', texte: '1914-1918, la Première Guerre mondiale.' },
+      { annee: 1939, affichage: '1939-1945', legende: 'La Seconde Guerre mondiale', texte: '1939-1945, la Seconde.' },
+      { annee: 1944, affichage: '1944', legende: 'Les femmes votent', texte: '1944, les femmes votent.' },
+      { annee: 1958, affichage: '1958', legende: 'La Ve République', texte: '1958, la Ve République.' },
+    ],
+    fin: 'Tu les avais toutes ? Révise-les en jouant, avec Erea !',
+  },
+};
+
+// Le père vient de la bibliothèque ElevenLabs : il faut l'ajouter au compte
+// pour que l'API accepte de le faire parler (une seule fois ; Léo en secours).
+const PERE_BIBLIOTHEQUE = {
+  publicOwnerId: '857c3aec1d3ffabd787b2f8b9fb9224d35efb670ba242098ed6819124b59f7a2',
+  voiceId: 'e18dMYHSYQ18rN5m989D',
+  name: 'Thomas Santo',
+  gender: 'homme',
+  desc: 'âge mûr, naturel et agréable (36 ans) — 🇫🇷 native',
+};
+const VOIX_SECOURS_PERE = 'AfbuxQ9DVtS4azaxN1W7'; // Léo
+
+// Ce que la voix doit LIRE (l'écran garde l'écriture d'origine) : pas de
+// « 1914-1918 » lu « moins », pas de « Ve » épelé.
+export function pourLaVoixErea(t) {
+  return String(t || '')
+    .replace(/(\d{3,4})\s*[-–]\s*(\d{3,4})/g, '$1, $2')
+    .replace(/\bVe République/g, 'Cinquième République')
+    .replace(/\bIVe République/g, 'Quatrième République')
+    .replace(/\bIIIe République/g, 'Troisième République')
+    .replace(/av\.\s*J\.-C\./g, 'avant Jésus-Christ')
+    .replace(/\[[^\]]*\]/g, '') // pas de balise glissée par Claude ([gasps]…)
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Avant ou après : la bonne réponse est CALCULÉE, jamais crue sur parole.
+export function verifieAvantApres(raw) {
+  const an = (v) => (Number.isFinite(Number(v)) ? Math.round(Number(v)) : NaN);
+  const s = an(raw.anneeSujet);
+  const a = an(raw.a && raw.a.annee);
+  const b = an(raw.b && raw.b.annee);
+  if (![s, a, b].every((x) => Number.isFinite(x) && x >= -3000 && x <= 2026)) {
+    return 'années manquantes ou hors de la frise';
+  }
+  const da = Math.abs(s - a);
+  const db = Math.abs(s - b);
+  if (Math.abs(da - db) < 100) {
+    return 'les deux écarts sont trop proches';
+  }
+  const bonne = da < db ? 'a' : 'b';
+  if (raw.bonne !== bonne) {
+    return `la bonne réponse est « ${raw[bonne].court || raw[bonne].nom} » (écarts : ${da} et ${db} ans)`;
+  }
+  if (!raw.question || !raw.reponse || !raw.fin) {
+    return 'textes manquants';
+  }
+  return '';
+}
+
+function verifieFormatErea(fmt, raw) {
+  if (fmt === 'avantapres') {
+    return verifieAvantApres(raw);
+  }
+  if (fmt === 'famille') {
+    const r = raw.repliques || [];
+    const ev = raw.evenement || {};
+    if (r.length !== 4 || r.some((x) => !x || !String(x.texte || '').trim())) {
+      return 'il faut 4 répliques';
+    }
+    if (!Number.isFinite(Number(ev.annee)) || !Number.isFinite(Number(raw.depart)) || !raw.visuel || !raw.imagePrompt || !raw.imageRire) {
+      return 'événement ou images manquants';
+    }
+    return '';
+  }
+  const d = raw.dates || [];
+  if (d.length !== 5 || d.some((x) => !x || !Number.isFinite(Number(x.annee)) || Number(x.annee) < -3000 || Number(x.annee) > 2026 || !x.texte)) {
+    return 'il faut 5 dates valides';
+  }
+  if (d.some((x, i) => i > 0 && Number(x.annee) < Number(d[i - 1].annee))) {
+    return 'les dates ne sont pas dans l’ordre';
+  }
+  if (/brevet/i.test(JSON.stringify(raw))) {
+    return 'le mot « brevet » est interdit';
+  }
+  return '';
+}
+
+// Ce que chaque format a déjà raconté (pour que Claude change de sujet).
+function resumeErea(fmt, raw) {
+  if (fmt === 'avantapres') {
+    return `${raw.sujet} : ${raw.a.court || raw.a.nom} ou ${raw.b.court || raw.b.nom}`;
+  }
+  if (fmt === 'famille') {
+    return `${raw.repliques[0].texte} / ${raw.evenement.nom}`;
+  }
+  return `${raw.theme || ''} (${raw.dates.map((d) => d.affichage || d.annee).join(', ')})`;
+}
+
+// Les fichiers communs aux pubs Erea : polices, décors et sons de l'appli,
+// bruitages de la marque, icône (début et fin).
+async function preparerErea(project, dir, update) {
+  const src = fichiersFrise();
+  const copie = (p, nom) => {
+    if (!p) {
+      return null;
+    }
+    const dest = path.join(dir, nom);
+    if (!fs.existsSync(dest)) {
+      fs.copyFileSync(p, dest);
+    }
+    return nom;
+  };
+  const friseAssets = {
+    sons: { tic: copie(src.sons.tic, 'erea-tic.wav'), tac: copie(src.sons.tac, 'erea-tac.wav') },
+    bg: src.bg.map((p, i) => copie(p, `erea-bg-${i}.webp`)),
+    anim: src.anim.map((p, i) => copie(p, `erea-anim-${i}.webp`)),
+    fonts: {
+      baloo: copie(src.fonts.baloo, 'erea-baloo2.ttf'),
+      nunito: copie(src.fonts.nunito, 'erea-nunito.ttf'),
+      nunitoBlack: copie(src.fonts.nunitoBlack, 'erea-nunito-black.ttf'),
+    },
+  };
+  const bruitage = async (nom, prompt, sec) => {
+    const f = path.join(dir, nom);
+    if (!fs.existsSync(f)) {
+      try {
+        await composeSfx(prompt, sec, f);
+      } catch (e) {
+        console.error(`Bruitage ${nom} :`, e.message);
+        return null;
+      }
+    }
+    return nom;
+  };
+  update('Bruitages de la marque…');
+  const sonLogo = await bruitage('erea-logo.mp3', 'quick magical whoosh with a soft bright chime, logo reveal', 1.2);
+  const sonBonne = await bruitage('erea-bonne.mp3', 'bright cheerful game show correct answer chime, short', 1);
+  const icone = iconeErea();
+  const logoIntro = icone ? `erea-icone${path.extname(icone)}` : null;
+  if (logoIntro) {
+    if (!fs.existsSync(path.join(dir, logoIntro))) {
+      fs.copyFileSync(icone, path.join(dir, logoIntro));
+    }
+    project.ctaLogo = logoIntro;
+  }
+  return { friseAssets, sonLogo, sonBonne, logoIntro };
+}
+
+export async function createEreaFormatAd(project, fmt, update) {
+  applyVoicePreset(project);
+  const state = project.ereaTour || (project.ereaTour = { deja: [] });
+  const faits = (state.formats || (state.formats = {}))[fmt] || (state.formats[fmt] = []);
+  const number = (project.episodes || []).reduce((m, e) => Math.max(m, e.number), 0) + 1;
+  const dir = assetsDir(project.id);
+
+  // La première pub du format reprend le texte validé par Jean ; les
+  // suivantes sont écrites par Claude (vérifiées, une relance au besoin).
+  const premiere = !(project.episodes || []).some((e) => e.ereaFormat === fmt);
+  let raw;
+  if (premiere) {
+    raw = JSON.parse(JSON.stringify(EREA_PREMIERES[fmt]));
+  } else {
+    update('Claude écrit une nouvelle version…');
+    let motif = '';
+    for (let essai = 0; essai < 2; essai++) {
+      raw = await askClaudeForJson(
+        buildEreaFormatPrompt({ format: fmt, exemple: EREA_PREMIERES[fmt], deja: faits.slice(-30), idees: evenementsCelebres(30) }) +
+          (motif ? `\n\nATTENTION, ta proposition précédente était fausse : ${motif}. Recommence.` : ''),
+      );
+      ensureUsage(project).claudeCalls += 1;
+      motif = verifieFormatErea(fmt, raw);
+      if (!motif) {
+        break;
+      }
+    }
+    if (motif) {
+      throw new Error(`Claude n'a pas proposé de version juste (${motif}). Relance la pub.`);
+    }
+  }
+
+  const { friseAssets, sonLogo, sonBonne, logoIntro } = await preparerErea(project, dir, update);
+  const fonts = friseAssets.fonts;
+
+  // Le père vient de la bibliothèque : on l'ajoute au compte ElevenLabs.
+  project.voixRoles = EREA_VOIX;
+  if (fmt === 'famille' && !state.pereAdopte) {
+    try {
+      await adoptLibraryVoice(PERE_BIBLIOTHEQUE);
+      state.pereAdopte = true;
+    } catch (e) {
+      console.error('Voix du père :', e.message);
+      const leo = { voice: VOIX_SECOURS_PERE, settings: EREA_VOIX.pere.settings };
+      project.voixRoles = { ...EREA_VOIX, pere: leo, pereDoute: { ...leo, settings: EREA_VOIX.pereDoute.settings } };
+    }
+  }
+
+  const role = (who, t) => {
+    const texte = pourLaVoixErea(String(t || '').slice(0, 220));
+    return texte ? [{ speaker: who, text: texte, audio: null, audioDurationSec: null }] : [];
+  };
+  const base = (i, extra) => ({
+    id: `s${i + 1}`,
+    location: '',
+    screenshot: null,
+    characters: [],
+    image: null,
+    imageUrl: null,
+    kenBurns: 'zoom-in',
+    durationSec: 5,
+    version: 0,
+    imagePrompt: '',
+    lines: [],
+    ...extra,
+  });
+  const logo = base(0, {
+    ereaLogo: { icone: logoIntro, fonts },
+    durationSec: 1.3,
+    fixedDuration: true,
+    videoDisabled: true,
+    sfx: sonLogo ? [{ file: sonLogo, at: 0, volume: 0.8 }] : [],
+  });
+  // La phrase de fin du format (dite par Troy), avant le carton Erea.
+  const fin = (i, texte) =>
+    base(i, {
+      slogan: { texte: String(texte).slice(0, 90), fonts, taille: String(texte).length > 40 ? 82 : 108 },
+      durationSec: 2.8,
+      videoDisabled: true,
+      lines: role('dynamique', texte),
+    });
+  const ecran = (extra) => ({ fixedDuration: true, videoDisabled: true, ...extra });
+
+  let scenes;
+  let sujet;
+  if (fmt === 'avantapres') {
+    const choix = (c) => ({
+      nom: String(c.nom || '').slice(0, 60),
+      court: String(c.court || c.nom || '').slice(0, 30),
+      emoji: String(c.emoji || '').slice(0, 4),
+      annee: Math.round(Number(c.annee)),
+    });
+    const a = choix(raw.a);
+    const b = choix(raw.b);
+    const s = { nom: String(raw.sujet || '').slice(0, 40), emoji: String(raw.emojiSujet || '⭐').slice(0, 4), annee: Math.round(Number(raw.anneeSujet)) };
+    sujet = `${s.nom} : ${a.nom} ou ${b.nom}`;
+    scenes = [
+      logo,
+      // La question, sur l'image des trois objets posés sur une frise.
+      base(1, {
+        imagePrompt: String(raw.imagePrompt || '').trim(),
+        motionPrompt: String(raw.motionPrompt || '').trim().slice(0, 300),
+        clip: true,
+        fixedDuration: true,
+        durationSec: 6,
+        question: { titre: String(raw.ecran || `${s.nom} a vécu plus près…`).slice(0, 60), texte: `${a.emoji} ${a.court}  ou  ${b.emoji} ${b.court} ?`, haut: true, fonts },
+        lines: role('dynamique', raw.question),
+      }),
+      // 3 secondes pour réfléchir : le compte à rebours, au rythme du « tic ».
+      base(2, ecran({
+        compteARebours: { secondes: 3, titre: String(raw.ecran || '').slice(0, 60), a, b, fonts },
+        durationSec: 3,
+        sfx: friseAssets.sons.tic ? [0, 1, 2].map((at) => ({ file: friseAssets.sons.tic, at, volume: 0.9 })) : [],
+      })),
+      // La réponse : la frise se remet dans l'ordre, les écarts s'affichent.
+      base(3, ecran({
+        comparaison: { sujet: s, a, b, bonne: raw.bonne === 'a' ? 'a' : 'b', fonts },
+        durationSec: 5,
+        sfx: sonBonne ? [{ file: sonBonne, at: 0.2, volume: 0.7 }] : [],
+        lines: role('dynamique', raw.reponse),
+      })),
+      fin(4, raw.fin),
+    ];
+  } else if (fmt === 'famille') {
+    const r = raw.repliques;
+    const ev = raw.evenement;
+    const visuel = String(raw.visuel || '').trim();
+    sujet = String(ev.nom || '').slice(0, 60);
+    scenes = [
+      logo,
+      // Sur le canapé : le père répond, l'enfant le piège, le père hésite.
+      base(1, {
+        imagePrompt: `${String(raw.imagePrompt || '').trim()} The family: ${visuel}`,
+        motionPrompt: String(raw.motionPrompt || '').trim().slice(0, 300),
+        motionPersonnes: true,
+        clip: true,
+        fixedDuration: true,
+        durationSec: 7,
+        lines: [...role('pere', r[0].texte), ...role('enfant', r[1].texte), ...role('pereDoute', r[2].texte)],
+      }),
+      // Le fou rire (visages bien visibles : la bonne date vient juste après, sur la frise).
+      base(2, {
+        memeQue: 's2',
+        imagePrompt: `${String(raw.imageRire || '').trim()} The family (same people as in the reference image): ${visuel}`,
+        motionPrompt: String(raw.motionRire || '').trim().slice(0, 300),
+        motionPersonnes: true,
+        clip: true,
+        fixedDuration: true,
+        durationSec: 4,
+        lines: role('enfantRire', r[3].texte),
+      }),
+      // La frise du jeu file jusqu'à la bonne date.
+      base(3, ecran({
+        reperes: {
+          depart: Math.round(Number(raw.depart)),
+          dates: [{ annee: Math.round(Number(ev.annee)), affichage: String(Math.round(Number(ev.annee))), legende: String(ev.nom || '').slice(0, 40) }],
+          mouvement: 2.2,
+          ...friseAssets,
+        },
+        durationSec: 4,
+        lines: role('dynamique', raw.frise),
+      })),
+      fin(4, raw.fin),
+    ];
+  } else {
+    const dates = raw.dates.map((d) => ({
+      annee: Math.round(Number(d.annee)),
+      affichage: String(d.affichage || d.annee).slice(0, 20),
+      legende: String(d.legende || '').slice(0, 40),
+      texte: String(d.texte || '').slice(0, 80),
+    }));
+    sujet = dates.map((d) => d.affichage).join(', ');
+    scenes = [
+      logo,
+      base(1, ecran({
+        carton: { etiquette: '📝 INTERRO SURPRISE', texte: '5 dates,\nc’est parti !', fonts },
+        durationSec: 3,
+        lines: role('dynamique', raw.intro),
+      })),
+      // Les 5 dates d'affilée : la frise saute de l'une à l'autre au rythme de la voix.
+      base(2, ecran({
+        reperes: {
+          depart: Math.max(-3000, dates[0].annee - 150),
+          dates: dates.map(({ texte, ...d }) => d),
+          suitLaVoix: true,
+          compteur: true,
+          mouvement: 0.7,
+          ...friseAssets,
+        },
+        durationSec: 10,
+        lines: dates.flatMap((d) => role('dynamique', d.texte)),
+      })),
+      fin(3, raw.fin),
+    ];
+  }
+
+  const propre = (t) => String(t).replace(/→| dans /g, ' – ');
+  const episode = {
+    number,
+    title: String(raw.title || `${EREA_FORMATS[fmt].replace(/^\S+\s/, '')} — ${sujet}`).slice(0, 120),
+    topic: propre(`${EREA_FORMATS[fmt]} — ${sujet}`).slice(0, 160),
+    ereaFormat: fmt,
+    locations: {},
+    cliffhanger: '',
+    status: 'script',
+    renderedFile: null,
+    scenes,
+    cta: 'Joue gratuitement à Erea',
+  };
+  // Couleurs du jeu : parchemin et ocre de l'âge du bronze.
+  project.ctaTheme = {
+    bg: 'radial-gradient(ellipse at 50% 40%, #fff8e8 0%, #f2e2bf 80%)',
+    ink: '#2b2118',
+    pill: '#a97b36',
+    pillInk: '#ffffff',
+    withName: true,
+    logoArrondi: true,
+  };
+  project.episodes.push(episode);
+  project.episodes.sort((a, b) => a.number - b.number);
+  project.episodeCount = project.episodes.length;
+  faits.push(resumeErea(fmt, raw));
+  state.formats[fmt] = faits.slice(-60);
   saveProject(project);
   return { number };
 }
@@ -2961,7 +3413,8 @@ export async function ensureEpisodeScript(project, number, update) {
 
 // Écrans dessinés par le studio lui-même (frise d'Erea, écrans de Palabre) :
 // aucune image à générer, donc aucun crédit dépensé.
-const dessineeParLeStudio = (scene) => Boolean(scene.frise || scene.palabre || scene.ereaLogo || scene.slogan || scene.bascule);
+const dessineeParLeStudio = (scene) =>
+  Boolean(scene.frise || scene.palabre || scene.ereaLogo || scene.slogan || scene.bascule || scene.reperes || scene.compteARebours || scene.comparaison || scene.carton);
 
 export async function produceEpisode(project, number, update) {
   const episode = await ensureEpisodeScript(project, number, update);

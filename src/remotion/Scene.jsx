@@ -13,6 +13,7 @@ import { SafeImg } from './SafeImg.jsx';
 import { EreaFrise, EreaQuestion } from './EreaFrise.jsx';
 import { PalabreJeu } from './PalabreJeu.jsx';
 import { EreaLogoIntro, EreaRevelation, EreaSlogan, EreaHistorien, EreaBascule, EreaCatastrophe } from './EreaPub.jsx';
+import { EreaCompteARebours, EreaComparaison, EreaCarton, EreaReperes } from './EreaFormats.jsx';
 import { Clip, mouvementImage } from './Clip.jsx';
 import { FPS, SHOT_AUDIO_DELAY, sceneFrames, lineOffsets, shotOffsets, shotDurations } from './timing.js';
 
@@ -490,7 +491,48 @@ export const Scene = ({ scene, characters, assetBase, isFirst, episodeTitle, epi
   if (scene.slogan) {
     return (
       <AbsoluteFill>
-        <EreaSlogan texte={scene.slogan.texte} fonts={ereaFonts(scene.slogan)} />
+        <EreaSlogan texte={scene.slogan.texte} fonts={ereaFonts(scene.slogan)} taille={scene.slogan.taille} />
+        {pistes}
+      </AbsoluteFill>
+    );
+  }
+  // Pub Erea, formats courts : compte à rebours, réponse, carton, frise de date en date.
+  if (scene.compteARebours) {
+    const c = scene.compteARebours;
+    return (
+      <AbsoluteFill>
+        <EreaCompteARebours secondes={c.secondes} titre={c.titre} a={c.a} b={c.b} fonts={ereaFonts(c)} />
+        {pistes}
+      </AbsoluteFill>
+    );
+  }
+  if (scene.comparaison) {
+    const c = scene.comparaison;
+    return (
+      <AbsoluteFill>
+        <EreaComparaison sujet={c.sujet} a={c.a} b={c.b} bonne={c.bonne} fonts={ereaFonts(c)} />
+        {pistes}
+      </AbsoluteFill>
+    );
+  }
+  if (scene.carton) {
+    return (
+      <AbsoluteFill>
+        <EreaCarton etiquette={scene.carton.etiquette} texte={scene.carton.texte} fonts={ereaFonts(scene.carton)} />
+        {pistes}
+      </AbsoluteFill>
+    );
+  }
+  if (scene.reperes) {
+    const r = scene.reperes;
+    // Chaque date part un quart de seconde avant d'être dite (ou, sans voix
+    // calée, dès le début du plan).
+    const debuts = r.suitLaVoix
+      ? (r.dates || []).map((_, i) => Math.max(0, (offsets[i] ?? 0) - Math.round(0.25 * fps)))
+      : (r.dates || []).map(() => Math.round(0.2 * fps));
+    return (
+      <AbsoluteFill>
+        <EreaReperes depart={r.depart} dates={r.dates} debuts={debuts} mouvement={r.mouvement} compteur={r.compteur} assets={ereaAssets(r, assetBase)} />
         {pistes}
       </AbsoluteFill>
     );
@@ -583,7 +625,7 @@ export const Scene = ({ scene, characters, assetBase, isFirst, episodeTitle, epi
       {scene.stat && scene.stat.valeur ? <StatOverlay valeur={scene.stat.valeur} label={scene.stat.label} /> : null}
       {scene.sticker ? <Sticker src={`${assetBase}/${scene.sticker}`} size={scene.stickerSize || 0.62} y={scene.stickerY || 0} /> : null}
       {scene.question ? (
-        <EreaQuestion titre={scene.question.titre} texte={scene.question.texte} fonts={ereaAssets(scene.question, assetBase).fonts} />
+        <EreaQuestion titre={scene.question.titre} texte={scene.question.texte} haut={scene.question.haut} fonts={ereaAssets(scene.question, assetBase).fonts} />
       ) : null}
       {scene.badge ? (
         scene.badgeStyle === 'doux' ? <SoftCaption text={scene.badge} /> : <SceneBadge text={scene.badge} />
