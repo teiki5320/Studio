@@ -1,6 +1,6 @@
 # Keur Cook — recettes africaines & produits rares
 
-Site en français de **recettes de plats africains** (58 recettes, 16 pays), avec une rubrique **Conseils** (trois articles par semaine : lundi, mercredi, vendredi), une **boutique de 127 produits africains rares** en 9 gammes et des pages **Top 10** (10 classements de produits). Le site ne vend rien lui-même : les boutons « Acheter · prix » mènent à Amazon.fr (programme Partenaires).
+Site en français de **recettes de plats africains** (58 recettes, 16 pays), avec une rubrique **Conseils** (trois articles par semaine : lundi, mercredi, vendredi), une **boutique de 127 produits africains rares** en 9 gammes des pages **Top 10** (10 classements de produits) et des **Actus de la cuisine africaine** lues en direct depuis la veille actus. Le site ne vend rien lui-même : les boutons « Acheter · prix » mènent à Amazon.fr (programme Partenaires).
 
 - **Site** : https://keurcook.com (`www.keurcook.com` y redirige).
 - **Éditeur** : ALOHASH (SAS). Contact : keurcook@toakeur.com.
@@ -20,6 +20,7 @@ Le site est **100 % statique** : pas de serveur, pas de base de données. Recett
 - Pages pays, **favoris sans compte** (stockés dans le navigateur).
 - **Conseils** : articles Markdown (`content/conseils/`), trois articles par semaine (lundi, mercredi, vendredi), publication programmée (voir `docs/CONSEILS.md`).
 - **Top 10** (`/top-10/<sujet>`) : 10 classements de dix produits de la boutique (voir « Top 10 » ci-dessous).
+- **Actus de la cuisine africaine** (`/actus`, 20 actus ; 4 sur l'accueil, 3 par page pays) : lues dans le navigateur depuis `https://teiki5320.github.io/veille/actus/keurcook.json` (`src/lib/veille.ts`, `src/components/actus/`), préparées 2 fois par jour (12 h et 19 h) par la veille actus (dépôt `teiki5320/veille`) ; rien ne s'affiche s'il n'y a pas d'actu.
 - Boutique par gammes, fiche produit avec « Utilisé dans ces recettes », bouton « Acheter · prix » vers Amazon.fr.
 - **Mode maintenance** : écran « On prépare la marmite », activé ou coupé depuis GitHub (voir « Maintenance » ci-dessous).
 
@@ -46,7 +47,7 @@ Données dans `src/lib/demo/top10.ts`, vérifiées par `tests/top10.test.ts`. Ch
 ### Publicité (Google AdSense)
 
 - Compte AdSense `pub-2680784147246798` (comptes de gestion sur `admin@toakeur.com`). Script chargé dans `src/app/layout.tsx`, emplacements « Publicité » (`src/components/ads/AdSlot.tsx`, `src/lib/ads.ts`) et `public/ads.txt` en place.
-- **Le site est encore en examen chez Google** (demande faite le 12 octobre 2026) : aucune annonce ne s'affiche tant que Google n'a pas validé le site.
+- **Le site est encore en examen chez Google** (demande faite le 12 octobre 2026 ; « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 27 octobre 2026)) : aucune annonce ne s'affiche tant que Google n'a pas validé le site.
 
 ### Pinterest
 

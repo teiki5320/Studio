@@ -24,7 +24,7 @@ de Keurbook (Next.js 16 statique, Tailwind 4, données dans le code).
   Ne pas utiliser `wrangler pages …` : la commande convertit le projet en application OpenNext et modifie les fichiers.
 - **Ancienne adresse** https://teiki5320.github.io/keurfoot/ : `.github/workflows/pages.yml` y publie seulement une page
   qui redirige vers la même page sur keurfoot.com.
-- AdSense : examen du site demandé le 20 octobre 2026, aucune annonce affichée pour l'instant. Reste à faire : créer les blocs AdSense
+- AdSense : examen du site demandé le 20 octobre 2026, « En préparation » dans la console au 27 octobre 2026, aucune annonce affichée pour l'instant. Reste à faire : créer les blocs AdSense
   et renseigner `ADSENSE_SLOTS` (`src/lib/config.ts`).
 
 ## Règles

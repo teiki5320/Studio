@@ -16,7 +16,7 @@ publications réelles, ou routine qui publie).
 ## Rémunération par phases
 
 - [fait] **Aujourd'hui** : affiliation Amazon Partenaires (tag `keurkadofr-21`) ; le site ne vend rien.
-- [en cours] **Publicité AdSense** : script et ads.txt en ligne, examen du site demandé le 20 octobre 2026, blocs d'annonces à créer.
+- [en cours] **Publicité AdSense** : script et ads.txt en ligne, examen du site demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 27 octobre 2026), blocs d'annonces à créer.
 - **Liens Amazon directs** : 53 cadeaux sur 95 mènent à leur fiche ; étendre les ASIN vérifiés aux autres.
 - **Saison des fêtes** : Noël et colis de fin d'année, période où l'affiliation rapporte le plus.
 - **Partenariats** : mises en avant payées par des créateurs ou boutiques africaines, une fois l'audience mesurée.
@@ -44,8 +44,8 @@ publications réelles, ou routine qui publie).
 
 ## Mesures
 
-- **Pages indexées par Google** : 9 sur 61 (Search Console, 21 octobre 2026)
-- **Pages pas encore indexées** : 52, dont 34 inconnues de Google et 18 détectées non explorées
+- **Pages indexées par Google** : 61 sur 62 (relevé du Studio, 27 octobre 2026 ; 9 sur 61 au 21 octobre)
+- **Pages pas encore indexées** : 1, inconnue de Google (l'article « cadeau belle-mère africaine »)
 - **Liens Amazon directs** : 53 cadeaux sur 95
 - **Articles Conseils** : 5 publiés, 7 programmés
 - **Visites** : à instrumenter
@@ -54,9 +54,9 @@ publications réelles, ou routine qui publie).
 
 ## Les 3 priorités
 
-- AdSense : examen de keurkado.com demandé le 20 octobre 2026 ; créer les trois blocs « Keur Kado - top / rubrique / article »
+- AdSense : examen de keurkado.com demandé le 20 octobre 2026, « En préparation » au 27 octobre ; créer les trois blocs « Keur Kado - top / rubrique / article »
   et renseigner leurs identifiants, pour que les annonces s'affichent.
-- Faire indexer par Google les 52 pages qui ne le sont pas encore (Top 10, pages occasion et
-  univers, articles) avant la saison des fêtes.
+- Faire indexer la dernière page manquante et suivre les positions dans Google (61 pages sur 62
+  indexées au 27 octobre 2026).
 - Liens Amazon directs : relever les ASIN vérifiés des 42 cadeaux qui ouvrent encore une recherche
   Amazon (53 sur 95 mènent à leur fiche), en commençant par ceux des Top 10 de Noël.

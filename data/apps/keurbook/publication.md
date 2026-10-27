@@ -28,7 +28,7 @@
 2. ✅ **Search Console et IndexNow** : sitemap envoyé à Google, tout le site signalé chaque lundi.
 3. ✅ **Publicité préparée** : script AdSense, ads.txt et 4 blocs d'annonces publiés le 12 octobre (aucune annonce affichée avant la validation).
 4. ✅ **Fiches rallongées** : refus AdSense du 21 octobre (contenu trop mince) ; les 796 fiches ont reçu « Le livre en détail » le 21 octobre.
-5. **Validation AdSense** : nouvel examen demandé le 22 octobre ; suivre l'avis de Google dans la console AdSense.
+5. **Validation AdSense** : nouvel examen demandé le 22 octobre, « En préparation » dans la console au 27 octobre 2026 ; suivre l'avis de Google dans la console AdSense.
 6. **Indexation complète** : faire entrer dans Google les 296 pages encore absentes.
 7. ✅ **Mesure d'audience** : Cloudflare Web Analytics autorisé dans `public/_headers` le 13 octobre.
 8. **Design définitif** : remplacer l'habillage provisoire par le design fait à part.
@@ -67,5 +67,5 @@
 - **Mesure d'audience** : Cloudflare Web Analytics (sans cookie), balise constatée en ligne le
   14 octobre 2026 ; chiffres à vérifier dans la console.
 - **Publicité** : Google AdSense en place (script chargé sur les pages, `https://keurbook.com/ads.txt`
-  répond). Validation du site par AdSense : première demande d'examen le 12 octobre 2026, refusée le 21 octobre 2026 (« contenu à faible valeur informative ») ; les 796 fiches ont été rallongées le 21 octobre et l'examen a été redemandé le 22 octobre 2026 (état du nouvel examen à vérifier dans la console) ; aucune annonce
+  répond). Validation du site par AdSense : première demande d'examen le 12 octobre 2026, refusée le 21 octobre 2026 (« contenu à faible valeur informative ») ; les 796 fiches ont été rallongées le 21 octobre et l'examen a été redemandé le 22 octobre 2026 (nouvel examen « En préparation » dans la console, vérifié le 27 octobre 2026) ; aucune annonce
   affichée pour l'instant.

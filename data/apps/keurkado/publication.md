@@ -8,7 +8,7 @@
 
 - **Production** : en ligne sur keurkado.com depuis le 20 octobre 2026
 - **Domaine & SSL** : Cloudflare, certificat valide jusqu'au 18 janvier 2027, renouvelé seul
-- **Visibilité** : 9 pages indexées par Google sur 61
+- **Visibilité** : 61 pages indexées par Google sur 62 (relevé du 27 octobre 2026)
 - **Contact** : keurkado@toakeur.com
 
 ## Boutiques
@@ -19,7 +19,7 @@
 | Hébergement | [ok] Worker de fichiers statiques Cloudflare « keurkado » |
 | Domaine | [ok] keurkado.com, www sert les mêmes pages |
 | SSL | [ok] Certificat Cloudflare, HSTS actif |
-| Indexation | [à faire] 9 / 61 pages indexées par Google |
+| Indexation | [ok] 61 / 62 pages indexées par Google (27 octobre 2026) |
 | Mesure d'audience | [pas encore] Aucune mesure sur le site |
 
 ## Ce qui reste, dans l'ordre
@@ -28,8 +28,8 @@
 2. ✅ **Ancienne adresse** : teiki5320.github.io/keurkado renvoie vers keurkado.com.
 3. ✅ **Search Console** : propriété keurkado.com, sitemap envoyé le 20 octobre 2026.
 4. **Amazon Partenaires** : déclarer keurkado.com dans les sites du compte (à vérifier dans la console).
-5. **Publicité** : site ajouté dans AdSense, examen demandé le 20 octobre 2026 ; créer les blocs d'annonces et attendre la validation.
-6. **Indexation complète** : faire entrer dans Google les 52 pages encore absentes.
+5. **Publicité** : site ajouté dans AdSense, examen demandé le 20 octobre 2026, « En préparation » au 27 octobre 2026 ; créer les blocs d'annonces et attendre la validation.
+6. **Indexation complète** : faire entrer dans Google la dernière page encore absente (61 sur 62 au 27 octobre 2026).
 7. ✅ **Pinterest** : compte Keur Kado créé, domaine revendiqué, 21 épingles programmées dans Pinterest (une par jour à partir du 21 octobre 2026). Publication automatique par l'API en place depuis le 23 octobre 2026, clé du compte créée le même jour (`docs/PINTEREST.md`).
 8. **Carte sur toakeur.com** : mettre à jour le lien de la carte Keur Kado (à vérifier).
 
@@ -59,8 +59,8 @@
 
 - **Sitemap** : https://keurkado.com/sitemap.xml répond (62 adresses) ; `robots.txt` répond.
 - **Google Search Console** : propriété de domaine `keurkado.com`, sitemap envoyé et lu le
-  20 octobre 2026, sans erreur. Au 21 octobre 2026 : 9 pages indexées sur 61, 52 pas encore
-  (34 inconnues de Google, 18 détectées mais non explorées).
+  20 octobre 2026, sans erreur, relu le 23 octobre. Au 27 octobre 2026 (relevé du Studio) : 61 pages
+  indexées sur 62, 1 pas encore (inconnue de Google) ; il n'y en avait que 9 sur 61 au 21 octobre.
 - **Bing et autres moteurs (IndexNow)** : depuis le 25 octobre 2026, `node scripts/indexnow.mjs`
   signale les pages du sitemap à Bing, DuckDuckGo, Ecosia et Yandex (clé publique servie à la
   racine du site). Journal du référencement page par page : `docs/referencement.md`.
@@ -71,4 +71,6 @@
   réussie chaque jour du 24 au 27 octobre 2026 (aucune épingle de plus à publier : les 21 sont déjà programmées).
 - **Mesure d'audience** : aucune (la page Confidentialité l'indique).
 - **Publicité** : script AdSense chargé, `https://keurkado.com/ads.txt` répond ; aucun bloc
-  d'annonce créé ; examen du site demandé le 20 octobre 2026, aucune annonce affichée pour l'instant.
+  d'annonce créé ; examen du site demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 27 octobre 2026) ; la console y affiche
+  encore `ads.txt` « Introuvable » alors que le fichier répond (200) : elle ne l'a pas revérifié ; aucune
+  annonce affichée pour l'instant.

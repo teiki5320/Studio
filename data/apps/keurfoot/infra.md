@@ -15,10 +15,10 @@ uniquement des noms de variables et de consoles.
 ## Parcours
 
 - 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build [ok] → ☁️ Cloudflare Workers — Worker keurfoot [ok] → 🌍 keurfoot.com — en ligne, réponse 200 [ok]
-- 📝 **Contenu** : ✍️ Conseils — 8 publiés, 25 programmés jusqu'au 23 décembre 2026 [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — 95 sur 97 indexées au 25 octobre [ok]
-- 🛒 **Affiliation** : 🛍️ Boutique et fiches — boutons Amazon [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurfootfr-21 [ok] → 🌐 Site déclaré chez Amazon — à vérifier dans la console [à faire] → 🔗 Liens directs — aucun ASIN, recherches seulement [pas encore]
+- 📝 **Contenu** : ✍️ Conseils — 8 publiés, 25 programmés jusqu'au 23 décembre 2026 [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — 97 sur 99 indexées au 27 octobre [ok]
+- 🛒 **Affiliation** : 🛍️ Boutique et fiches — boutons Amazon [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurfootfr-21 [ok] → 🌐 Site déclaré chez Amazon — non revérifié au 27 octobre, à vérifier dans la console [à faire] → 🔗 Liens directs — aucun ASIN, recherches seulement [pas encore]
 - 🗞️ **Actus** : 🤖 Tâche Claude — 12 h et 19 h [ok] → 🐙 Dépôt teiki5320/veille — actus/keurfoot.json [ok] → 📄 GitHub Pages — fichier et images [ok] → 🌍 keurfoot.com — accueil, /actus, fiches sélection [ok]
-- 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en place [ok] → ✅ Examen du site — demandé le 20 octobre [à faire] → 🧱 Blocs d'annonces — aucun identifiant renseigné [pas encore]
+- 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en place [ok] → ✅ Examen du site — demandé le 20 octobre, « En préparation » au 27 octobre [à faire] → 🧱 Blocs d'annonces — aucun identifiant renseigné [pas encore]
 
 ## Vue d'ensemble
 
@@ -36,7 +36,9 @@ uniquement des noms de variables et de consoles.
   10 Top 10, 2 pages CAN, 8 articles Conseils publiés, boutique, page Actus, pages de liste et
   pages légales).
 - **Images** : illustrations originales créées avec OpenArt puis découpées par
-  `scripts/decouper-planche.mjs` (voir docs/ILLUSTRATIONS.md) ; épingles Pinterest des Top 10
+  `scripts/decouper-planche.mjs` (voir docs/ILLUSTRATIONS.md) ; depuis le 27 octobre 2026, les conseils
+  sans illustration originale ont une photo libre (Wikimedia Commons ou Openverse, crédit sous l'image)
+  ou une carte générée, rangée dans `public/illustrations/` (crédits dans `src/lib/data/conseils-images.ts`) ; épingles Pinterest des Top 10
   générées avant chaque build par `scripts/epingles.mts` (satori et resvg), dans `public/epingles/`.
 - **Particularités** : interrupteur de maintenance dans `content/maintenance.json` (désactivé),
   tests de cohérence des contenus dans `tests/`, contrôle de la sortie par `npm run test:sortie`.
@@ -103,7 +105,7 @@ uniquement des noms de variables et de consoles.
   tous les liens ouvrent une recherche Amazon.
 - **Identifiant** : `keurfootfr-21` depuis le 20 octobre 2026 (nouveau compte Amazon Partenaires
   du 18 octobre 2026 ; l'ancien `keurfoot-21` est fermé).
-- **Site déclaré** : `keurfoot.com` parmi les sites du compte : à vérifier dans la console.
+- **Site déclaré** : `keurfoot.com` parmi les sites du compte : jamais confirmé (non revérifié le 27 octobre 2026), à vérifier dans la console.
 - **Console** : https://partenaires.amazon.fr
 
 ## AdSense (publicité web)

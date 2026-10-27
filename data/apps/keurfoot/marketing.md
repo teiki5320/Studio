@@ -15,7 +15,7 @@ publications réelles, ou routine qui publie).
 ## Rémunération par phases
 
 - [fait] **Aujourd'hui** : affiliation Amazon Partenaires (tag `keurfootfr-21`) sur la boutique et les fiches ; le site ne vend rien.
-- [en cours] **Examen AdSense** : demandé le 20 octobre ; avis de Google à vérifier dans la console.
+- [en cours] **Examen AdSense** : demandé le 20 octobre ; « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 27 octobre 2026).
 - **Blocs d'annonces** : créer les blocs AdSense et renseigner leurs identifiants pour afficher les 7 emplacements prévus.
 - **Liens Amazon directs** : remplacer les recherches par des fiches produits (ASIN vérifiés) sur les maillots les plus vus.
 - **Partenariats** : équipementiers ou boutiques de supporters, une fois l'audience mesurée.
@@ -25,7 +25,7 @@ publications réelles, ou routine qui publie).
 - 🌍 **Toute l'Afrique** : les 54 sélections nationales ont leur fiche, classées par région, avec leur palmarès.
 - 🏆 **Top 10 et légendes** : 10 classements et 15 fiches joueurs, avec 9 épingles Pinterest déjà prêtes.
 - 🗞️ **Actus** : depuis le 27 octobre 2026, les actus du foot africain résumées en français 2 fois par jour, sur l'accueil, la page /actus et les fiches sélection, chacune avec le lien vers sa source.
-- 🎨 **Images maison** : illustrations originales sans logo ni visage, qui évitent tout souci de droits.
+- 🎨 **Images maison** : illustrations originales sans logo ni visage, qui évitent tout souci de droits ; depuis le 27 octobre 2026, les conseils sans illustration ont une photo libre créditée (Wikimedia, Openverse) ou une carte aux couleurs du site.
 
 ## Canaux
 
@@ -33,8 +33,8 @@ publications réelles, ou routine qui publie).
 - ✅ Contenu régulier : articles Conseils publiés automatiquement le lundi, le mercredi et le
   vendredi (8 publiés et 25 programmés jusqu'au 23 décembre 2026, au 27 octobre 2026).
 - ✅ Référencement naturel : propriété keurfoot.com vérifiée dans la Search Console, sitemap envoyé
-  le 20 octobre 2026 et relu par Google le 25 octobre ; 95 pages sur 97 indexées (relevé du Studio,
-  25 octobre 2026) ; Google montre déjà des pages joueurs ; signalement IndexNow
+  le 20 octobre 2026 et relu par Google le 26 octobre ; 97 pages sur 99 indexées (relevé du Studio,
+  27 octobre 2026) ; Google montre déjà des pages joueurs ; signalement IndexNow
   (Bing…) par `scripts/indexnow.mjs` depuis le 24 octobre 2026 ; suivi dans `docs/referencement.md`.
 - ✅ Rubrique Actus : page `/actus` (dans le menu) et blocs sur l'accueil et les fiches sélection
   depuis le 27 octobre 2026, mis à jour automatiquement à 12 h et 19 h (pages non reconstruites ;
@@ -49,7 +49,7 @@ publications réelles, ou routine qui publie).
 ## Mesures
 
 - **Adresses dans le sitemap** : 99 (27 octobre 2026, avec la page Actus)
-- **Pages indexées par Google** : 95 sur 97 (relevé du Studio, 25 octobre 2026)
+- **Pages indexées par Google** : 97 sur 99 (relevé du Studio, 27 octobre 2026)
 - **Articles Conseils** : 8 publiés, 25 programmés jusqu'au 23 décembre 2026 (27 octobre 2026)
 - **Liens Amazon directs** : aucun, tous les liens ouvrent une recherche Amazon
 - **Visites** : à instrumenter
@@ -60,7 +60,7 @@ publications réelles, ou routine qui publie).
 
 - Ouvrir un compte Pinterest Keur Foot, le brancher au Planning du Studio et publier les
   9 épingles déjà prêtes.
-- Vérifier que keurfoot.com est déclaré dans le compte Amazon Partenaires (`keurfootfr-21`), puis
+- Vérifier que keurfoot.com est déclaré dans le compte Amazon Partenaires (`keurfootfr-21`) — pas encore vérifié au 27 octobre 2026 —, puis
   brancher une mesure d'audience (Cloudflare Web Analytics) pour savoir quelles pages rapportent.
 - Activer « Always Use HTTPS » dans Cloudflare : http://keurfoot.com répond encore sans renvoyer
   vers https (constaté le 25 octobre 2026).

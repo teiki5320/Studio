@@ -4,9 +4,10 @@
     "status": "completed",
     "conclusion": "success",
     "updatedAt": "2026-10-25T05:52:21Z",
-    "url": "https://github.com/teiki5320/Kultiva/actions/runs/40166603146"
+    "url": "https://github.com/teiki5320/Kultiva/actions/runs/40166603146",
+    "enCours": true
   },
-  "fetchedAt": "2026-10-25T06:14:20.711Z",
+  "fetchedAt": "2026-10-27T08:54:42.051Z",
   "boutiques": {
     "appStore": null,
     "googlePlay": null

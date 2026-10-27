@@ -54,7 +54,7 @@ Règles de rédaction : [`docs/REDACTION.md`](docs/REDACTION.md). Pinterest : [`
 
 ## Publicité et cookies
 
-Même fonctionnement que Keurbook : code AdSense (même identifiant d'éditeur, `public/ads.txt`) et bandeau de consentement de Google, lien « Gérer mes cookies » dans le pied de page. Examen du site par AdSense demandé le 20 octobre 2026 : aucune annonce affichée pour l'instant, et les blocs d'annonces restent à créer (voir `docs/DEPLOIEMENT.md`).
+Même fonctionnement que Keurbook : code AdSense (même identifiant d'éditeur, `public/ads.txt`) et bandeau de consentement de Google, lien « Gérer mes cookies » dans le pied de page. Examen du site par AdSense demandé le 20 octobre 2026 (« En préparation » dans la console au 27 octobre 2026) : aucune annonce affichée pour l'instant, et les blocs d'annonces restent à créer (voir `docs/DEPLOIEMENT.md`).
 
 ## Logo
 

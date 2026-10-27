@@ -15,10 +15,11 @@ Généré le 21 octobre 2026, mis à jour le 27 octobre 2026 par un scan du dép
 
 ## Parcours
 
-- 🌐 **Web** : 🐙 GitHub — main, CI au vert le 27 octobre [ok] → ⚙️ GitHub Actions — tests, build et test de bout en bout [ok] → 🏠 GitHub Pages — hébergement du site [ok] → 🔗 Nom de domaine — www.kultiled.com depuis le 16 octobre [ok] → 🔎 Google — nouveau domaine à faire indexer [à faire]
+- 🌐 **Web** : 🐙 GitHub — main, CI au vert le 27 octobre [ok] → ⚙️ GitHub Actions — tests, build et test de bout en bout [ok] → 🏠 GitHub Pages — hébergement du site [ok] → 🔗 Nom de domaine — www.kultiled.com depuis le 16 octobre [ok] → 🔎 Google — 96 pages sur 101 indexées au 27 octobre [ok]
 - 📝 **Contenu** : ✍️ Articles de conseil — 74 rédigés [ok] → ⏰ GitHub Actions — publication lundi, mercredi, vendredi [ok] → 📰 Rubrique Conseils — 40 en ligne, 34 programmés [ok] → 📌 Pinterest — 12 épingles prêtes, aucun compte [pas encore]
 - 🛒 **Affiliation** : 💡 Sélection de lampes — 16 lampes, une indisponible [ok] → 🔁 Routine de vérification — dernier passage le 27 octobre [ok] → 🏆 Top 10 — 9 onglets de 10 produits depuis le 19 octobre [ok] → 🛍️ Affiliation — liens Amazon.fr kultiledfr-21 [ok]
-- 📢 **Publicité** : 📰 Pages de lecture — deux emplacements au plus [ok] → 🍪 Consentement — bandeau de Google en ligne [ok] → 💰 AdSense (publicité web) — examen de kultiled.com demandé [à faire]
+- 📰 **Actus** : 🤖 Veille du Studio — 2 passages par jour, 12 h et 19 h [ok] → 🐙 Dépôt teiki5320/veille — fichier kultiled.json [ok] → 🌐 kultiled.com — accueil, page Actus et fiches des cultures, depuis le 27 octobre [ok]
+- 📢 **Publicité** : 📰 Pages de lecture — deux emplacements au plus [ok] → 🍪 Consentement — bandeau de Google en ligne [ok] → 💰 AdSense (publicité web) — examen de kultiled.com demandé le 16 octobre, « En préparation » au 27 octobre [à faire]
 
 ## Vue d'ensemble
 
@@ -28,7 +29,7 @@ Généré le 21 octobre 2026, mis à jour le 27 octobre 2026 par un scan du dép
 - **Distribution** : GitHub Pages, publication automatique à chaque envoi sur `main` et chaque lundi, mercredi et vendredi à 5 h UTC pour les articles de conseil programmés (`.github/workflows/pages.yml`), sur le domaine `www.kultiled.com` depuis le 16 octobre 2026 (`public/CNAME`, `SITE_URL` dans `build/site.ts`). L'ancien domaine `www.optiled.fr` a été abandonné le 16 octobre 2026 (retiré d'AdSense le 22 octobre 2026) ; il affichait encore le 27 octobre 2026 une page « Kultiled a déménagé » vers le nouveau domaine, publiée par le dépôt `teiki5320/optiled-redirection`.
 - **Contact public** : `kultiled@toakeur.com` (mentions légales et page « À propos » ; dans le code depuis le 7 octobre 2026, en ligne depuis le 12). Plus aucune adresse en `alohash.fr` dans le site.
 - **Particularités** :
-  - 28 pages HTML à la racine, plus les articles de conseil (`contenu/conseils/`), les pages des 26 cultures et les pages « Top 10 » (`build/top-10.ts`), assemblées au build par un plugin Vite maison (`build/site.ts`) : en-tête, menu, pied de page, sommaire, sitemap, robots.txt, flux RSS `conseils.xml`, balises de partage, données structurées.
+  - 29 pages HTML à la racine (dont `actus.html` depuis le 27 octobre 2026), plus les articles de conseil (`contenu/conseils/`), les pages des 26 cultures et les pages « Top 10 » (`build/top-10.ts`), assemblées au build par un plugin Vite maison (`build/site.ts`) : en-tête, menu, pied de page, sommaire, sitemap, robots.txt, flux RSS `conseils.xml`, balises de partage, données structurées.
   - Données des 26 cultures dans `src/data/legumes.json`, chaque valeur avec sa source ; sélection de lampes Amazon dans `src/data/lampes.json` ; fourchettes de prix dans `src/data/budget.json` ; produits des onglets « Top 10 » dans `src/data/tentes.json` et `src/data/top-10/`.
   - Pages « Top 10 » depuis le 19 octobre 2026 (`build/top-10.ts`) : onglet « Top 10 » dans le menu, une page par sujet (`top-10-<sujet>.html`), publiée seulement si elle compte 10 vrais produits. Neuf onglets en ligne : lampes LED de culture, tentes, kits complets, kits hydroponiques, extracteurs et ventilateurs, minuteurs et thermomètres, terreaux et substrats, lampes pour semis, lampes pour placard. Les lampes sont classées par efficacité, les autres produits selon la note des acheteurs relevée le 19 octobre 2026, note qui n'est ni enregistrée ni affichée.
   - La chaîne de publication refuse de publier si les tests unitaires, le build ou le test de bout en bout échouent (ce qui a bloqué toute mise en ligne du 7 au 12 octobre 2026).
@@ -71,7 +72,7 @@ Généré le 21 octobre 2026, mis à jour le 27 octobre 2026 par un scan du dép
 ## Analytics (mesure d'usage)
 
 - **Rôle** : Cloudflare Web Analytics, mesure d'audience gratuite et sans cookie, **active sur le site en ligne** depuis la publication du 12 octobre 2026 (script `static.cloudflareinsights.com/beacon.min.js` présent sur les pages). Une seule source depuis le 12 octobre 2026 : le jeton du site, écrit dans le code (constante `JETON_MESURE_AUDIENCE`, `build/site.ts`), commande à la fois le script, ajouté au seul build de production, et la phrase des mentions légales, qui décrit la mesure (sans cookie, pages vues agrégées, adresse IP non conservée). L'ancienne variable de dépôt `CF_BEACON_TOKEN` a été retirée du code et du workflow. Le test de bout en bout (`scripts/e2e.mjs`) n'autorise que ce script et ceux de Google AdSense.
-- **Console** : https://dash.cloudflare.com → Analytics & Logs → Web Analytics (site créé pour `www.optiled.fr`, même jeton depuis le passage à `kultiled.com` : nom d'hôte à vérifier dans la console).
+- **Console** : https://dash.cloudflare.com → Analytics & Logs → Web Analytics (site créé pour `www.optiled.fr`, même jeton depuis le passage à `kultiled.com` ; dernier état connu, non revérifié le 27 octobre 2026 : nom d'hôte à vérifier dans la console).
 - **Identifiants publics** : jeton du site (32 caractères, visible dans les pages, non secret), dans `JETON_MESURE_AUDIENCE`.
 - **Secrets** : aucun.
 - **Coût** : gratuit.
@@ -79,14 +80,22 @@ Généré le 21 octobre 2026, mis à jour le 27 octobre 2026 par un scan du dép
 ## AdSense (publicité web)
 
 - **Rôle** : annonces display de Google dans les pages de lecture, ajoutées le 12 octobre 2026 (`build/annonces.ts`). Au plus deux par page (milieu et fin de l'article), signalées « Publicité », jamais dans le calculateur, le carnet de suivi ni les pages de lampes, jamais à côté d'un lien Amazon ; l'emplacement reste replié tant que Google ne fournit pas d'annonce. Le bandeau de consentement est celui de Google (Autoriser, Refuser, Gérer les options), rouvert par le lien « Gérer les cookies » du pied de page ; les mentions légales et la page « À propos » décrivent la publicité et ses cookies. Le calculateur intégré sur d'autres sites ne charge pas le code de Google. Script et `ads.txt` constatés en ligne le 13 octobre 2026 ; examen du nouveau domaine `kultiled.com` demandé le 16 octobre 2026 ; l'ancien site `optiled.fr` a été supprimé du compte AdSense le 22 octobre 2026. Identifiant d'éditeur `ca-pub-…` et `ads.txt` constatés en ligne sur kultiled.com le 27 octobre 2026.
-- **Console** : https://adsense.google.com (examen de `kultiled.com` et diffusion des annonces : à vérifier dans la console).
+- **Console** : https://adsense.google.com (examen de `kultiled.com` « En préparation » au 27 octobre 2026 ; la console y affiche encore `ads.txt` « Introuvable » alors que le fichier répond (200) : elle ne l'a pas revérifié).
 - **Identifiants publics** : identifiant d'éditeur (constante `CLIENT_ADSENSE`) et bloc d'annonces « Kultiled - articles » (constante `BLOC_ARTICLES`), dans `build/annonces.ts` ; ligne de déclaration dans `public/ads.txt`.
 - **Secrets** : aucun dans le dépôt ; compte et informations de paiement uniquement dans la console AdSense.
 - **Coût** : gratuit (Google prélève sa part sur les revenus).
 
+## Veille actus
+
+- **Rôle** : actus de la culture en intérieur et de l'éclairage des plantes, préparées deux fois par jour (12 h et 19 h) par la tâche de veille du Studio dans le dépôt public `teiki5320/veille`, et lues **en direct dans le navigateur** du visiteur (`src/veille.ts`, délai de 8 s, cache de 15 min), sans reconstruire le site. En ligne depuis le 27 octobre 2026 : bloc de 4 actus sur l'accueil (sous le calculateur), page `actus.html` (20 actus et date de mise à jour) et bloc de 3 actus sur chaque page culture qui en a (tag `legume:<id>`), jamais sur la fiche Chanvre CBD. Si le fichier est injoignable, les blocs restent cachés et le calculateur n'est pas touché. Le build publie aussi `veille/entites.json` (25 cultures, sans le chanvre), que la veille lit pour relier une actu à une fiche (`build/veille.ts`). Le test de bout en bout vérifie l'affichage avec un fichier d'essai et avec un fichier coupé.
+- **Console** : https://github.com/teiki5320/veille (fichier lu : https://teiki5320.github.io/veille/actus/kultiled.json).
+- **Identifiants publics** : adresse du fichier (`URL_VEILLE`, `src/veille.ts`). Pas de politique de sécurité du contenu (CSP) sur le site : rien à ouvrir.
+- **Secrets** : aucun.
+- **Coût** : gratuit (GitHub Pages ; la tâche tourne sur l'abonnement Claude du Studio).
+
 ## API d'IA (génération d'images)
 
-- **Rôle** : photos de couverture des guides et des articles, miniatures des cultures et illustrations des lampes, générées par IA hors du site puis converties en WebP (`npm run images`, `npm run planche`) ; le site n'appelle aucune IA. Les consignes du projet (`CLAUDE.md`) imposent OpenArt en priorité, avec annonce du coût en crédits avant chaque génération ; les premières images ont été faites avec ElevenLabs (d'après le README). Le pied de page signale les images générées.
+- **Rôle** : photos de couverture des guides et des articles, miniatures des cultures et illustrations des lampes, générées par IA hors du site puis converties en WebP (`npm run images`, `npm run planche`) ; le site n'appelle aucune IA. Les consignes du projet (`CLAUDE.md`) imposent OpenArt en priorité, avec annonce du coût en crédits avant chaque génération ; les premières images ont été faites avec ElevenLabs (d'après le README). Le pied de page signale les images générées. Depuis le 27 octobre 2026, trois guides LED (`led-puissance`, `led-comparer`, `led-semis`) et les deux parcours (`debuter`, `tente`), qui n'avaient pas de photo, ont une photo libre de droits (Wikimedia Commons ou Openverse, `src/data/photos-libres.json`, `npm run images-libres`), avec auteur et licence sous l'image.
 - **Console** : OpenArt (crédits) — à vérifier dans la console.
 - **Identifiants publics** : aucun dans le code.
 - **Secrets** : aucun dans le dépôt.
