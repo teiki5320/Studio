@@ -304,7 +304,11 @@ export function TriCartes({ elements, onAgir, chargement }) {
               onPointerDown={down}
               onPointerMove={move}
               onPointerUp={up}
-              onPointerCancel={up}
+              onPointerCancel={() => {
+                // Le navigateur reprend la main (défilement du verso) : on ne répond rien.
+                depart.current = null;
+                setGlisse({ dx: 0, dy: 0, actif: false });
+              }}
               onKeyDown={clavier}
               style={{ transform: `translate(${dx}px, ${dy}px) rotate(${dx / 22}deg)` }}
             >
