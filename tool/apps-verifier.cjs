@@ -54,6 +54,8 @@ const TITRES_HORS_SERVICE = [
   // Sections d'organisation de la fiche
   /^(en bref|parcours|prevu mais pas branche|vue d ensemble|sommaire|services?( externes?)?|notes?|recapitulatif|valeurs publiques|checklist|a faire|a verifier|en attente|annexes?|couts?)/,
   /^(ou vit chaque secret|reprise du projet|format .*source des donnees|routine )/,
+  // La veille actus est un fichier lu sur le dépôt public teiki5320/veille (GitHub, déjà déclaré) : aucun compte en plus.
+  /^(\d+\.\s*)?veille actus/,
   // Dépendances techniques sans compte : registres de paquets, polices web
   /^(registres? de paquets|google fonts|polices)/,
   // Le titre dit lui-même que le service n'est pas en place
@@ -313,6 +315,8 @@ async function verifieSite(id, manifeste, fichiers) {
     const fausses = [];
     for (const x of lignes) {
       if (!LIGNE_HEBERGEMENT.test(x.l)) continue;
+      // Les actus du site sont lues sur teiki5320.github.io (veille actus) : ce n'est pas l'hébergement du site.
+      if (/veille/i.test(x.l)) continue;
       // Étape déjà faite d'une liste (« 1. ✅ … ») : historique.
       if (/^\s*(\d+\.|[-*])\s*✅/.test(x.l)) continue;
       // Une phrase qui parle d'un autre site (adresse différente) ne compte pas.
