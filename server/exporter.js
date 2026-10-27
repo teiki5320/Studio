@@ -169,7 +169,18 @@ export function exportEpisode(project, episode) {
       // nom peuvent rester, mais l'épisode est bien exporté.
     }
     const dest = path.join(dir, episodeFileName(project, episode));
-    fs.copyFileSync(src, dest);
+    // Copie dans un fichier temporaire du même dossier, puis renommage : copier
+    // PAR-DESSUS une vidéo restée seulement dans iCloud (non téléchargée) échoue
+    // (« Unknown system error -11 ») et l'efface au passage (27/10 : 4 pubs Erea
+    // perdues). Le renommage remplace l'ancienne d'un coup, ou ne touche à rien.
+    const tmp = path.join(dir, `.${path.basename(dest)}.copie`);
+    try {
+      fs.copyFileSync(src, tmp);
+      fs.renameSync(tmp, dest);
+    } catch (e) {
+      fs.rmSync(tmp, { force: true });
+      throw e;
+    }
     // L'ancienne copie de CET épisode (autre nom ou autre dossier) disparaît :
     // une seule copie par vidéo, toujours au bon endroit.
     if (episode.exportedTo && episode.exportedTo !== dest && fs.existsSync(episode.exportedTo)) {
