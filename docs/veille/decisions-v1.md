@@ -10,11 +10,11 @@ Sites web seulement, pas les applis.
 |---|---|---|
 | Keur Foot | keurfoot.com | oui |
 | Keurbook | keurbook.com | oui |
-| Keur Cook | keurcook.com | oui — jamais d'actus santé ni de vocabulaire de vente |
-| Keur Déco | keurdeco.com | oui — peu d'actualité : sources larges |
-| Keur Kado | keurkado.com | oui — peu d'actualité : sources larges |
-| Kultiled | kultiled.com | oui — peu d'actualité : sources larges |
-| Solelis | solelis.com | oui |
+| Keur Cook | keurcook.com | oui — jamais d'actus santé ni de vocabulaire de vente (en ligne depuis le 27/10) |
+| Keur Déco | keurdeco.com | oui — peu d'actualité : sources larges (en ligne depuis le 27/10) |
+| Keur Kado | keurkado.com | à discuter avec Jean (rien de lancé) |
+| Kultiled | kultiled.com | oui — sources larges, pas seulement l'Afrique, jamais de cannabis (en ligne depuis le 27/10) |
+| Solelis | solelis.com | oui — France seulement, pas d'actus sur l'accueil (en ligne depuis le 27/10) |
 | toakeur.com | toakeur.com | non |
 | Palabre | appli et palabre.toakeur.com | non, mis de côté |
 
@@ -78,8 +78,44 @@ Tests du 26/10/2026 :
 - **Flux RSS (10, tous validés par Jean le 26/10/2026) :** Africultures, Jeune Afrique Culture, RFI Culture, France 24 Culture, Le Monde Afrique, SenePlus, Livres Hebdo, Le Monde des livres, ActuaBD, BDZoom.
 - **Keurbook : complet.**
 
-### Keur Cook, Keur Déco, Keur Kado, Kultiled, Solelis
-À définir **après** avoir vu le résultat sur Keur Foot et Keurbook (demande de Jean).
+### Keur Cook
+Défini le 27/10/2026 (Jean ne valide pas les flux un par un : toutes les bonnes sources testées sont prises).
+- **Sujets :** cuisine africaine et de la diaspora : plats, recettes et traditions ; chefs et restaurants africains ; produits et ingrédients du continent vus sous l'angle du goût (fonio, mil, bissap, vanille, huile d'olive, épices, café, cacao…) ; fêtes et repas ; festivals, salons, prix et livres de cuisine ; patrimoine culinaire.
+- **Exclusions (strictes) :** **jamais d'actu santé ni de nutrition médicale** (régimes, maladies, effets d'un aliment sur le corps) ; **aucun vocabulaire de vente** (prix, promotions, « acheter », « disponible sur », bons plans) ; crises alimentaires, famines, intoxications et faits divers ; politique et conflits ; alcool mis en avant ; cuisine non africaine.
+- **Emplacement :** un bloc sur l'accueil (**4** actus : 1 bandeau + 3 vignettes), une page **`/actus`** (**20**), et sur chaque **page pays** (`/pays/<slug>`) **3** actus filtrées sur le code pays (`pays` contient le code ISO du pays, ex. `SN`). Pas de fichier de fiches à exposer (le filtre se fait sur `pays`).
+- **Carte générée :** dégradé `#c9531f` → `#2a1810`, encre `#fbeee2` (les couleurs du site), **icône marmite**, grand drapeau du pays.
+- **Flux RSS (15, testés le 27/10/2026) :** Le Monde Afrique, RFI Afrique, RFI Culture, France 24 Afrique, France 24 Culture, BBC Afrique, Africanews, Jeune Afrique, SenePlus, Le Soleil (Sénégal), Mondafrique, Nofi, Le Figaro Gastronomie, AllAfrica (FR), The Guardian Food (EN). Il n'existe presque pas de flux « cuisine africaine » : ce sont des sources larges que Claude trie en lisant. Volume attendu faible (1 à 3 actus par passage).
+- **Premier passage (27/10/2026, 9 h) :** 2 actus (vanille de São Tomé, huile d'olive tunisienne), 2 photos Wikimedia.
+
+### Keur Déco
+Défini le 27/10/2026.
+- **Sujets :** décoration, design et artisanat africains : designers, architectes d'intérieur et artisans d'Afrique et de la diaspora ; textiles (wax, bogolan, kente, indigo…), vannerie et raphia, terre cuite, bois sculpté, perles ; salons, foires et expositions de design ou d'art africain ; maisons et intérieurs inspirés de l'Afrique.
+- **Exclusions :** politique et conflits, faits divers, ventes aux enchères et cotes du marché de l'art, vocabulaire de vente, people sans rapport, déco sans lien avec l'Afrique ou sa diaspora.
+- **Emplacement :** un bloc sur l'accueil (**4**), une page **`actus.html`** (**20**), et sur chaque **page matière** (`matiere-<id>.html`) **3** actus avec le tag `matiere:<id>` (wax, bogolan, kente, indigo, raphia-paniers, terre-cuite, bois-sculpte, perles). Le site exposera ses matières dans `https://www.keurdeco.com/veille/entites.json`.
+- **Carte générée :** dégradé `#a3472a` (terracotta) → `#2a1d15`, encre `#fdf9f3`, **icône jarre**, grand drapeau du pays.
+- **Flux RSS (15, testés le 27/10/2026), sources larges :** AD Magazine, Ideat, Connaissance des Arts, Beaux Arts, Le Journal des Arts, Le Monde Arts, Le Monde Afrique, Africultures, RFI Culture, France 24 Culture, Dezeen (EN), Designboom (EN), Wallpaper* (EN), Design Milk (EN), Design Indaba (EN).
+- **Premier passage :** 4 actus (Ibrahim Mahama à la Fondation Cartier, foire AKAA, quilts de Gee's Bend, art contemporain à Marrakech), 4 photos Wikimedia.
+
+### Kultiled
+Défini le 27/10/2026. **Pas centré sur l'Afrique** (consigne de Jean) : toute l'actualité de la culture en intérieur.
+- **Sujets :** culture de plantes en intérieur, partout dans le monde : potagers d'intérieur, aromatiques, micro-pousses, semis ; éclairage LED horticole (spectre, efficacité, nouveautés) ; hydroponie, serres et fermes verticales ; recherche sur les plantes sous lumière artificielle ; agriculture urbaine en intérieur.
+- **Exclusions (strictes) :** **toujours le cannabis, le chanvre, le CBD et toute drogue**, même légal ou médical ; pesticides de synthèse mis en avant ; vocabulaire de vente et tests de produits ; levées de fonds et rachats sans rapport direct ; jardinage d'extérieur seul ; politique et faits divers.
+- **Emplacement :** un bloc sur l'accueil (**4**, sous le calculateur), une page **`actus.html`** (**20**), et sur chaque **page légume** (`legume-<id>.html`) **3** actus avec le tag `legume:<id>`. La fiche « Chanvre CBD » n'a **jamais** de bloc d'actus et n'est pas exposée. Le site exposera ses légumes dans `https://www.kultiled.com/veille/entites.json`.
+- **Carte générée :** dégradé `#3a2140` → `#1b1322` (la nuit du site), encre ambre `#f7c07a`, **icône plante sous une lampe**, **sans drapeau** (`"drapeau": false`).
+- **Flux RSS (14, testés le 27/10/2026), français d'abord :** Gerbeaud, Le Figaro Jardin, Futura Maison, Végétable, Sciences et Avenir (nature), Le Monde Planète, Terre-net ; puis en anglais : Greenhouse Grower, Greenhouse Management, Produce Grower, Greenhouse Canada, AgFunderNews, Phys.org (plantes), ScienceDaily (botanique). Peu de sources françaises sur le sujet (Rustica, Jardiner Malin, Hortidaily, LEDs Magazine : pas de flux qui marche).
+- **Premier passage :** 3 actus (achats de plantes d'intérieur, un radis original, la « fleur du diable »), 2 photos Wikimedia, 1 carte.
+
+### Solelis
+Défini le 27/10/2026. **France uniquement** (consigne de Jean) : sources françaises, en français, et sujets français.
+- **Sujets :** entreprises en difficulté en France, du point de vue du dirigeant de TPE ou PME : chiffres des défaillances ; procédures (mandat ad hoc, conciliation, sauvegarde, redressement, liquidation, rétablissement professionnel) et réformes ; tribunaux des activités économiques ; dettes URSSAF, impôts, fournisseurs, banques ; aides et dispositifs publics (CODEFI, CCSF, Médiation du crédit, Médiateur des entreprises) ; prévention et accompagnement des dirigeants ; redressement d'une enseigne connue quand cela éclaire la situation.
+- **Exclusions :** actualité hors de France, politique partisane, bourse et placements, faits divers et procès pénaux, noms de dirigeants ou de petites entreprises qui ne sont pas connus, levées de fonds, rumeurs.
+- **Emplacement : AUCUNE actu sur l'accueil** (consigne de Jean). Les actus vont seulement sur une page **`/actus`** (**20**) et, si c'est pertinent, sur les **4 pages situation** (`/situation/<slug>` : dettes-urssaf, dettes-fournisseurs, credit-bancaire, impots-impayes), **3** actus avec le tag `situation:<slug>`, bloc absent s'il n'y en a pas. Le site exposera ses situations dans `https://solelis.com/veille/entites.json`.
+- **Carte générée :** dégradé `#1e3d82` → `#0a1628` (bleus du site), encre blanche, **icône soleil**, **sans drapeau** (`"drapeau": false`).
+- **Flux RSS (14, tous français, testés le 27/10/2026) :** Service-Public.fr (actualités professionnelles), Le Monde Entreprises, Le Monde Économie française, Le Figaro Entrepreneur, Le Figaro Sociétés, BFM Business Entreprises, Franceinfo Entreprises, La Tribune, L'Usine Nouvelle, Sud Ouest Économie, 20 Minutes Économie, Village de la Justice, Les Affiches Parisiennes, Échos Judiciaires. (Les Échos ne répondaient pas le 27/10 : à réessayer plus tard.)
+- **Premier passage :** 4 actus (Forges de Tarbes, Alizé Group, E-Totem en redressement ; aides aux commerces dégradés), 2 photos Wikimedia, 2 cartes.
+
+### Keur Kado
+**Rien de lancé** : Jean veut en parler d'abord.
 
 ## Mise en œuvre technique (précisée dans les prompts)
 
@@ -87,4 +123,5 @@ Tests du 26/10/2026 :
 - Les photos libres sont **copiées** dans le dépôt veille (WebP, 16:9 et carré), pour ne dépendre d'aucun serveur tiers. La CSP des sites n'autorise donc que `teiki5320.github.io`.
 - Schéma v3 : 7 sites, champ `tags` (ex. `auteur:<slug>`), image obligatoire.
 - Contrôle anti-copie automatique : 6 mots consécutifs repris = actu rejetée.
-- Prompts : `prompts/00-socle-v1.md`, `prompts/keurfoot-v1.md`, `prompts/keurbook-v1.md`.
+- Icônes de la carte : `ballon`, `livre`, `marmite`, `jarre`, `plante`, `soleil`. Option `"drapeau": false` dans `sites/<site>.json` : jamais de drapeau sur la carte (Kultiled, Solelis).
+- Prompts : `prompts/00-socle-v1.md`, `prompts/keurfoot-v1.md`, `prompts/keurbook-v1.md`, `prompts/keurcook-v1.md`, `prompts/keurdeco-v1.md`, `prompts/kultiled-v1.md`, `prompts/solelis-v1.md`.
