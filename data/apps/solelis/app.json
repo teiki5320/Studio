@@ -15,5 +15,6 @@
     "base-sql",
     "email-transactionnel",
     "api-tierce"
-  ]
+  ],
+  "etat": "actif"
 }
