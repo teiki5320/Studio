@@ -85,3 +85,25 @@ export function synchroDue() {
   });
   return age > TOUTES_LES || (enCours && age > 20 * 60 * 1000);
 }
+
+// L'état d'un projet (actif, en pause, archivé) se décide UNIQUEMENT ici, par
+// Jean, dans Mes applis. Les fiches et la tâche du matin s'y alignent ; rien ne
+// le déduit plus d'une phrase. On l'écrit dans app.json et on l'enregistre tout
+// de suite dans git (ce seul fichier), pour qu'il ne se perde pas.
+export const ETATS = ['actif', 'pause', 'archive'];
+export async function changerEtat(id, etat) {
+  if (!/^[a-z0-9-]+$/.test(id) || !ETATS.includes(etat)) throw new Error('état ou appli inconnus');
+  const fichier = path.join(ROOT, 'data', 'apps', id, 'app.json');
+  const app = lireJson(fichier, null);
+  if (!app) throw new Error(`pas d'appli « ${id} »`);
+  if (app.etat === etat) return { ok: true, inchange: true };
+  app.etat = etat;
+  fs.writeFileSync(fichier, JSON.stringify(app, null, 2) + '\n');
+  await construireApplis();
+  const git = (...a) => new Promise((resolve) => execFile('git', ['-C', ROOT, ...a], (err) => resolve(!err)));
+  const libelle = { actif: 'actif', pause: 'en pause', archive: 'archivé' }[etat];
+  const commit = await git('commit', '-m', `${app.name} : état « ${libelle} », choisi par Jean dans Mes applis\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`, '--', path.relative(ROOT, fichier));
+  // Si l'envoi échoue (pas de réseau), la tâche du matin l'enverra avec les fiches.
+  if (commit) await git('push', '-q');
+  return { ok: true };
+}

@@ -636,7 +636,31 @@ function AnciennesBoutiques({ app }) {
 
 const TITRE_TEMOIN = { ok: 'Tout va', run: 'À surveiller', ko: 'Bloqué', none: 'Rien encore' };
 
-function FicheApp({ app, data, ext, volet, famTint, ouvrir }) {
+// L'état du projet, que seul Jean décide : les fiches et la tâche du matin s'y alignent.
+function ChoixEtat({ app, recharger }) {
+  const [occupe, setOccupe] = useState(false);
+  const changer = (e) => {
+    const etat = e.target.value;
+    setOccupe(true);
+    api
+      .changerEtat(app.id, etat)
+      .then(() => recharger?.())
+      .catch((x) => alert(`L'état n'a pas pu être enregistré : ${x.message}`))
+      .finally(() => setOccupe(false));
+  };
+  return (
+    <label className="fa-tag fa-choix-etat" title="État du projet (toi seul le changes)">
+      Projet :
+      <select value={app.etat || 'actif'} onChange={changer} disabled={occupe}>
+        <option value="actif">actif</option>
+        <option value="pause">en pause</option>
+        <option value="archive">archivé</option>
+      </select>
+    </label>
+  );
+}
+
+function FicheApp({ app, data, ext, volet, famTint, ouvrir, recharger }) {
   const volets = [
     ['technique', 'cle', 'Technique'],
     ['marketing', 'porte', 'Marketing'],
@@ -755,6 +779,7 @@ function FicheApp({ app, data, ext, volet, famTint, ouvrir }) {
               </span>
             ))}
             <span className={`fa-tag ${etat[0]}`}>{etat[1]}</span>
+            <ChoixEtat app={app} recharger={recharger} />
           </div>
           <h2>{app.name}</h2>
           {app.tagline ? <p>{accroche(app)}</p> : null}
@@ -1024,7 +1049,7 @@ export function MesApplisPage({ arg }) {
   };
   return (
     <div className="applis">
-      {app ? <FicheApp app={app} data={data} ext={ext} volet={volet || 'technique'} famTint={famTint} ouvrir={setSvc} /> : <Grille data={data} ext={ext} onSynchro={lancerSynchro} synchro={synchro} />}
+      {app ? <FicheApp app={app} data={data} ext={ext} volet={volet || 'technique'} famTint={famTint} ouvrir={setSvc} recharger={recharger} /> : <Grille data={data} ext={ext} onSynchro={lancerSynchro} synchro={synchro} />}
       {errSynchro && <p className="error small clay-content">{errSynchro}</p>}
       {svc ? <FicheService svc={svc} app={app} data={data} famTint={famTint} onFermer={() => setSvc(null)} onAller={setSvc} /> : null}
     </div>

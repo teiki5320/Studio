@@ -44,12 +44,13 @@ export function temoins(app, site) {
   ];
 }
 
-// L'étiquette d'état d'une carte : [classe, libellé]. Une appli « en pause »
-// (dit par son accroche) n'est pas en panne : gris, comme sur la maquette.
-export const enPause = (app) => /en pause/i.test(app.tagline || '');
+// L'étiquette d'état d'une carte : [classe, libellé]. Une appli « en pause » ou
+// « archivée » (choisi par Jean, champ etat d'app.json) n'est pas en panne : gris.
+export const enPause = (app) => app.etat === 'pause';
 export function etatApp(app, site) {
   const k = pire(app, site);
   if (k === 'ko') return ['ko', 'Bloqué'];
+  if (app.etat === 'archive') return ['none', 'Archivé'];
   if (enPause(app)) return ['none', 'En pause'];
   if (k === 'run') return ['run', 'À surveiller'];
   return ['ok', 'Au vert'];

@@ -789,3 +789,7 @@ html:root[data-theme='clair'] .clay-shell .applis .fa-hero .app-big { box-shadow
 
 /* La légende reste discrète : pas d'anneau. */
 .clay-shell .applis .ap-legende .ap-dot::after { display: none; }
+
+/* Choix de l'état du projet (actif / en pause / archivé), décidé par Jean. */
+.clay-shell .applis .fa-choix-etat { cursor: pointer; }
+.clay-shell .applis .fa-choix-etat select { font: inherit; font-weight: 700; color: var(--c-text, inherit); background: transparent; border: 0; padding: 0 2px; cursor: pointer; }

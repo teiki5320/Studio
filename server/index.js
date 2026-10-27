@@ -110,7 +110,7 @@ import {
   noterCorrection,
   depotDe,
 } from './indexation.js';
-import { applis, construireApplis, synchroniserApplis, synchroDue } from './applis.js';
+import { applis, construireApplis, synchroniserApplis, synchroDue, changerEtat } from './applis.js';
 import { pointDuMatin, deposerPoint, demanderCorbeille } from './point.js';
 import { accueil } from './accueil.js';
 import { listeAfaire, deposer as deposerAfaire, envoyer as envoyerAfaire, fileAfaire, retourAfaire, envoyerGithub } from './afaire.js';
@@ -1476,6 +1476,13 @@ const lancerSynchroApplis = () => {
   }).id;
   return synchroApplis;
 };
+app.post('/api/applis/:id/etat', async (req, res) => {
+  try {
+    res.json(await changerEtat(String(req.params.id), String(req.body?.etat || '')));
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
 app.get('/api/applis', async (req, res) => {
   try {
     if (!applis()) await construireApplis();

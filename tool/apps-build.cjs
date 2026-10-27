@@ -640,6 +640,8 @@ function loadApps() {
       // ?v= : quand un logo change (OptiLED → Kultiled), le navigateur le recharge.
       logo: fs.existsSync(path.join(LOGOS_DIR, id + '.webp')) ? 'logos/' + id + '.webp?v=' + Math.round(fs.statSync(path.join(LOGOS_DIR, id + '.webp')).mtimeMs) : null,
       tagline: manifest.tagline || '',
+      // L'état du projet, décidé par Jean dans Mes applis (jamais déduit d'une phrase).
+      etat: ['actif', 'pause', 'archive'].includes(manifest.etat) ? manifest.etat : 'actif',
       repo: manifest.repo || '',
       platforms: manifest.platforms || [],
       services: services.filter((sid) => SERVICES.some((s) => s.id === sid)),

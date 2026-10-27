@@ -87,6 +87,7 @@ export const api = {
   consigneIndexation: (id) => request(`/api/indexation/consigne?id=${encodeURIComponent(id)}`),
   applis: () => request('/api/applis'),
   synchroApplis: () => request('/api/applis/synchro', { method: 'POST' }),
+  changerEtat: (id, etat) => request(`/api/applis/${id}/etat`, { method: 'POST', body: JSON.stringify({ etat }) }),
   accueil: () => request('/api/accueil'),
   routines: () => request('/api/routines'),
   performancesGoogle: () => request('/api/indexation/performances'),
