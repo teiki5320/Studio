@@ -1,6 +1,6 @@
 # PUBLICATION — état de la mise en ligne
 
-> Mis à jour le 26 octobre 2026, d'après le site en ligne et les exécutions GitHub Actions.
+> Mis à jour le 27 octobre 2026, d'après le site en ligne et les exécutions GitHub Actions.
 >
 > Aucun secret ici — uniquement des références.
 
@@ -8,7 +8,7 @@
 
 - **Production** : en ligne sur keurfoot.com depuis le 20 octobre 2026
 - **Domaine & SSL** : Cloudflare, certificat valide jusqu'au 18 janvier 2027, renouvelé seul
-- **Visibilité** : sitemap de 98 adresses ; 95 pages indexées par Google (relevé du 25 octobre)
+- **Visibilité** : sitemap de 99 adresses (page Actus ajoutée le 27 octobre) ; 95 pages indexées par Google (relevé du 25 octobre)
 - **Contact** : keurfoot@toakeur.com
 
 ## Boutiques
@@ -37,10 +37,10 @@
 |---|---|
 | Adresse | **En ligne** sur https://keurfoot.com (vérifié le 26 octobre 2026 : réponse 200) |
 | Hébergeur | Cloudflare, Worker de fichiers statiques `keurfoot` (`wrangler.jsonc`), workflow `deploy.yml` |
-| Dernière publication | 26 octobre 2026, publication programmée réussie |
-| Mise en ligne | 20 octobre 2026 (version provisoire sur GitHub Pages depuis le 17 octobre) |
+| Dernière publication | 27 octobre 2026, rubrique Actus (la précédente, programmée, le 26 octobre) |
+| Mise en ligne | 20 octobre 2026 (version provisoire sur GitHub Pages du 17 au 20 octobre, remplacée par Cloudflare) |
 | Dépôt | https://github.com/teiki5320/keurfoot |
-| Taille publiée | 98 adresses dans le sitemap (26 octobre 2026) |
+| Taille publiée | 99 adresses dans le sitemap (27 octobre 2026) |
 | Contact affiché | `keurfoot@toakeur.com` |
 | Maintenance | désactivée (`content/maintenance.json`) |
 
@@ -56,7 +56,7 @@
 
 ## Visibilité
 
-- **Sitemap** : https://keurfoot.com/sitemap.xml répond (98 adresses, dont 8 articles Conseils, le 26 octobre 2026) ; `robots.txt` autorise tout
+- **Sitemap** : https://keurfoot.com/sitemap.xml répond (99 adresses, dont 8 articles Conseils et la page Actus, le 27 octobre 2026) ; `robots.txt` autorise tout
   et cite le sitemap.
 - **Google Search Console** : propriété `keurfoot.com` vérifiée ; sitemap envoyé le 20 octobre 2026,
   sans erreur, relu par Google le 25 octobre ; 95 pages sur 97 indexées, 1 explorée mais pas encore

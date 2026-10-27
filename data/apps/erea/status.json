@@ -3,10 +3,10 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-24T04:42:54Z",
-    "url": "https://github.com/teiki5320/erea/actions/runs/40063403386"
+    "updatedAt": "2026-10-27T05:45:23Z",
+    "url": "https://github.com/teiki5320/erea/actions/runs/40457071507"
   },
-  "fetchedAt": "2026-10-24T04:45:04.172Z",
+  "fetchedAt": "2026-10-27T05:49:36.224Z",
   "boutiques": {
     "appStore": {
       "version": "1.0.5",

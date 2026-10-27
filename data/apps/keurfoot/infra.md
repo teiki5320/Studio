@@ -1,22 +1,23 @@
 # INFRA — fiche technique
 
-Mis à jour le 26 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
+Mis à jour le 27 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
 ## En bref
 
 - **Plateforme** : site web éditorial sur le football africain, en français, ordinateur et mobile
 - **Stack** : Next.js 16 en export statique, React 19, Tailwind CSS 4
-- **Backend** : aucun — site statique, sans base ni compte
+- **Backend** : aucun — site statique, sans base ni compte ; actus lues en direct depuis la veille (GitHub Pages)
 - **Distribution** : Worker de fichiers statiques Cloudflare, publié par GitHub Actions
-- **Site** : keurfoot.com (98 adresses dans le sitemap)
+- **Site** : keurfoot.com (99 adresses dans le sitemap)
 - **IA et outils** : illustrations faites avec OpenArt, épingles générées au build
 
 ## Parcours
 
 - 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build [ok] → ☁️ Cloudflare Workers — Worker keurfoot [ok] → 🌍 keurfoot.com — en ligne, réponse 200 [ok]
-- 📝 **Contenu** : ✍️ Conseils — 8 publiés, 13 programmés jusqu'au 25 novembre 2026 [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — 95 sur 97 indexées au 25 octobre [ok]
+- 📝 **Contenu** : ✍️ Conseils — 8 publiés, 25 programmés jusqu'au 23 décembre 2026 [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — 95 sur 97 indexées au 25 octobre [ok]
 - 🛒 **Affiliation** : 🛍️ Boutique et fiches — boutons Amazon [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurfootfr-21 [ok] → 🌐 Site déclaré chez Amazon — à vérifier dans la console [à faire] → 🔗 Liens directs — aucun ASIN, recherches seulement [pas encore]
+- 🗞️ **Actus** : 🤖 Tâche Claude — 12 h et 19 h [ok] → 🐙 Dépôt teiki5320/veille — actus/keurfoot.json [ok] → 📄 GitHub Pages — fichier et images [ok] → 🌍 keurfoot.com — accueil, /actus, fiches sélection [ok]
 - 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en place [ok] → ✅ Examen du site — demandé le 20 octobre [à faire] → 🧱 Blocs d'annonces — aucun identifiant renseigné [pas encore]
 
 ## Vue d'ensemble
@@ -31,8 +32,9 @@ uniquement des noms de variables et de consoles.
 - **Backend** : aucun. Site entièrement statique (dossier `out/`), sans base de données ni compte.
   Seuls cookies possibles : ceux de Google AdSense, après accord dans le bandeau de consentement de
   Google (lien « Cookies » en pied de page).
-- **Taille** : 98 adresses dans le sitemap au 26 octobre 2026 (54 sélections, 15 joueurs,
-  10 Top 10, 2 pages CAN, 8 articles Conseils publiés, boutique, pages de liste et pages légales).
+- **Taille** : 99 adresses dans le sitemap au 27 octobre 2026 (54 sélections, 15 joueurs,
+  10 Top 10, 2 pages CAN, 8 articles Conseils publiés, boutique, page Actus, pages de liste et
+  pages légales).
 - **Images** : illustrations originales créées avec OpenArt puis découpées par
   `scripts/decouper-planche.mjs` (voir docs/ILLUSTRATIONS.md) ; épingles Pinterest des Top 10
   générées avant chaque build par `scripts/epingles.mts` (satori et resvg), dans `public/epingles/`.
@@ -57,12 +59,31 @@ uniquement des noms de variables et de consoles.
 - **Fournisseur** : Cloudflare, Worker de fichiers statiques `keurfoot` (pas Cloudflare Pages),
   décrit dans `wrangler.jsonc` et publié par `npx wrangler deploy` depuis `deploy.yml`. Pas
   d'adresse technique `workers.dev` ni d'aperçus publics : seul keurfoot.com sert le site.
-- **En-têtes** : `public/_headers` (politique de sécurité limitée au site lui-même, à Google AdSense
-  et à Cloudflare Web Analytics, HSTS, cache des images).
+- **En-têtes** : `public/_headers` (politique de sécurité limitée au site lui-même, à Google AdSense,
+  à Cloudflare Web Analytics et, depuis le 27 octobre 2026, à `teiki5320.github.io` pour le
+  fichier et les images des actus (connect-src et img-src seulement) ; HSTS, cache des images).
 - **Redirections** : `public/_redirects`.
 - **Ancienne adresse** : https://teiki5320.github.io/keurfoot/ (version provisoire du 17 au
   20 octobre 2026) ne sert plus qu'une page de renvoi vers keurfoot.com, en `noindex`.
 - **Console** : tableau de bord Cloudflare, rubrique Workers & Pages → `keurfoot`.
+
+## Veille actus
+
+- **Rôle** : actus du football africain (titre reformulé, résumé réécrit, lien vers la source,
+  image libre de droits avec son crédit) affichées depuis le 27 octobre 2026 sur l'accueil
+  (4 actus), la page `/actus` (20 actus) et chaque fiche sélection (3 actus du pays, bloc absent
+  s'il n'y en a aucune).
+- **Service** : une tâche Claude prépare le fichier 2 fois par jour (12 h et 19 h) dans le dépôt
+  public `teiki5320/veille` ; le site lit ce fichier depuis `teiki5320.github.io` (pages GitHub
+  du dépôt de la veille, pas celles du site) :
+  https://teiki5320.github.io/veille/actus/keurfoot.json (schéma v3 :
+  https://teiki5320.github.io/veille/schema/actus-schema-v3.json). Les images sont copiées au même
+  endroit (photos Wikimedia ou Openverse, ou carte générée « Illustration : Keur Foot »).
+- **Côté site** : `src/lib/veille.ts` et `src/components/actus/`. Le fichier est lu dans le
+  navigateur du visiteur (délai 8 s, cache de 15 min dans la session) ; le site n'est pas
+  reconstruit à chaque passage. En cas de panne, les blocs s'effacent sans casser la page. Google
+  ne voit pas les actus : c'est voulu.
+- **Console** : https://github.com/teiki5320/veille (onglet Actions pour les passages).
 
 ## Nom de domaine
 

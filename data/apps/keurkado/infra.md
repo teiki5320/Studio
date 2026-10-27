@@ -1,6 +1,6 @@
 # INFRA — fiche technique
 
-Mis à jour le 26 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
+Mis à jour le 27 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
 ## En bref
@@ -51,7 +51,7 @@ uniquement des noms de variables et de consoles.
   - `pinterest.yml` (« Publier les épingles Pinterest ») : chaque jour à 4 h 17 UTC, au plus 5 épingles
     du manifeste (`config/pinterest.json`), jamais deux du même Top le même jour, dans le tableau de sa
     rubrique, puis enregistre `data/pinterest-etat.json` sur `main` (les 21 épingles programmées à la
-    main y sont notées). Clé du compte en place : les exécutions des 24 et 25 octobre 2026 se sont connectées à
+    main y sont notées). Clé du compte en place : les exécutions du 24 au 27 octobre 2026 se sont connectées à
     Pinterest et n'ont rien publié, les 21 épingles actuelles étant déjà programmées à la main.
 - **Console** : https://github.com/teiki5320/keurkado (branche `main` uniquement).
 - **Secrets** : `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID`, réglés dans les secrets

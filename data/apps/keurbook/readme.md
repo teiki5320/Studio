@@ -1,6 +1,6 @@
 # Keurbook — les livres des auteurs d'Afrique subsaharienne
 
-Site en français qui présente des **livres et BD d'auteurs d'Afrique subsaharienne** (et de leur diaspora), écrits en français ou traduits : fiches livres, fiches auteurs, littérature de chaque pays et une rubrique **Conseils** (articles le lundi, le mercredi et le vendredi) et des pages **Top 10** (11 onglets). Le site ne vend rien : les boutons « Acheter sur Amazon » mènent à Amazon.fr (programme Partenaires).
+Site en français qui présente des **livres et BD d'auteurs d'Afrique subsaharienne** (et de leur diaspora), écrits en français ou traduits : fiches livres, fiches auteurs, littérature de chaque pays et une rubrique **Conseils** (articles le lundi, le mercredi et le vendredi) et des pages **Top 10** (11 onglets), plus des **Actus du livre africain** lues en direct depuis la veille actus (depuis le 27 octobre 2026). Le site ne vend rien : les boutons « Acheter sur Amazon » mènent à Amazon.fr (programme Partenaires).
 
 - **Site** : https://keurbook.com (`www.keurbook.com` sert le même site ; adresse canonique sans www). Publié sur Cloudflare Pages (projet `keurbook`).
 - **Dépôt** : https://github.com/teiki5320/keurbook.
@@ -25,6 +25,7 @@ Le site est **100 % statique** : pas de serveur, pas de base de données. Livres
 | Pays (seulement ceux qui ont au moins un livre) | `/pays`, `/pays/<slug>` |
 | Conseils (lundi, mercredi et vendredi) | `/conseils`, `/conseils/<slug>` |
 | Top 10 (11 onglets thématiques ; `/top-10` ouvre le premier) | `/top-10`, `/top-10/<slug>` |
+| Actus du livre africain (20 dernières actus, lues en direct ; 4 sur l'accueil, 3 par fiche auteur) | `/actus` |
 | Ma pile à lire (dans le navigateur, sans compte, partageable par lien) | `/pile-a-lire` |
 | Pages légales | `/mentions-legales`, `/confidentialite`, `/conditions` |
 
@@ -44,6 +45,7 @@ Le site est **100 % statique** : pas de serveur, pas de base de données. Livres
 | Thèmes, genres, publics | `src/lib/themes.ts` |
 | Articles Conseils | `content/conseils/<slug>.md` (paraissent à leur date : lundi, mercredi ou vendredi) |
 | Top 10 | `src/lib/top10/sujets.ts` (11 onglets) |
+| Actus (veille) | lues dans le navigateur depuis `https://teiki5320.github.io/veille/actus/keurbook.json` (`src/lib/veille.ts`, `src/components/actus/`) ; `public/veille/entites.json` (liste des auteurs pour la veille) est généré au build par `scripts/veille-entites.mjs` |
 
 Règles de rédaction : [`docs/REDACTION.md`](docs/REDACTION.md). Champs exacts : `src/lib/types.ts`. Les tests (`npm test`) vérifient la cohérence : chaque auteur a un pays d'Afrique subsaharienne, chaque livre une fiche auteur, chaque lien d'article une page existante, etc.
 

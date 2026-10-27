@@ -1,7 +1,8 @@
 # Keur Foot
 
 Le football africain pour tous les passionnés : sélections nationales, CAN, grands joueurs, classements Top 10,
-boutique supporter (liens Amazon Partenaires) et conseils d'achat. Un site TOA KEUR, construit sur la base technique
+boutique supporter (liens Amazon Partenaires), conseils d'achat et actus du foot africain (depuis le 27 octobre 2026,
+lues en direct depuis https://teiki5320.github.io/veille/actus/keurfoot.json, voir `src/lib/veille.ts`). Un site TOA KEUR, construit sur la base technique
 de Keurbook (Next.js 16 statique, Tailwind 4, données dans le code).
 
 ## Commandes
