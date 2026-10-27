@@ -28,5 +28,6 @@
   "boutiques": {
     "appStore": "com.toa.kultiva",
     "googlePlay": "com.toa.kultiva"
-  }
+  },
+  "etat": "pause"
 }
