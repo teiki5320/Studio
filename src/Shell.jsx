@@ -151,6 +151,8 @@ const ICONES = {
     </>
   ),
   lune: <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" />,
+  menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+  fermer: <path d="M6 6l12 12M18 6L6 18" />,
 };
 
 export function Icone({ id, petite = false }) {
@@ -232,6 +234,37 @@ function Sidebar({ active, running }) {
   );
 }
 
+// Téléphone : la barre d'onglets du bas peut être cachée par celle de Safari,
+// alors un bouton Menu en haut ouvre aussi la liste des pages.
+function MenuTelephone() {
+  const [ouvert, setOuvert] = useState(false);
+  const ici = window.location.hash.replace(/^#\//, '').split('/')[0];
+  return (
+    <>
+      <button className="clay-pill rf-menu-tel" onClick={() => setOuvert(true)} title="Menu" aria-label="Ouvrir le menu" aria-expanded={ouvert}>
+        <Icone id="menu" />
+      </button>
+      {ouvert ? (
+        <div className="rf-menu-fond" onClick={() => setOuvert(false)}>
+          <nav className="rf-menu-liste" aria-label="Pages" onClick={(e) => e.stopPropagation()}>
+            <button className="clay-pill rf-menu-fermer" onClick={() => setOuvert(false)} aria-label="Fermer le menu">
+              <Icone id="fermer" />
+            </button>
+            {NAV.filter((n) => n.id !== 'sep').map((n) => (
+              <a key={n.id} href={`#/${n.path}`} className={`rf-menu-lien${ici === n.path ? ' on' : ''}`} onClick={() => setOuvert(false)}>
+                <span className="clay-nav-ic">
+                  <Icone id={n.id} />
+                </span>
+                {n.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      ) : null}
+    </>
+  );
+}
+
 function TopBar({ title, onBack, theme, onTheme }) {
   return (
     <header className="clay-top">
@@ -241,6 +274,7 @@ function TopBar({ title, onBack, theme, onTheme }) {
         </button>
       )}
       <h1>{title}</h1>
+      <MenuTelephone />
       <button className="clay-pill" onClick={onTheme} title="Thème clair / sombre" aria-label="Thème clair ou sombre">
         <Icone id={theme === 'clair' ? 'lune' : 'soleil'} />
       </button>

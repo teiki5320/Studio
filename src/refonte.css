@@ -835,3 +835,71 @@ html:root .accueil .ac-fr.ko {
     padding: 16px;
   }
 }
+
+/* ---------- Bouton Menu (téléphone) ----------
+   La barre de Safari peut recouvrir les onglets du bas : le menu s'ouvre aussi d'en haut. */
+.rf-menu-tel,
+.rf-menu-fond {
+  display: none;
+}
+@media (max-width: 760px) {
+  .clay-shell .clay-top .rf-menu-tel {
+    display: grid;
+  }
+  .clay-shell .clay-top {
+    gap: 10px;
+  }
+  .clay-shell .clay-side {
+    background: var(--carte);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .rf-menu-fond {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: rgba(0, 0, 0, 0.45);
+  }
+  .rf-menu-liste {
+    position: absolute;
+    top: calc(12px + env(safe-area-inset-top));
+    right: 12px;
+    left: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    border-radius: 22px;
+    background: var(--carte);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+    animation: rf-monte 0.25s var(--doux) both;
+  }
+  .rf-menu-fermer {
+    align-self: flex-end;
+  }
+  .rf-menu-lien {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 10px;
+    border-radius: 14px;
+    color: var(--texte);
+    font-size: 17px;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .rf-menu-lien .clay-nav-ic {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--accent-doux);
+    color: var(--accent);
+  }
+  .rf-menu-lien.on {
+    background: var(--accent-doux);
+    color: var(--accent);
+  }
+}
