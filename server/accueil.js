@@ -51,11 +51,19 @@ async function sonderSites() {
       try {
         const res = await fetch(url, { redirect: 'follow', signal: AbortSignal.timeout(10000) });
         data[id] = { url, code: res.status, etat: res.ok ? 'ok' : 'ko' };
-      } catch {
-        data[id] = { url, code: null, etat: 'inconnu' };
+      } catch (e) {
+        data[id] = { url, code: null, etat: 'inconnu', erreur: e.cause?.code || e.message };
       }
     }),
   );
+  // Tous injoignables d'un coup = c'est la connexion du Mac, pas les sites
+  // (vu le 28/10 : coupure de 3 min, puis tout gris pendant des heures).
+  // On garde le dernier état connu et on resonde dans 1 minute.
+  if (Object.values(data).every((d) => d.etat === 'inconnu')) {
+    console.error('Accueil — aucun site joignable :', Object.values(data)[0]?.erreur);
+    cacheSites = { at: Date.now() - 9 * 60 * 1000, data: cacheSites.data || data };
+    return cacheSites.data;
+  }
   cacheSites = { at: Date.now(), data };
   return data;
 }
