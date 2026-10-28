@@ -62,7 +62,7 @@ import { chargeArticles, logoKeurDeco, VUES } from './keurdeco.js';
 import { composeMusic, composeSfx } from './music.js';
 import { chargeLivres, logoKeurbook } from './keurbook.js';
 import { chargeCultures, optiledRepo } from './optiled.js';
-import { iconeErea, evenementsCelebres, fichiersFrise, cartesDuJeu } from './erea.js';
+import { iconeErea, evenementsCelebres, fichiersFrise, cartesDuJeu, sujetEvite } from './erea.js';
 import { cartesJouables, carteSerment, finsDuJeu, palais, fichiersPalabre, sonDeLaReponse, applique, JAUGES, palabreRepo } from './palabre.js';
 import { chargeEspeces, aSemer, tamassi, fondPastel, iconeKultiva, REGIONS, MOIS } from './kultiva.js';
 import { applyVoicePreset } from './voicepresets.js';
@@ -2397,6 +2397,9 @@ export function verifieAvantApres(raw) {
 }
 
 function verifieFormatErea(fmt, raw, cartes = []) {
+  if (sujetEvite(JSON.stringify(raw))) {
+    return 'sujet à éviter (abbé Pierre, Emmaüs) : choisis un autre événement';
+  }
   if (fmt === 'avantapres') {
     return verifieAvantApres(raw);
   }

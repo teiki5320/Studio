@@ -48,12 +48,18 @@ export function iconeErea() {
   return '';
 }
 
+// Sujets que les pubs Erea n'abordent jamais (choix de Jean) : personnes visées par des affaires
+// ces dernières années. Ajouter ici une expression par sujet.
+export const SUJETS_EVITES = [/abb[ée]\s+pierre/i, /emma[üu]s/i];
+export const sujetEvite = (texte) => SUJETS_EVITES.some((re) => re.test(String(texte || '')));
+const carteEvitee = (e) => sujetEvite([e.titre, e.description, e.anecdote].join(' '));
+
 // Quelques événements du jeu, pour inspirer Claude (personnages célèbres).
 export function evenementsCelebres(n = 80) {
   const ev = JSON.parse(fs.readFileSync(path.join(ereaRepo(), 'erea_flutter/assets/events.json'), 'utf8'));
   const liste = Array.isArray(ev) ? ev : ev.events || [];
   return liste
-    .filter((e) => (e.niveau || 3) <= 2)
+    .filter((e) => (e.niveau || 3) <= 2 && !carteEvitee(e))
     .sort(() => Math.random() - 0.5)
     .slice(0, n)
     .map((e) => `${e.annee} — ${e.titre}`);
@@ -85,5 +91,5 @@ export function fichiersFrise() {
 // les pubs « Petite histoire » : le sujet est TOUJOURS une vraie carte d'Erea.
 export function cartesDuJeu() {
   const ev = JSON.parse(fs.readFileSync(path.join(ereaRepo(), 'erea_flutter/assets/events.json'), 'utf8'));
-  return (Array.isArray(ev) ? ev : ev.events || []).filter((e) => Number.isFinite(Number(e.annee)) && e.titre);
+  return (Array.isArray(ev) ? ev : ev.events || []).filter((e) => Number.isFinite(Number(e.annee)) && e.titre && !carteEvitee(e));
 }
