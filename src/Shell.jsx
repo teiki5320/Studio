@@ -416,13 +416,15 @@ function PubPage({ projects, onOpenRepo }) {
     const ordre = applis.apps.map((a) => String(a.repo || '').toLowerCase());
     api
       .githubRepos()
-      .then((d) =>
-        setRepos(
-          (d.repos || [])
-            .filter((r) => !NOT_ADVERTISED.has(r.name.toLowerCase()) && ordre.includes(r.fullName.toLowerCase()))
-            .sort((a, b) => ordre.indexOf(a.fullName.toLowerCase()) - ordre.indexOf(b.fullName.toLowerCase())),
-        ),
-      )
+      .then((d) => {
+        const vus = (d.repos || []).filter((r) => !NOT_ADVERTISED.has(r.name.toLowerCase()) && ordre.includes(r.fullName.toLowerCase()));
+        // Un dépôt privé (toakeur) n'est pas dans la liste publique de GitHub :
+        // la fiche de Mes applis suffit pour lui donner son onglet.
+        const prives = applis.apps
+          .filter((a) => a.repo && !vus.some((r) => r.fullName.toLowerCase() === a.repo.toLowerCase()) && !NOT_ADVERTISED.has(String(a.repo).split('/')[1].toLowerCase()))
+          .map((a) => ({ name: String(a.repo).split('/')[1], fullName: a.repo, label: a.name }));
+        setRepos([...vus, ...prives].sort((a, b) => ordre.indexOf(a.fullName.toLowerCase()) - ordre.indexOf(b.fullName.toLowerCase())));
+      })
       .catch((e) => {
         // GitHub injoignable : les applis de « Mes applis » suffisent pour
         // ouvrir leur page (le dépôt est écrit dans chaque fiche).

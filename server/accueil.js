@@ -14,7 +14,7 @@ import { routines, routinesDuJour } from './routines.js';
 import { applis } from './applis.js';
 
 // L'adresse publique de chaque site suivi (clé = dossier data/apps/<id>).
-const SITES = {
+export const SITES = {
   alohash: 'https://www.keurcook.com',
   optiled: 'https://www.kultiled.com',
   keurdeco: 'https://www.keurdeco.com',

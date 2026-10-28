@@ -112,7 +112,7 @@ import {
 } from './indexation.js';
 import { applis, construireApplis, synchroniserApplis, synchroDue, changerEtat } from './applis.js';
 import { pointDuMatin, deposerPoint, demanderCorbeille } from './point.js';
-import { accueil } from './accueil.js';
+import { accueil, SITES } from './accueil.js';
 import { listeAfaire, deposer as deposerAfaire, envoyer as envoyerAfaire, fileAfaire, retourAfaire, envoyerGithub } from './afaire.js';
 import { routines } from './routines.js';
 import { audience, etatCloudflare, enregistrerCle as enregistrerCleCloudflare, oublierCle as oublierCleCloudflare } from './audience.js';
@@ -542,16 +542,31 @@ app.post('/api/ads/from-repo', async (req, res) => {
   }
   try {
     const { repos } = await listRepos();
-    const known = repos.find((r) => r.fullName.toLowerCase() === wanted);
+    let known = repos.find((r) => r.fullName.toLowerCase() === wanted);
+    // Dépôt privé (toakeur) : invisible sans jeton GitHub, on lit alors le
+    // site lui-même, d'après l'adresse suivie sur l'Accueil.
+    const fiche = (applis()?.apps || []).find((a) => String(a.repo || '').toLowerCase() === wanted);
+    const url = !known && fiche ? SITES[fiche.id] : null;
+    if (!known && url) known = { fullName: fiche.repo, label: fiche.name };
     if (!known) {
       res.status(400).json({ error: 'Ce dépôt ne fait pas partie de ton compte GitHub.' });
       return;
     }
     const job = startJob(`Campagne ${known.label}`, async (update) => {
-      update(`Lecture du dépôt ${known.fullName}…`, 0.1);
-      const brief = await fetchRepoBrief(known.fullName);
-      update('Claude remplit la fiche de l’appli…', 0.3);
-      const { fields } = briefFields(await askClaudeForJson(buildRepoBriefPrompt(brief)), brief.label);
+      let fields;
+      let brief;
+      if (url) {
+        update(`Lecture du site ${url}…`, 0.1);
+        const site = await fetchSiteBrief(url);
+        brief = { label: known.label, description: '' };
+        update('Claude remplit la fiche…', 0.3);
+        ({ fields } = briefFields(await askClaudeForJson(buildSiteBriefPrompt(site)), known.label));
+      } else {
+        update(`Lecture du dépôt ${known.fullName}…`, 0.1);
+        brief = await fetchRepoBrief(known.fullName);
+        update('Claude remplit la fiche de l’appli…', 0.3);
+        ({ fields } = briefFields(await askClaudeForJson(buildRepoBriefPrompt(brief)), brief.label));
+      }
       const pitch =
         fields.pitch.length >= 10 ? fields.pitch : brief.description || `${fields.name}, l'appli à découvrir.`;
       return createAdProject(
