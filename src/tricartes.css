@@ -68,6 +68,7 @@
 .tc-dj .tc-logo { width: 28px; justify-content: center; }
 .tc-dj .tx { flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .tc-dj .tx small { display: block; font-size: 11.5px; font-weight: 700; color: var(--c-muted); }
+.tc-dj .tx .choisi { display: block; margin-top: 3px; font-size: 13px; font-weight: 700; color: var(--accent); }
 .tc-dj .rep { flex: none; width: 88px; text-align: center; font-size: 12px; font-weight: 800; padding: 4px 0; border-radius: 999px; background: var(--carte-2); color: var(--c-muted); }
 .tc-dj .rep.oui { background: var(--accent); color: var(--accent-ink); }
 .tc-dj .rep.ticket { background: rgba(159, 195, 240, .16); color: #9fc3f0; }

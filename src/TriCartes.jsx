@@ -423,7 +423,6 @@ function Rond({ lab, taille, d, couleur, principal, ...props }) {
 
 function reponseDe(e) {
   if (e.ticket) return ['Claude', 'ticket'];
-  if (e.reponseJean) return [court(e.reponseJean.split(' — ')[0], 48), e.etat === 'envoye' ? 'oui' : ''];
   if (e.etat === 'encours') return ['Ensemble', 'ens'];
   if (e.attendJusqua) return ['Attendre', 'ens'];
   if (e.source === 'point' && e.choix) return e.choix === 'oui' ? ['Oui', 'oui'] : ['Non', ''];
@@ -493,6 +492,7 @@ export function DecidesDuJour({ elements, onAgir }) {
             </span>
             <span className="tx">
               {e.texte}
+              {e.reponseJean ? <span className="choisi">Ton choix : {court(e.reponseJean.split(' — ')[0], 140)}</span> : null}
               <small>{[e.site, SOURCES[e.source] || e.source].filter(Boolean).join(' · ')}</small>
             </span>
             <span className={`rep ${repCl}`}>{rep}</span>
