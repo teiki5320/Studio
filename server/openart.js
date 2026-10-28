@@ -140,6 +140,27 @@ function noRegenerate(message) {
   return e;
 }
 
+// Traduit le « ERREUR: … » renvoyé par la session OpenArt. Une panne du
+// fournisseur (upstream_error, system_error, génération FAILED) n'est ni un
+// manque de crédits ni un souci de connexion, même si la cause cite le coût
+// du clip ou le MCP : on la nomme pour ce qu'elle est.
+function openartError(cause, mcpName, prefix = 'OpenArt') {
+  if (/upstream_error|system_error|\b100[27]\b|FAILED|côté (fournisseur|PixVerse|Kling|Wan|Seedance)/i.test(cause)) {
+    const e = new Error(`${prefix} : le modèle d'animation est en panne chez le fournisseur — réessaie plus tard avec « Réparer ». (${cause})`);
+    e.providerDown = true;
+    return e;
+  }
+  if (/(insuffisant|insufficient|not enough|pas assez|épuisé).{0,40}cr[ée]dit|cr[ée]dits?.{0,40}(insuffisant|insufficient|épuisé)/i.test(cause)) {
+    return new Error(`${prefix} : crédits insuffisants — ${cause}`);
+  }
+  if (/unauthori[sz]ed|\b401\b|authentifi|login|reconnect|token (expir|invalid)/i.test(cause)) {
+    return new Error(
+      `${prefix} : problème d'authentification MCP — relance \`claude\`, tape /mcp, et reconnecte "${mcpName}". (${cause})`,
+    );
+  }
+  return new Error(`${prefix} : ${cause}`);
+}
+
 async function downloadFile(url, { minBytes = 5000, timeoutMs = 120000, label = "l'image" } = {}) {
   let res;
   try {
@@ -209,15 +230,7 @@ export async function openartGenerate({ prompt, referenceUrls = [], referenceKin
       );
       if (/^ERREUR\s*:/i.test(text)) {
         const cause = text.replace(/^ERREUR\s*:/i, '').trim();
-        if (/credit|crédit/i.test(cause)) {
-          throw new Error(`OpenArt : crédits insuffisants — ${cause}`);
-        }
-        if (/auth|connect|login|token/i.test(cause)) {
-          throw new Error(
-            `OpenArt : problème d'authentification MCP — relance \`claude\`, tape /mcp, et reconnecte "${mcpName}". (${cause})`,
-          );
-        }
-        throw new Error(`OpenArt : ${cause}`);
+        throw openartError(cause, mcpName);
       }
       const urls = [...text.matchAll(/https?:\/\/[^\s"'<>)\]]+/g)].map((m) => m[0]);
       if (urls.length === 0) {
@@ -251,7 +264,7 @@ export async function openartGenerate({ prompt, referenceUrls = [], referenceKin
   throw lastErr;
 }
 
-function buildVideoInstruction({ prompt, imageUrl, referenceUrls, durationSec }) {
+function buildVideoInstruction({ prompt, imageUrl, referenceUrls, durationSec, echecPrecedent = '' }) {
   const source = imageUrl
     ? `\n- IMPORTANT — image-to-video : anime EXACTEMENT cette image (utilise-la comme image de départ / première frame, les visages et le décor doivent rester IDENTIQUES) :\n  ${imageUrl}`
     : referenceUrls.length > 0
@@ -265,6 +278,10 @@ function buildVideoInstruction({ prompt, imageUrl, referenceUrls, durationSec })
     process.env.OPENART_VIDEO_MODEL
       ? `utilise EXACTEMENT le modèle "${process.env.OPENART_VIDEO_MODEL}".`
       : `utilise un modèle image-to-video ÉCONOMIQUE (Wan, Seedance standard ou Fast, PixVerse standard, Kling standard). INTERDICTION ABSOLUE d'utiliser une version Pro / Master / Premium / Omni ou tout modèle coûtant plus d'environ 60 crédits par clip — vérifie le coût avant de lancer, et en cas de doute prends le MOINS CHER qui accepte une image de référence.`
+  }${
+    echecPrecedent
+      ? `\n- IMPORTANT — un premier essai vient d'échouer chez le fournisseur : « ${echecPrecedent} ». Prends un AUTRE modèle que celui-là, toujours économique.`
+      : ''
   }
 - RÈGLE ABSOLUE : personne ne parle dans le clip. Bouches FERMÉES et immobiles, aucun mouvement de lèvres (la voix off est ajoutée séparément, sans synchronisation labiale). Reformule le prompt si nécessaire pour que le modèle le respecte.
 Attends la fin de la génération — cela peut prendre plusieurs minutes, patiente et vérifie le statut si nécessaire. Puis réponds UNIQUEMENT avec l'URL directe du fichier vidéo généré (.mp4, une seule ligne, aucune autre phrase). Si la génération échoue, réponds "ERREUR: " suivi de la cause exacte.`;
@@ -294,15 +311,7 @@ export async function openartTalkingVideo({ imageUrl, audioUrl }) {
       );
       if (/^ERREUR\s*:/i.test(text)) {
         const cause = text.replace(/^ERREUR\s*:/i, '').trim();
-        if (/credit|crédit/i.test(cause)) {
-          throw new Error(`OpenArt : crédits insuffisants — ${cause}`);
-        }
-        if (/auth|connect|login|token/i.test(cause)) {
-          throw new Error(
-            `OpenArt : problème d'authentification MCP — relance \`claude\`, tape /mcp, et reconnecte "${mcpName}". (${cause})`,
-          );
-        }
-        throw new Error(`OpenArt lip-sync : ${cause}`);
+        throw openartError(cause, mcpName, 'OpenArt lip-sync');
       }
       const urls = [...text.matchAll(/https?:\/\/[^\s"'<>)\]]+/g)].map((m) => m[0]);
       const candidates = urls.filter((u) => u !== imageUrl && u !== audioUrl);
@@ -343,22 +352,16 @@ export async function openartGenerateVideo({
   let lastErr;
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
+      // Après une panne du fournisseur, le second essai change de modèle.
+      const echecPrecedent = lastErr && lastErr.providerDown ? lastErr.message.slice(0, 300) : '';
       const text = await askOpenArt(
-        buildVideoInstruction({ prompt, imageUrl, referenceUrls, durationSec }),
+        buildVideoInstruction({ prompt, imageUrl, referenceUrls, durationSec, echecPrecedent }),
         mcpName,
         VIDEO_TIMEOUT_MS,
       );
       if (/^ERREUR\s*:/i.test(text)) {
         const cause = text.replace(/^ERREUR\s*:/i, '').trim();
-        if (/credit|crédit/i.test(cause)) {
-          throw new Error(`OpenArt : crédits insuffisants — ${cause}`);
-        }
-        if (/auth|connect|login|token/i.test(cause)) {
-          throw new Error(
-            `OpenArt : problème d'authentification MCP — relance \`claude\`, tape /mcp, et reconnecte "${mcpName}". (${cause})`,
-          );
-        }
-        throw new Error(`OpenArt : ${cause}`);
+        throw openartError(cause, mcpName);
       }
       const urls = [...text.matchAll(/https?:\/\/[^\s"'<>)\]]+/g)].map((m) => m[0]);
       if (urls.length === 0) {

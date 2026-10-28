@@ -37,6 +37,7 @@ import {
   retryFailedAssets,
 } from './pipeline.js';
 import { renderEpisode } from './render.js';
+import { sceneShots } from '../shared/catalog.js';
 
 const FILE = path.join(STUDIO_DIR, 'queue.json');
 const KEEP_FINISHED = 30;
@@ -341,6 +342,13 @@ async function produceItem(it, update) {
   const sansImage = (ep.scenes || []).filter((sc) => !sc.image && !sc.videoDisabled && !dessineeParLeStudio(sc));
   if (sansImage.length) {
     throw new Error(`${sansImage.length} image(s) ratée(s) (${sansImage[0].imageError || 'OpenArt'}) : la vidéo n'est pas montée. Arrêtée après 1 réparation automatique : à regarder ensemble avec Claude.`);
+  }
+  // Même règle pour les clips : une pub prévue animée ne se monte pas en
+  // images fixes. Le plus souvent le modèle d'animation est en panne chez
+  // OpenArt : « Réparer » relance seulement les clips manquants.
+  const sansClip = (ep.scenes || []).flatMap((sc) => [sc, ...sceneShots(sc)]).filter((x) => x.videoError && !x.videoDisabled);
+  if (sansClip.length) {
+    throw new Error(`${sansClip.length} clip(s) non animé(s) (${sansClip[0].videoError}) : la vidéo n'est pas montée. Relance avec « Réparer » quand le modèle remarche.`);
   }
 
   // 3. Montage, puis rangement dans iCloud
