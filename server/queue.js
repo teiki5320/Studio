@@ -31,6 +31,7 @@ import {
   createPalabreAd,
   PALABRE_FORMATS,
   createEreaAd,
+  dessineeParLeStudio,
   EREA_FORMATS,
   produceEpisode,
   retryFailedAssets,
@@ -321,8 +322,9 @@ async function produceItem(it, update) {
   await produceEpisode(p, number, step('Fabrication', 0.05, 0.8));
 
   // 2 bis. Réparation automatique : une image ou une voix ratée est refaite
-  // une fois avant le montage (l'existant n'est pas repayé). Si elle rate
-  // encore, on monte quand même : le plan reste sur fond sombre.
+  // une fois avant le montage (l'existant n'est pas repayé). Si une image
+  // manque encore, on ne monte PAS (une pub sur fond noir ne sert à rien) :
+  // la ligne passe en erreur, et « Réparer » la reprend plus tard.
   const ep = p.episodes.find((e) => e.number === number);
   const missing = (ep.scenes || []).some(
     (sc) => (!sc.image && !sc.videoDisabled) || sc.imageError || sc.videoError || (sc.lines || []).some((l) => !l.audio),
@@ -333,6 +335,11 @@ async function produceItem(it, update) {
     } catch (e) {
       console.error(`File d'attente — réparation incomplète (${it.label}) :`, e.message);
     }
+  }
+
+  const sansImage = (ep.scenes || []).filter((sc) => !sc.image && !sc.videoDisabled && !dessineeParLeStudio(sc));
+  if (sansImage.length) {
+    throw new Error(`${sansImage.length} image(s) ratée(s) (${sansImage[0].imageError || 'OpenArt'}) : la vidéo n'est pas montée. Relance la réparation.`);
   }
 
   // 3. Montage, puis rangement dans iCloud

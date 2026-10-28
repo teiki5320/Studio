@@ -17,7 +17,8 @@ function detectMcpName() {
   }
   if (!mcpNamePromise) {
     mcpNamePromise = new Promise((resolve, reject) => {
-      execFile(claudeBin(), ['mcp', 'list'], { timeout: 60000 }, (err, stdout) => {
+      // `claude mcp list` vérifie chaque serveur : il dépasse parfois la minute.
+      execFile(claudeBin(), ['mcp', 'list'], { timeout: 240000 }, (err, stdout) => {
         const lines = String(stdout || '').split('\n');
         const hit = lines.find((l) => /openart/i.test(l));
         if (hit) {

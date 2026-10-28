@@ -2342,20 +2342,20 @@ export const EREA_PREMIERES = {
     title: 'Rosa Parks, le siège du bus',
     id: 76,
     ecran: "Elle va changer l'Amérique… assise",
-    accroche: "Cette femme va changer l'Amérique… sans se lever de son siège.",
+    accroche: "Cette femme va changer l'Amérique… sans se lever.",
     moment1: {
-      voix: 'Montgomery, 1955. Le chauffeur lui ordonne de céder sa place à un Blanc. Rosa Parks ne bouge pas. Menottes.',
+      voix: 'Montgomery, 1955. On lui ordonne de céder sa place. Rosa Parks refuse.',
       imagePrompt:
         'Montgomery, Alabama, December 1955, inside a 1950s city bus: Rosa Parks, a dignified African-American woman in her forties (round glasses, hair pinned up, dark wool coat, small hat), sits calmly by the window, hands on her handbag, looking straight ahead with quiet determination; the bus driver stands in the aisle; warm dim winter light, realistic cinematic photo, close shot, everyone with closed mouths, vertical 9:16, no text, no logo, no watermark',
       motionPrompt: 'Rosa Parks stays perfectly still and calm, she slowly turns her head toward the window; the driver gestures in the aisle; slow push-in on her face',
     },
     moment2: {
-      voix: "Le lendemain, toute la ville noire laisse les bus vides. Pendant 381 jours, on marche.",
+      voix: 'Le lendemain, les bus roulent vides. Pendant 381 jours, on marche.',
       imagePrompt:
         'Montgomery, Alabama, 1956: a wide street at dawn, hundreds of African-American men and women in 1950s coats walking together to work along the sidewalks while an empty city bus passes by, dignified and determined, realistic cinematic wide shot, vertical 9:16, no text, no logo, no watermark',
       motionPrompt: 'the crowd walks steadily forward along the street, the empty bus drives slowly past, gentle crane shot rising above the marchers',
     },
-    chute: 'Et la Cour suprême finit par lui donner raison. Un seul siège a tout changé.',
+    chute: "Un seul siège a fait plier l'Amérique.",
     ecranChute: 'Un siège a tout changé',
   },
 };
@@ -2416,6 +2416,19 @@ function verifieFormatErea(fmt, raw, cartes = []) {
     }
     if (/brevet|disponible sur/i.test(JSON.stringify(raw))) {
       return 'mot interdit (« brevet » ou « disponible sur »)';
+    }
+    // 20 secondes en tout : les textes doivent rester très courts.
+    const mots = (t) => String(t || '').split(/\s+/).filter(Boolean).length;
+    const trop = [
+      ['accroche', raw.accroche, 12],
+      ['moment1.voix', m1.voix, 16],
+      ['moment2.voix', m2.voix, 16],
+      ['chute', raw.chute, 11],
+    ]
+      .filter(([, t, max]) => mots(t) > max)
+      .map(([nom, t, max]) => `« ${nom} » fait ${mots(t)} mots, ${max - 2} au plus`);
+    if (trop.length) {
+      return `textes trop longs : ${trop.join(' ; ')} — coupe sans pitié`;
     }
     return '';
   }
@@ -2522,7 +2535,7 @@ export async function createEreaFormatAd(project, fmt, update) {
   } else {
     update('Claude écrit une nouvelle version…');
     let motif = '';
-    for (let essai = 0; essai < 2; essai++) {
+    for (let essai = 0; essai < 3; essai++) {
       raw = await askClaudeForJson(
         buildEreaFormatPrompt({ format: fmt, exemple: EREA_PREMIERES[fmt], deja: faits.slice(-30), idees: fmt === 'petitehistoire' ? [] : evenementsCelebres(30), cartes }) +
           (motif ? `\n\nATTENTION, ta proposition précédente était fausse : ${motif}. Recommence.` : ''),
@@ -2642,16 +2655,14 @@ export async function createEreaFormatAd(project, fmt, update) {
         choc: { etiquette: '📜 PETITE HISTOIRE', texte: String(raw.ecran || '').slice(0, 60), fonts },
         lines: [...role('mystere', raw.accroche), ...role('recit', raw.moment1.voix)],
       }),
-      // Ce qu'il a changé, en plus large.
-      base(1, { ...visuel(raw.moment2), lines: role('recit', raw.moment2.voix) }),
-      // La chute : le détail étonnant.
-      base(2, ecran({
-        carton: { etiquette: '🤯 LE DÉTAIL', texte: String(raw.ecranChute || '').slice(0, 60), taille: 80, fonts },
-        durationSec: 3,
-        lines: role('touchant', raw.chute),
-      })),
+      // Ce qu'il a changé, en plus large, puis la chute sur la même image.
+      base(1, {
+        ...visuel(raw.moment2),
+        choc: [{ etiquette: '🤯 LE DÉTAIL', texte: String(raw.ecranChute || '').slice(0, 60), ligne: 1, fonts }],
+        lines: [...role('recit', raw.moment2.voix), ...role('touchant', raw.chute)],
+      }),
       // La carte se pose sur la frise du jeu, à sa date.
-      base(3, ecran({
+      base(2, ecran({
         reperes: {
           depart: Math.max(-3000, annee - 200),
           dates: [{ annee, affichage: annee < 0 ? `${-annee} av. J.-C.` : String(annee), legende: `${carte.emoji || ''} ${carte.titre}`.trim().slice(0, 70) }],
@@ -3421,7 +3432,7 @@ export async function ensureEpisodeScript(project, number, update) {
 
 // Écrans dessinés par le studio lui-même (frise d'Erea, écrans de Palabre) :
 // aucune image à générer, donc aucun crédit dépensé.
-const dessineeParLeStudio = (scene) =>
+export const dessineeParLeStudio = (scene) =>
   Boolean(
     scene.frise || scene.palabre || scene.ereaLogo || scene.slogan || scene.bascule ||
       scene.reperes || scene.recherche || scene.compteARebours || scene.comparaison || scene.carton,

@@ -419,14 +419,14 @@ export const EreaQuestion = ({ titre, texte, fonts, haut = false }) => {
   );
 };
 
-// Petite histoire : la phrase choc en grand sur l'image, le temps que la voix
-// la dise (jusqu'à la frame `fin`), puis elle s'efface et l'image respire.
-export const EreaChoc = ({ etiquette, texte, fonts, fin }) => {
+// Petite histoire : une phrase en grand sur l'image, le temps que la voix la
+// dise (de la frame `debut` à `fin`), puis elle s'efface et l'image respire.
+export const EreaChoc = ({ etiquette, texte, fonts, debut = 0, fin }) => {
   const frame = useCurrentFrame();
   const { fps, width } = useVideoConfig();
   useFonts(fonts);
-  const opacity = interpolate(frame, [0, 0.25 * fps, fin, fin + 0.4 * fps], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
-  const y = interpolate(frame, [0, 0.4 * fps], [40, 0], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
+  const opacity = interpolate(frame, [debut, debut + 0.25 * fps, fin, fin + 0.4 * fps], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const y = interpolate(frame, [debut, debut + 0.4 * fps], [40, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
   const scale = width / LOGICAL_W;
   return (
     <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'flex-start', paddingTop: 260, opacity }}>

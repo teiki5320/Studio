@@ -636,14 +636,13 @@ export const Scene = ({ scene, characters, assetBase, isFirst, episodeTitle, epi
       {/* Pub : incrustation qui situe le plan (lieu, année) */}
       {scene.stat && scene.stat.valeur ? <StatOverlay valeur={scene.stat.valeur} label={scene.stat.label} /> : null}
       {scene.sticker ? <Sticker src={`${assetBase}/${scene.sticker}`} size={scene.stickerSize || 0.62} y={scene.stickerY || 0} /> : null}
-      {scene.choc ? (
-        <EreaChoc
-          etiquette={scene.choc.etiquette}
-          texte={scene.choc.texte}
-          fonts={ereaAssets(scene.choc, assetBase).fonts}
-          fin={(lineOffsets(scene)[0] || 0) + Math.round(((scene.lines || [])[0]?.audioDurationSec || 3) * FPS) + Math.round(0.3 * FPS)}
-        />
-      ) : null}
+      {[].concat(scene.choc || []).map((c, k) => {
+        // Chaque phrase en grand reste à l'écran pendant sa réplique (c.ligne).
+        const i = c.ligne || 0;
+        const debut = i ? lineOffsets(scene)[i] || 0 : 0;
+        const fin = (lineOffsets(scene)[i] || 0) + Math.round((((scene.lines || [])[i] || {}).audioDurationSec || 3) * FPS) + Math.round(0.3 * FPS);
+        return <EreaChoc key={k} etiquette={c.etiquette} texte={c.texte} fonts={ereaAssets(c, assetBase).fonts} debut={debut} fin={fin} />;
+      })}
       {scene.question ? (
         <EreaQuestion titre={scene.question.titre} texte={scene.question.texte} haut={scene.question.haut} fonts={ereaAssets(scene.question, assetBase).fonts} />
       ) : null}
