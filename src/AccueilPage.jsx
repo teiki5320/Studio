@@ -377,6 +377,21 @@ export function AccueilPage() {
     const t = setInterval(() => setMaintenant(minutesMaintenant()), 60000);
     return () => clearInterval(t);
   }, []);
+  // Les choix d'une carte sont écrits par Claude en arrière-plan : tant qu'une
+  // carte à trier n'a pas les siens, on relit la liste (3 min au plus).
+  const sansChoix = (af?.elements || []).some((e) => e.etat === 'a-faire' && !e.action && !e.options);
+  useEffect(() => {
+    if (!sansChoix) return;
+    const debut = Date.now();
+    const t = setInterval(() => (Date.now() - debut > 180000 ? clearInterval(t) : chargerAf()), 10000);
+    return () => clearInterval(t);
+  }, [sansChoix]);
+  // Retour sur l'onglet (iPad) : on relit la liste.
+  useEffect(() => {
+    const vu = () => document.visibilityState === 'visible' && chargerAf();
+    document.addEventListener('visibilitychange', vu);
+    return () => document.removeEventListener('visibilitychange', vu);
+  }, []);
   if (!data) return <div className="clay-content clay-muted">{error || 'Chargement…'}</div>;
 
   const apps = data.apps;
