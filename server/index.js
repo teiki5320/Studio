@@ -128,6 +128,7 @@ import {
   buildSiteBriefPrompt,
 } from './claudegen.js';
 import { generateStoryboard, clearStoryboard } from './storyboard.js';
+import { sujetEvite } from './erea.js';
 import {
   STUDIO_DIR,
   loadStudio,
@@ -1252,7 +1253,7 @@ function supprimerEpisode(p, ep) {
       // dossier d'export indisponible (iCloud) : on n'insiste pas
     }
   }
-  if (p.mode === 'chaine' && ep.topic) {
+  if (p.mode === 'chaine' && ep.topic && !sujetEvite(ep.topic)) {
     p.topicIdeas = [ep.topic, ...(p.topicIdeas || []).filter((t) => t !== ep.topic)].slice(0, 20);
   }
   p.episodes = (p.episodes || []).filter((e) => e.number !== ep.number);
