@@ -324,7 +324,8 @@ async function produceItem(it, update) {
   // 2 bis. Réparation automatique : une image ou une voix ratée est refaite
   // une fois avant le montage (l'existant n'est pas repayé). Si une image
   // manque encore, on ne monte PAS (une pub sur fond noir ne sert à rien) :
-  // la ligne passe en erreur, et « Réparer » la reprend plus tard.
+  // la ligne passe en erreur et RIEN ne la relance tout seul (choix de Jean :
+  // un seul essai automatique, ensuite on regarde ensemble).
   const ep = p.episodes.find((e) => e.number === number);
   const missing = (ep.scenes || []).some(
     (sc) => (!sc.image && !sc.videoDisabled) || sc.imageError || sc.videoError || (sc.lines || []).some((l) => !l.audio),
@@ -339,7 +340,7 @@ async function produceItem(it, update) {
 
   const sansImage = (ep.scenes || []).filter((sc) => !sc.image && !sc.videoDisabled && !dessineeParLeStudio(sc));
   if (sansImage.length) {
-    throw new Error(`${sansImage.length} image(s) ratée(s) (${sansImage[0].imageError || 'OpenArt'}) : la vidéo n'est pas montée. Relance la réparation.`);
+    throw new Error(`${sansImage.length} image(s) ratée(s) (${sansImage[0].imageError || 'OpenArt'}) : la vidéo n'est pas montée. Arrêtée après 1 réparation automatique : à regarder ensemble avec Claude.`);
   }
 
   // 3. Montage, puis rangement dans iCloud
