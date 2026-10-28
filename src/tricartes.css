@@ -93,3 +93,24 @@ html[data-theme='clair'] .tc-tampon.bas { color: #6a43a0; }
   .tc-dj .st { width: auto; flex: 1; }
   .tc-dj .rep { margin-left: 58px; }
 }
+
+/* Les choix de Claude sur la carte (Jean, 28/10 : « comme dans la conversation »). */
+.tc-scene.avec-choix { height: 600px; }
+.tc-carte.fixe { cursor: default; touch-action: auto; user-select: text; -webkit-user-select: text; }
+.avec-choix .tc-face.recto { overflow-y: auto; overscroll-behavior: contain; }
+.avec-choix .tc-titre { font-size: 21px; }
+.tc-choix { display: flex; flex-direction: column; gap: 8px; margin-top: auto; padding-top: 6px; }
+.tc-option { all: unset; box-sizing: border-box; cursor: pointer; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 10px 14px; border-radius: 14px; background: var(--carte, rgba(255,255,255,.04)); box-shadow: 0 0 0 1px var(--ligne); font-size: 15.5px; font-weight: 650; line-height: 1.3; }
+.tc-option b { flex: none; width: 28px; height: 28px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: var(--carte-2); box-shadow: 0 0 0 1px var(--ligne); font-size: 14px; }
+.tc-option span { flex: 1; }
+.tc-option em { font-style: normal; color: var(--accent); font-weight: 800; }
+.tc-option small { flex: none; font-size: 11.5px; font-weight: 700; color: var(--c-muted); text-align: right; max-width: 96px; }
+.tc-option.conseil { box-shadow: 0 0 0 2px var(--accent); }
+.tc-option.conseil b { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+.tc-option.autre { color: var(--c-muted); }
+.tc-option:disabled { opacity: .5; cursor: default; }
+.tc-option:not(:disabled):active { transform: scale(.98); }
+.tc-libre { display: flex; flex-direction: column; gap: 8px; }
+.tc-libre textarea { box-sizing: border-box; width: 100%; border-radius: 12px; border: 0; padding: 10px 12px; font: inherit; font-size: 15px; background: var(--carte, rgba(255,255,255,.05)); color: inherit; box-shadow: 0 0 0 1px var(--ligne); resize: vertical; }
+.tc-libre > span { display: flex; justify-content: flex-end; gap: 8px; }
+@media (max-width: 760px) { .tc-scene.avec-choix { height: 640px; } .tc-option small { display: none; } }

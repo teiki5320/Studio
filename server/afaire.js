@@ -31,6 +31,7 @@ import { pointDuMatin, repondre, annulerReponse, fileActions, retourAction } fro
 import { comptes } from './comptes.js';
 import { applis } from './applis.js';
 import { planning } from './planning.js';
+import { optionsDe, preparerOptions } from './afaireOptions.js';
 
 const FICHIER = path.join(STUDIO_DIR, 'afaire.json');
 const VERIFICATION = path.join(STUDIO_DIR, 'verification.json');
@@ -49,7 +50,8 @@ const lireJson = (f, defaut) => {
 };
 const lire = () => {
   const d = lireJson(FICHIER, {});
-  return { elements: d.elements || {}, suivi: d.suivi || {}, tickets: d.tickets || {} };
+  // reponses : le choix que Jean a touché (ou écrit) sur la carte, lu par la routine.
+  return { elements: d.elements || {}, suivi: d.suivi || {}, tickets: d.tickets || {}, reponses: d.reponses || {} };
 };
 const ecrire = (d) => {
   // On oublie ce qui est fait depuis plus de 7 jours.
@@ -60,6 +62,7 @@ const ecrire = (d) => {
       delete d.elements[id];
     }
   }
+  for (const [id, r] of Object.entries(d.reponses || {})) if (new Date(r.le).getTime() < vieux) delete d.reponses[id];
   fs.mkdirSync(STUDIO_DIR, { recursive: true });
   fs.writeFileSync(FICHIER, JSON.stringify(d, null, 2));
 };
@@ -580,8 +583,28 @@ export function listeAfaire() {
       bloques: compte((e) => e.etat === 'bloque'),
       faits: compte((e) => e.etat === 'fait'),
     },
-    elements: tout.map((e) => (d.tickets[e.id] ? { ...e, ticket: avecEtat(d.tickets[e.id]) } : e)),
+    elements: avecChoix(tout.map((e) => (d.tickets[e.id] ? { ...e, ticket: avecEtat(d.tickets[e.id]) } : e)), d),
   };
+}
+
+// Les choix préparés par Claude pour chaque carte à trier, et la réponse de
+// Jean pour celles qu'il a tranchées ; les cartes sans choix sont préparées en
+// arrière-plan (une à la fois).
+const aTrierIci = (e) => (e.etat === 'a-faire' || e.etat === 'bloque') && !(e.ticket && e.ticket.etat !== 'a-toi' && e.ticket.etat !== 'regle');
+function avecChoix(elements, d) {
+  const out = elements.map((e) => {
+    const r = d.reponses[e.id];
+    const x = r && e.etat !== 'a-faire' && e.etat !== 'bloque' ? { ...e, reponseJean: r.texte } : e;
+    if (!aTrierIci(e)) return x;
+    const options = optionsDe(e);
+    return options ? { ...x, options } : x;
+  });
+  try {
+    preparerOptions(out.filter((e) => aTrierIci(e) && !e.options));
+  } catch (err) {
+    console.error('À trier — préparation des choix :', err.message);
+  }
+  return out;
 }
 
 // ---------- « Envoyer sur GitHub » ----------
@@ -704,6 +727,10 @@ const PAR_JEAN = ['Réglé par Jean.', 'Noté : on ne fait rien.'];
 const ATTENTE_JOURS = 2; // « Attendre » : la décision revient en carte 2 jours plus tard
 function annuler(e) {
   const d0 = lire();
+  if (d0.reponses[e.id]) {
+    delete d0.reponses[e.id];
+    ecrire(d0);
+  }
   if (d0.suivi[e.id]?.statut === 'attendre') {
     delete d0.suivi[e.id];
     ecrire(d0);
@@ -730,7 +757,7 @@ function annuler(e) {
   throw new Error('Trop tard : Claude est déjà passé');
 }
 
-export function envoyer(id, choix = 'oui') {
+export function envoyer(id, choix = 'oui', reponse = '') {
   if (!['oui', 'non', 'fait', 'encours', 'reprendre', 'annuler', 'attendre'].includes(choix)) throw new Error('Réponse attendue : oui, non, fait, encours, reprendre, annuler ou attendre');
   const e = listeAfaire().elements.find((x) => x.id === id);
   if (!e) throw new Error('Élément introuvable (déjà réglé ?)');
@@ -739,6 +766,11 @@ export function envoyer(id, choix = 'oui') {
     return listeAfaire();
   }
   if (e.etat === 'fait') throw new Error('Déjà fait');
+  if (String(reponse || '').trim()) {
+    const d = lire();
+    d.reponses[id] = { texte: court(reponse, 1500), le: maintenant() };
+    ecrire(d);
+  }
   if (choix === 'attendre') {
     const d = lire();
     d.suivi[id] = { statut: 'attendre', le: maintenant(), jusqua: new Date(Date.now() + ATTENTE_JOURS * JOUR).toISOString(), copie: copie(e) };
@@ -784,6 +816,7 @@ export function envoyer(id, choix = 'oui') {
 // ---------- La file commune, lue par la routine du matin ----------
 export function fileAfaire() {
   const { elements } = listeAfaire();
+  const { reponses } = lire();
   const indexation = new Map(
     fileClaude()
       .filter((f) => !f.disparu)
@@ -793,13 +826,14 @@ export function fileAfaire() {
     .filter((e) => e.etat === 'envoye')
     .map((e) => {
       const ix = indexation.get(e.id);
+      const r = reponses[e.id];
       return {
         id: e.id,
         source: e.source,
         type: e.type,
         site: e.site,
         texte: e.texte,
-        consigne: ix ? ix.consigne : e.consigne,
+        consigne: `${ix ? ix.consigne : e.consigne}${r ? `\n\nJEAN A CHOISI : « ${r.texte} ». Fais exactement cela (et rien d'autre) ; si c'est impossible, ne fais rien et explique pourquoi dans le compte rendu.` : ''}`,
         dossier: ix ? ix.dossier || '' : e.dossier,
         envoyeLe: e.le || null,
       };

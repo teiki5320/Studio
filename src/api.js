@@ -94,7 +94,7 @@ export const api = {
   historiqueGoogle: () => request('/api/indexation/historique'),
   point: () => request('/api/point'),
   afaire: () => request('/api/afaire'),
-  envoyerAfaire: (id, choix = 'oui') => request('/api/afaire/envoyer', { method: 'POST', body: JSON.stringify({ id, choix }) }),
+  envoyerAfaire: (id, choix = 'oui', reponse = '') => request('/api/afaire/envoyer', { method: 'POST', body: JSON.stringify({ id, choix, reponse }) }),
   envoyerGithub: (ids) => request('/api/afaire/github', { method: 'POST', body: JSON.stringify({ ids }) }),
   corbeillePoint: (groupes) => request('/api/point/corbeille', { method: 'POST', body: JSON.stringify({ groupes }) }),
   occasionsGoogle: (site) => request(`/api/indexation/occasions?site=${encodeURIComponent(site)}`),

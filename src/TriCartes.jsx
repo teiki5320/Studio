@@ -96,7 +96,50 @@ function Puce({ e }) {
   return <span className="tc-puce">À FAIRE</span>;
 }
 
-function Recto({ e }) {
+// Ce que déclenche chaque choix écrit par Claude (voir server/afaireOptions.js).
+const CODE_ACTION = { routine: 'oui', fait: 'fait', rien: 'non', ensemble: 'encours', attendre: 'attendre' };
+const QUAND_ACTION = { routine: 'demain 5 h 05', fait: 'déjà fait', rien: 'on classe', ensemble: 'avec Claude', attendre: 'dans 2 jours' };
+
+// Les choix de Claude, comme dans une conversation, plus « Autre chose… ».
+function Choix({ options, onChoisir, occupe }) {
+  const [libre, setLibre] = useState(null);
+  const stop = (x) => x.stopPropagation();
+  return (
+    <div className="tc-choix" onPointerDown={stop} onPointerUp={stop} onKeyDown={stop}>
+      {options.map((o, i) => (
+        <button key={i} type="button" className={`tc-option${i === 0 ? ' conseil' : ''}`} disabled={occupe} onClick={() => onChoisir(o)}>
+          <b>{i + 1}</b>
+          <span>
+            {o.texte}
+            {i === 0 ? <em> (conseillé)</em> : null}
+          </span>
+          <small>{QUAND_ACTION[o.action]}</small>
+        </button>
+      ))}
+      {libre === null ? (
+        <button type="button" className="tc-option autre" disabled={occupe} onClick={() => setLibre('')}>
+          <b>✎</b>
+          <span>Autre chose…</span>
+        </button>
+      ) : (
+        <div className="tc-libre">
+          <textarea autoFocus rows={3} value={libre} placeholder="Écris ce que tu veux que Claude fasse" onChange={(x) => setLibre(x.target.value)} />
+          <span>
+            <button type="button" className="clay-btn ghost small" onClick={() => setLibre(null)}>
+              Fermer
+            </button>
+            <button type="button" className="clay-btn small" disabled={occupe || libre.trim().length < 3} onClick={() => onChoisir({ texte: libre.trim(), action: 'routine', consigne: '' })}>
+              Envoyer (demain 5 h 05)
+            </button>
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Recto({ e, onChoisir, occupe }) {
+  const options = e.options?.length ? e.options : null;
   return (
     <div className="tc-face recto">
       <div className="tc-tete">
@@ -117,10 +160,16 @@ function Recto({ e }) {
           Claude a répondu, à toi : lire sa réponse ↗
         </a>
       ) : null}
-      <div className="tc-vide" />
-      <span className="tc-retourner">
-        <Ic d={ICONES.tourner} taille={16} epais={2.4} /> Touche la carte pour voir ce que fera chaque choix
-      </span>
+      {options ? (
+        <Choix options={options} onChoisir={onChoisir} occupe={occupe} />
+      ) : (
+        <>
+          <div className="tc-vide" />
+          <span className="tc-retourner">
+            <Ic d={ICONES.tourner} taille={16} epais={2.4} /> Touche la carte pour voir ce que fera chaque choix
+          </span>
+        </>
+      )}
     </div>
   );
 }
@@ -183,6 +232,18 @@ export function TriCartes({ elements, onAgir, chargement }) {
   }, [elements, ordre]);
   const e = pile[0];
   const choix = e ? choixDe(e) : {};
+  // Une carte avec les choix de Claude se répond en touchant un choix (ni glissé ni verso).
+  const avecOptions = Boolean(e?.options?.length);
+  const choisir = (o) => {
+    if (occupe) return;
+    setOccupe(true);
+    const id = e.id;
+    const reponse = o.action === 'routine' && o.consigne ? `${o.texte} — ${o.consigne}` : o.texte;
+    onAgir(() => api.envoyerAfaire(id, CODE_ACTION[o.action] || 'oui', reponse)).finally(() => {
+      setOccupe(false);
+      setDernier({ id, texte: e.texte });
+    });
+  };
 
   const agir = (sens) => {
     const c = choix[sens];
@@ -215,7 +276,7 @@ export function TriCartes({ elements, onAgir, chargement }) {
   };
 
   const down = (x) => {
-    if (occupe) return;
+    if (occupe || avecOptions) return;
     depart.current = { x: x.clientX, y: x.clientY, bouge: false };
     try {
       x.currentTarget.setPointerCapture(x.pointerId);
@@ -246,6 +307,7 @@ export function TriCartes({ elements, onAgir, chargement }) {
     else setGlisse({ dx: 0, dy: 0, actif: false });
   };
   const clavier = (x) => {
+    if (avecOptions) return;
     const sens = { ArrowRight: 'droite', ArrowLeft: 'gauche', ArrowUp: 'haut', ArrowDown: 'bas' }[x.key];
     if (sens) {
       x.preventDefault();
@@ -288,7 +350,7 @@ export function TriCartes({ elements, onAgir, chargement }) {
 
       {e ? (
         <>
-          <div className="tc-scene">
+          <div className={`tc-scene${avecOptions ? ' avec-choix' : ''}`}>
             {pile[2] ? <div className="tc-derriere d2" /> : null}
             {pile[1] ? (
               <div className="tc-derriere d1">
@@ -297,7 +359,7 @@ export function TriCartes({ elements, onAgir, chargement }) {
             ) : null}
             <div
               key={e.id}
-              className={`tc-carte${glisse.actif ? ' glisse' : ''}${occupe ? ' occupe' : ''}`}
+              className={`tc-carte${glisse.actif ? ' glisse' : ''}${occupe ? ' occupe' : ''}${avecOptions ? ' fixe' : ''}`}
               role="button"
               tabIndex={0}
               aria-label={`${e.texte}. Flèches pour répondre, Espace pour retourner.`}
@@ -313,7 +375,7 @@ export function TriCartes({ elements, onAgir, chargement }) {
               style={{ transform: `translate(${dx}px, ${dy}px) rotate(${dx / 22}deg)` }}
             >
               <div className={`tc-tourne${verso ? ' verso' : ''}`}>
-                <Recto e={e} />
+                <Recto e={e} onChoisir={choisir} occupe={occupe} />
                 <Verso e={e} choix={choix} />
               </div>
               {sensVu && choix[sensVu] ? (
@@ -324,6 +386,12 @@ export function TriCartes({ elements, onAgir, chargement }) {
             </div>
           </div>
 
+          {avecOptions ? (
+            <div className="tc-boutons">
+              <Rond lab="Annuler" taille={50} onClick={annuler} disabled={!dernier || occupe} d={ICONES.annuler} couleur="var(--run)" />
+              <Rond lab="Passer" taille={50} onClick={passer} disabled={pile.length < 2} d={ICONES.passer} />
+            </div>
+          ) : (
           <div className="tc-boutons">
             <Rond lab="Annuler" taille={50} onClick={annuler} disabled={!dernier || occupe} d={ICONES.annuler} couleur="var(--run)" />
             {choix.gauche ? <Rond lab={choix.gauche.mot} taille={68} onClick={() => agir('gauche')} disabled={occupe} d={e.type === 'decision' ? ICONES.croix : ICONES.check} couleur={e.type === 'decision' ? undefined : 'var(--ok)'} /> : null}
@@ -333,6 +401,7 @@ export function TriCartes({ elements, onAgir, chargement }) {
             <Rond lab="Passer" taille={50} onClick={passer} disabled={pile.length < 2} d={ICONES.passer} />
             {choix.droite ? <Rond lab={choix.droite.mot} taille={68} principal onClick={() => agir('droite')} disabled={occupe} d={e.type === 'decision' ? ICONES.check : e.action === 'planning' || e.action === 'plan' ? ICONES.passer : ICONES.claude} /> : null}
           </div>
+          )}
         </>
       ) : null}
     </section>
@@ -354,6 +423,7 @@ function Rond({ lab, taille, d, couleur, principal, ...props }) {
 
 function reponseDe(e) {
   if (e.ticket) return ['Claude', 'ticket'];
+  if (e.reponseJean) return [court(e.reponseJean.split(' — ')[0], 48), e.etat === 'envoye' ? 'oui' : ''];
   if (e.etat === 'encours') return ['Ensemble', 'ens'];
   if (e.attendJusqua) return ['Attendre', 'ens'];
   if (e.source === 'point' && e.choix) return e.choix === 'oui' ? ['Oui', 'oui'] : ['Non', ''];
