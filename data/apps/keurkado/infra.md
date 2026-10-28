@@ -1,6 +1,6 @@
 # INFRA — fiche technique
 
-Mis à jour le 27 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
+Mis à jour le 28 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
 ## En bref
@@ -46,12 +46,12 @@ uniquement des noms de variables et de consoles.
 - **Rôle** : dépôt du code et des contenus, et trois workflows :
   - `deploy.yml` (« Publier le site ») : lint, types, tests, build, puis publication par
     `npx wrangler deploy` à chaque push sur `main`, chaque lundi, mercredi et vendredi (0 h 15 heure de Paris, pour les
-    articles programmés) et à la main ; dernière exécution réussie le 26 octobre 2026 ;
+    articles programmés) et à la main ; dernière exécution réussie le 28 octobre 2026 (republication programmée du mercredi, 2 h 20 UTC) ;
   - `pages.yml` : publie sur l'ancienne adresse GitHub Pages une page qui renvoie vers keurkado.com ;
   - `pinterest.yml` (« Publier les épingles Pinterest ») : chaque jour à 4 h 17 UTC, au plus 5 épingles
     du manifeste (`config/pinterest.json`), jamais deux du même Top le même jour, dans le tableau de sa
     rubrique, puis enregistre `data/pinterest-etat.json` sur `main` (les 21 épingles programmées à la
-    main y sont notées). Clé du compte en place : les exécutions du 24 au 27 octobre 2026 se sont connectées à
+    main y sont notées). Clé du compte en place : les exécutions du 24 au 28 octobre 2026 se sont connectées à
     Pinterest et n'ont rien publié, les 21 épingles actuelles étant déjà programmées à la main.
 - **Console** : https://github.com/teiki5320/keurkado (branche `main` uniquement).
 - **Secrets** : `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID`, réglés dans les secrets
@@ -105,5 +105,5 @@ uniquement des noms de variables et de consoles.
   s'affiche tant que les blocs ne sont pas créés.
 - **Consentement** : bandeau « Confidentialité et messages » d'AdSense, lien « Gérer mes cookies »
   en pied de page.
-- **Validation du site** : examen demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 27 octobre 2026).
+- **Validation du site** : examen demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 28 octobre 2026).
 - **Console** : https://adsense.google.com (compte AdSense de Jean).

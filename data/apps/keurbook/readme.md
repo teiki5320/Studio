@@ -26,6 +26,7 @@ Le site est **100 % statique** : pas de serveur, pas de base de données. Livres
 | Conseils (lundi, mercredi et vendredi) | `/conseils`, `/conseils/<slug>` |
 | Top 10 (11 onglets thématiques ; `/top-10` ouvre le premier) | `/top-10`, `/top-10/<slug>` |
 | Actus du livre africain (20 dernières actus, lues en direct ; 4 sur l'accueil, 3 par fiche auteur) | `/actus` |
+| Article complet d'une actu (construit 2 fois par jour ; page de secours non indexée pour les plus récents) | `/actus/<adresse>`, `/actus/article?id=<id>` |
 | Ma pile à lire (dans le navigateur, sans compte, partageable par lien) | `/pile-a-lire` |
 | Pages légales | `/mentions-legales`, `/confidentialite`, `/conditions` |
 
@@ -45,7 +46,7 @@ Le site est **100 % statique** : pas de serveur, pas de base de données. Livres
 | Thèmes, genres, publics | `src/lib/themes.ts` |
 | Articles Conseils | `content/conseils/<slug>.md` (paraissent à leur date : lundi, mercredi ou vendredi) |
 | Top 10 | `src/lib/top10/sujets.ts` (11 onglets) |
-| Actus (veille) | lues dans le navigateur depuis `https://teiki5320.github.io/veille/actus/keurbook.json` (`src/lib/veille.ts`, `src/components/actus/`) ; `public/veille/entites.json` (liste des auteurs pour la veille) est généré au build par `scripts/veille-entites.mjs` |
+| Actus (veille) | lues dans le navigateur depuis `https://teiki5320.github.io/veille/actus/keurbook.json` (`src/lib/veille.ts`, `src/components/actus/`) ; `public/veille/entites.json` (liste des auteurs pour la veille) est généré au build par `scripts/veille-entites.mjs` ; tous les articles complets (index `articles/keurbook/index.json`, puis `articles/keurbook/<id>.json`, jamais supprimés) sont lus au build par `scripts/veille-articles.mjs` (`src/lib/data/veille-articles.ts`) |
 
 Règles de rédaction : [`docs/REDACTION.md`](docs/REDACTION.md). Champs exacts : `src/lib/types.ts`. Les tests (`npm test`) vérifient la cohérence : chaque auteur a un pays d'Afrique subsaharienne, chaque livre une fiche auteur, chaque lien d'article une page existante, etc.
 
@@ -94,7 +95,7 @@ Même fonctionnement que Keur Cook : le workflow `.github/workflows/deploy.yml` 
 ### Publicité (Google AdSense)
 
 - Compte AdSense `pub-2680784147246798` (comptes de gestion sur `admin@toakeur.com`). Le script est chargé sur les pages (`src/app/layout.tsx`, identifiant dans `src/lib/config.ts`) et `public/ads.txt` est publié.
-- **Le site n'est pas encore validé par Google** : première demande le 12 octobre 2026, refusée le 21 octobre (contenu jugé trop mince) ; fiches rallongées, nouvel examen demandé le 22 octobre 2026 (état à vérifier dans la console). Aucune annonce ne s'affiche tant que Google n'a pas validé le site. Détail : [`docs/PUBLICITE.md`](docs/PUBLICITE.md).
+- **Le site n'est pas encore validé par Google** : première demande le 12 octobre 2026, refusée le 21 octobre (contenu jugé trop mince) ; fiches rallongées, nouvel examen demandé le 22 octobre 2026, « En préparation » dans la console (vérifié le 28 octobre 2026). Aucune annonce ne s'affiche tant que Google n'a pas validé le site. Détail : [`docs/PUBLICITE.md`](docs/PUBLICITE.md).
 
 ### État de la mise en route
 

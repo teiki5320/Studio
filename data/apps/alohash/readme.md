@@ -20,7 +20,7 @@ Le site est **100 % statique** : pas de serveur, pas de base de données. Recett
 - Pages pays, **favoris sans compte** (stockés dans le navigateur).
 - **Conseils** : articles Markdown (`content/conseils/`), trois articles par semaine (lundi, mercredi, vendredi), publication programmée (voir `docs/CONSEILS.md`).
 - **Top 10** (`/top-10/<sujet>`) : 10 classements de dix produits de la boutique (voir « Top 10 » ci-dessous).
-- **Actus de la cuisine africaine** (`/actus`, 20 actus ; 4 sur l'accueil, 3 par page pays) : lues dans le navigateur depuis `https://teiki5320.github.io/veille/actus/keurcook.json` (`src/lib/veille.ts`, `src/components/actus/`), préparées 2 fois par jour (12 h et 19 h) par la veille actus (dépôt `teiki5320/veille`) ; rien ne s'affiche s'il n'y a pas d'actu.
+- **Actus de la cuisine africaine** (`/actus`, 20 actus ; 4 sur l'accueil, 3 par page pays) : lues dans le navigateur depuis `https://teiki5320.github.io/veille/actus/keurcook.json` (`src/lib/veille.ts`, `src/components/actus/`), préparées 2 fois par jour (12 h et 19 h) par la veille actus (dépôt `teiki5320/veille`) ; rien ne s'affiche s'il n'y a pas d'actu. Depuis le 28 octobre 2026, toute la carte d'une actu ouvre son **article complet** (300 à 450 mots) sur le site : page `/actus/<adresse>` construite au build (`scripts/articles-veille.ts` télécharge tous les articles de l'index `articles/keurcook/index.json`, jamais supprimés, dans `.veille/articles.json`, `src/app/(shop)/actus/[slug]/`), sinon page de secours `/actus/article?id=…` lue dans le navigateur (noindex, hors sitemap), sinon la source quand l'article n'est pas encore rédigé. Veille injoignable au build : 0 page article, le build continue.
 - Boutique par gammes, fiche produit avec « Utilisé dans ces recettes », bouton « Acheter · prix » vers Amazon.fr.
 - **Mode maintenance** : écran « On prépare la marmite », activé ou coupé depuis GitHub (voir « Maintenance » ci-dessous).
 
@@ -47,7 +47,7 @@ Données dans `src/lib/demo/top10.ts`, vérifiées par `tests/top10.test.ts`. Ch
 ### Publicité (Google AdSense)
 
 - Compte AdSense `pub-2680784147246798` (comptes de gestion sur `admin@toakeur.com`). Script chargé dans `src/app/layout.tsx`, emplacements « Publicité » (`src/components/ads/AdSlot.tsx`, `src/lib/ads.ts`) et `public/ads.txt` en place.
-- **Le site est encore en examen chez Google** (demande faite le 12 octobre 2026 ; « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 27 octobre 2026)) : aucune annonce ne s'affiche tant que Google n'a pas validé le site.
+- **Le site est encore en examen chez Google** (demande faite le 12 octobre 2026 ; « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 28 octobre 2026)) : aucune annonce ne s'affiche tant que Google n'a pas validé le site.
 
 ### Pinterest
 
@@ -60,7 +60,7 @@ Publication automatique (même système que Keur Déco, depuis le 23 octobre 202
 - **Aucune allégation de santé** : liste de termes à risque (« soigne », « bienfaits », « digestion »… — voir `src/lib/compliance.ts`). Cette liste ne remplace pas une relecture humaine.
 - **Étiquetage alimentaire** : ingrédients, allergènes et conservation sur chaque fiche produit.
 - Pages **conditions d'utilisation** (`/conditions`, CGU ; `/cgv` y redirige), **mentions légales**, **politique de confidentialité** ; consentement aux cookies recueilli par le **message de Google** (Confidentialité et messages, dans AdSense), que le lien « Cookies » du pied de page rouvre (`src/components/compliance/CookieBanner.tsx`). Hébergeur indiqué : Cloudflare, Inc.
-- Données structurées Google **Recipe**, **Article**, fil d'Ariane et listes (pas de **Product** sur les fiches produit), sitemap avec les recettes, les pays et les articles publiés.
+- Données structurées Google **Recipe**, **Article**, fil d'Ariane et listes (pas de **Product** sur les fiches produit), sitemap avec les recettes, les pays, les articles publiés et les articles d'actus (NewsArticle).
 
 > ⚠️ Les textes légaux sont des **modèles** à faire valider.
 
@@ -100,6 +100,7 @@ Workflow GitHub Actions `.github/workflows/deploy.yml` (« Publier le site »), 
 
 - à chaque push sur `main` ;
 - chaque lundi, mercredi et vendredi à 0 h 15, heure de Paris en hiver (1 h 15 en été ; cron), pour publier les articles « Conseils » programmés ;
+- chaque jour à 12 h 50 et 19 h 50, heure de Paris en hiver (13 h 50 et 20 h 50 en été ; cron `50 11,18 * * *`), après la veille actus : chaque nouvel article d'actu devient sa page `/actus/<adresse>` ;
 - à la main (onglet **Actions → Publier le site → Run workflow**) ;
 - après le bouton « Maintenance ».
 
@@ -144,7 +145,7 @@ Servis par Cloudflare Pages :
 
 ```
 .github/workflows/
-  deploy.yml           publication sur Cloudflare Pages (push, lundi/mercredi/vendredi, à la main, après maintenance)
+  deploy.yml           publication sur Cloudflare Pages (push, lundi/mercredi/vendredi, 2 fois par jour après la veille, à la main, après maintenance)
   maintenance.yml      bouton « Maintenance » (modifie content/maintenance.json et republie)
   indexnow.yml         signale les pages à Bing via IndexNow (lundi 3 h UTC et à la main)
 content/

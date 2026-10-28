@@ -1,6 +1,6 @@
 # MARKETING — plan marketing & rémunération
 
-Mis à jour le 26 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
+Mis à jour le 28 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
 publications réelles, ou routine qui publie).
 
 ## Positionnement
@@ -16,7 +16,7 @@ publications réelles, ou routine qui publie).
 ## Rémunération par phases
 
 - [fait] **Aujourd'hui** : affiliation Amazon Partenaires (tag `keurkadofr-21`) ; le site ne vend rien.
-- [en cours] **Publicité AdSense** : script et ads.txt en ligne, examen du site demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 27 octobre 2026), blocs d'annonces à créer.
+- [en cours] **Publicité AdSense** : script et ads.txt en ligne, examen du site demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 28 octobre 2026), blocs d'annonces à créer.
 - **Liens Amazon directs** : 53 cadeaux sur 95 mènent à leur fiche ; étendre les ASIN vérifiés aux autres.
 - **Saison des fêtes** : Noël et colis de fin d'année, période où l'affiliation rapporte le plus.
 - **Partenariats** : mises en avant payées par des créateurs ou boutiques africaines, une fois l'audience mesurée.
@@ -54,7 +54,7 @@ publications réelles, ou routine qui publie).
 
 ## Les 3 priorités
 
-- AdSense : examen de keurkado.com demandé le 20 octobre 2026, « En préparation » au 27 octobre ; créer les trois blocs « Keur Kado - top / rubrique / article »
+- AdSense : examen de keurkado.com demandé le 20 octobre 2026, « En préparation » au 28 octobre ; créer les trois blocs « Keur Kado - top / rubrique / article »
   et renseigner leurs identifiants, pour que les annonces s'affichent.
 - Faire indexer la dernière page manquante et suivre les positions dans Google (61 pages sur 62
   indexées au 27 octobre 2026).
