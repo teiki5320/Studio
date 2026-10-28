@@ -418,3 +418,26 @@ export const EreaQuestion = ({ titre, texte, fonts, haut = false }) => {
     </AbsoluteFill>
   );
 };
+
+// Petite histoire : la phrase choc en grand sur l'image, le temps que la voix
+// la dise (jusqu'à la frame `fin`), puis elle s'efface et l'image respire.
+export const EreaChoc = ({ etiquette, texte, fonts, fin }) => {
+  const frame = useCurrentFrame();
+  const { fps, width } = useVideoConfig();
+  useFonts(fonts);
+  const opacity = interpolate(frame, [0, 0.25 * fps, fin, fin + 0.4 * fps], [0, 1, 1, 0], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' });
+  const y = interpolate(frame, [0, 0.4 * fps], [40, 0], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
+  const scale = width / LOGICAL_W;
+  return (
+    <AbsoluteFill style={{ alignItems: 'center', justifyContent: 'flex-start', paddingTop: 260, opacity }}>
+      <div style={{ width: LOGICAL_W - 40, transform: `translateY(${y}px) scale(${scale})`, transformOrigin: '50% 0', textAlign: 'center' }}>
+        {etiquette ? (
+          <div style={{ display: 'inline-block', padding: '4px 14px', borderRadius: 999, background: '#9B7BF7', fontFamily: 'Nunito', fontWeight: 900, fontSize: 12, letterSpacing: 1, color: '#fff', marginBottom: 10 }}>
+            {etiquette}
+          </div>
+        ) : null}
+        <div style={{ fontFamily: 'Baloo2', fontWeight: 800, fontSize: 38, lineHeight: 1.08, color: '#fff', textShadow: '0 3px 14px rgba(0,0,0,0.75), 0 1px 3px rgba(0,0,0,0.9)' }}>{texte}</div>
+      </div>
+    </AbsoluteFill>
+  );
+};

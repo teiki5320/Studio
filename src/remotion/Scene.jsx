@@ -10,7 +10,7 @@ import {
   useVideoConfig,
 } from 'remotion';
 import { SafeImg } from './SafeImg.jsx';
-import { EreaFrise, EreaQuestion } from './EreaFrise.jsx';
+import { EreaChoc, EreaFrise, EreaQuestion } from './EreaFrise.jsx';
 import { PalabreJeu } from './PalabreJeu.jsx';
 import { EreaLogoIntro, EreaRevelation, EreaSlogan, EreaHistorien, EreaBascule, EreaCatastrophe } from './EreaPub.jsx';
 import { EreaCompteARebours, EreaComparaison, EreaCarton, EreaReperes, EreaRecherche } from './EreaFormats.jsx';
@@ -636,6 +636,14 @@ export const Scene = ({ scene, characters, assetBase, isFirst, episodeTitle, epi
       {/* Pub : incrustation qui situe le plan (lieu, année) */}
       {scene.stat && scene.stat.valeur ? <StatOverlay valeur={scene.stat.valeur} label={scene.stat.label} /> : null}
       {scene.sticker ? <Sticker src={`${assetBase}/${scene.sticker}`} size={scene.stickerSize || 0.62} y={scene.stickerY || 0} /> : null}
+      {scene.choc ? (
+        <EreaChoc
+          etiquette={scene.choc.etiquette}
+          texte={scene.choc.texte}
+          fonts={ereaAssets(scene.choc, assetBase).fonts}
+          fin={(lineOffsets(scene)[0] || 0) + Math.round(((scene.lines || [])[0]?.audioDurationSec || 3) * FPS) + Math.round(0.3 * FPS)}
+        />
+      ) : null}
       {scene.question ? (
         <EreaQuestion titre={scene.question.titre} texte={scene.question.texte} haut={scene.question.haut} fonts={ereaAssets(scene.question, assetBase).fonts} />
       ) : null}

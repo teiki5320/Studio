@@ -1448,12 +1448,12 @@ ${json}
 ${regles}`;
   }
   if (format === 'petitehistoire') {
-    return `Tu écris une pub TikTok d'environ 30 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise. Format « PETITE HISTOIRE » : on raconte, comme un conteur, la vraie histoire derrière UNE carte du jeu.
-DÉROULÉ (monté par le studio) : logo ; ACCROCHE (~3 s) : une phrase qui intrigue, avec la date et le lieu ; RÉCIT en 2 moments (~10 s chacun), chacun sur UNE image animée : « moment1 » = le moment lui-même, au plus près des personnages ; « moment2 » = ce qu'il a changé, plus large et spectaculaire ; CHUTE (~3 s) : un détail étonnant et VRAI (tu peux t'appuyer sur l'anecdote de la carte) ; puis la carte se pose sur la frise et le narrateur dit « Retrouve cette histoire dans Erea ! » (rien à écrire pour cette fin).
-Ton : sérieux et touchant, phrases courtes, à l'oral, on raconte (pas de « tu » dans le récit). Longueurs : accroche 18 mots maximum, chaque « voix » 26 mots maximum, chute 16 mots maximum.
+    return `Tu écris une pub TikTok d'environ 20 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise. Format « PETITE HISTOIRE » : la vraie histoire derrière UNE carte du jeu, racontée comme un thriller de 20 secondes.
+DÉROULÉ (monté par le studio) : on ENTRE DIRECT dans l'image du « moment1 », sans logo ni carton ; la voix lance l'ACCROCHE, une phrase choc qui crée un mystère (on ne sait pas encore de qui ou de quoi on parle, ex. « Cette femme va changer l'Amérique… sans se lever de son siège. ») ; puis le RÉCIT en 2 moments, chacun sur UNE image animée : « moment1 » = le moment lui-même, au plus près des personnages (date et lieu dits dans la voix) ; « moment2 » = ce qu'il a changé, plus large et spectaculaire ; CHUTE (~3 s) : le détail le plus étonnant, VRAI, gardé pour la fin (tu peux t'appuyer sur l'anecdote de la carte) ; puis la carte se pose sur la frise et le narrateur dit « Retrouve cette histoire dans Erea ! » (rien à écrire pour cette fin).
+Ton : un conteur qui captive, vif et ému. AU PRÉSENT, phrases très courtes (souvent 3 à 8 mots), des chiffres concrets, du suspense ; jamais de liste de faits ni de phrase de manuel. On raconte (pas de « tu » dans le récit). Longueurs : accroche 14 mots maximum, chaque « voix » 20 mots maximum, chute 14 mots maximum.
 CHOISIS UNE SEULE CARTE dans cette liste (et AUCUNE autre), en recopiant son « id » ; choisis-en une qui fait une belle histoire humaine, connue et vérifiable :
 ${cartes.map((c) => `- id ${c.id} — ${c.annee} — ${c.emoji || ''} ${c.titre} : ${c.desc || ''}${c.fun ? ` (anecdote : ${c.fun})` : ''}`).join('\n')}
-« ecran » : la date et le lieu à l'écran, 2 lignes courtes séparées par \\n. « ecranChute » : le détail en 6 mots maximum, à l'écran. Images : photo réaliste cinématographique de SON époque (tenues, décor, objets justes), personne ne parle (bouches fermées), rien de choquant (ni sang ni blessure).
+« ecran » : l'accroche résumée à l'écran, 7 mots maximum (ex. « Elle va changer l'Amérique… assise »). « ecranChute » : le détail en 6 mots maximum, à l'écran. Images : photo réaliste cinématographique de SON époque (tenues, décor, objets justes), personne ne parle (bouches fermées), rien de choquant (ni sang ni blessure).
 ${json}
 ${regles}`;
   }

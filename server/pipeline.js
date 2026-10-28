@@ -2081,9 +2081,11 @@ export const EREA_VOIX = {
   historien: { voice: 'aQROLel5sQbj1vuIVi6B', settings: { stability: 0.68, similarity_boost: 0.8, style: 0.3, speed: 0.95 } },
   panique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
   dynamique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
-  // Petite histoire : toujours Troy, mais sérieux et touchant pour le récit.
-  recit: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[serious]' } },
-  touchant: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[warm]' } },
+  // Petite histoire : toujours Troy — intrigant pour la phrase choc, conteur vif
+  // et habité pour le récit, ému pour la chute (Jean, 28/10 : le récit était plat).
+  mystere: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[mysterious]' } },
+  recit: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[dramatic]' } },
+  touchant: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[emotional]' } },
 };
 export const ACCROCHE_EREA = 'Avec Erea, devenez les maîtres du temps.';
 export function accrocheErea(fonts) {
@@ -2339,22 +2341,22 @@ export const EREA_PREMIERES = {
   petitehistoire: {
     title: 'Rosa Parks, le siège du bus',
     id: 76,
-    ecran: '1er décembre 1955\nMontgomery',
-    accroche: '1er décembre 1955, à Montgomery. Une femme refuse de se lever de son siège de bus.',
+    ecran: "Elle va changer l'Amérique… assise",
+    accroche: "Cette femme va changer l'Amérique… sans se lever de son siège.",
     moment1: {
-      voix: "Elle s'appelle Rosa Parks. Le chauffeur exige qu'elle laisse sa place à un passager blanc. Elle reste assise, calme. La police l'arrête.",
+      voix: 'Montgomery, 1955. Le chauffeur lui ordonne de céder sa place à un Blanc. Rosa Parks ne bouge pas. Menottes.',
       imagePrompt:
         'Montgomery, Alabama, December 1955, inside a 1950s city bus: Rosa Parks, a dignified African-American woman in her forties (round glasses, hair pinned up, dark wool coat, small hat), sits calmly by the window, hands on her handbag, looking straight ahead with quiet determination; the bus driver stands in the aisle; warm dim winter light, realistic cinematic photo, close shot, everyone with closed mouths, vertical 9:16, no text, no logo, no watermark',
       motionPrompt: 'Rosa Parks stays perfectly still and calm, she slowly turns her head toward the window; the driver gestures in the aisle; slow push-in on her face',
     },
     moment2: {
-      voix: "Alors toute la communauté noire de la ville boycotte les bus. Pendant plus d'un an, des milliers de gens vont à pied au travail.",
+      voix: "Le lendemain, toute la ville noire laisse les bus vides. Pendant 381 jours, on marche.",
       imagePrompt:
         'Montgomery, Alabama, 1956: a wide street at dawn, hundreds of African-American men and women in 1950s coats walking together to work along the sidewalks while an empty city bus passes by, dignified and determined, realistic cinematic wide shot, vertical 9:16, no text, no logo, no watermark',
       motionPrompt: 'the crowd walks steadily forward along the street, the empty bus drives slowly past, gentle crane shot rising above the marchers',
     },
-    chute: 'Et en 1956, la Cour suprême déclare la ségrégation dans les bus contraire à la Constitution.',
-    ecranChute: 'La Cour suprême lui donne raison',
+    chute: 'Et la Cour suprême finit par lui donner raison. Un seul siège a tout changé.',
+    ecranChute: 'Un siège a tout changé',
   },
 };
 
@@ -2630,26 +2632,26 @@ export async function createEreaFormatAd(project, fmt, update) {
     });
     sujet = carte.titre;
     raw.title = raw.title || carte.titre;
+    // Version rythmée (Jean, 28/10 : trop lent, récit plat) : pas de logo ni
+    // de carton d'ouverture — on entre direct dans l'image avec une phrase
+    // choc ; le logo arrive au carton final.
     scenes = [
-      logo,
-      // L'accroche : la date et le lieu, en carton.
-      base(1, ecran({
-        carton: { etiquette: '📜 PETITE HISTOIRE', texte: String(raw.ecran || annee).slice(0, 60), taille: 96, fonts },
-        durationSec: 3,
-        lines: role('recit', raw.accroche),
-      })),
-      // Le moment lui-même, au plus près des personnages.
-      base(2, { ...visuel(raw.moment1), lines: role('recit', raw.moment1.voix) }),
+      // La phrase choc, à l'écran et à la voix, puis le moment lui-même.
+      base(0, {
+        ...visuel(raw.moment1),
+        choc: { etiquette: '📜 PETITE HISTOIRE', texte: String(raw.ecran || '').slice(0, 60), fonts },
+        lines: [...role('mystere', raw.accroche), ...role('recit', raw.moment1.voix)],
+      }),
       // Ce qu'il a changé, en plus large.
-      base(3, { ...visuel(raw.moment2), lines: role('recit', raw.moment2.voix) }),
+      base(1, { ...visuel(raw.moment2), lines: role('recit', raw.moment2.voix) }),
       // La chute : le détail étonnant.
-      base(4, ecran({
+      base(2, ecran({
         carton: { etiquette: '🤯 LE DÉTAIL', texte: String(raw.ecranChute || '').slice(0, 60), taille: 80, fonts },
         durationSec: 3,
         lines: role('touchant', raw.chute),
       })),
       // La carte se pose sur la frise du jeu, à sa date.
-      base(5, ecran({
+      base(3, ecran({
         reperes: {
           depart: Math.max(-3000, annee - 200),
           dates: [{ annee, affichage: annee < 0 ? `${-annee} av. J.-C.` : String(annee), legende: `${carte.emoji || ''} ${carte.titre}`.trim().slice(0, 70) }],
