@@ -1,0 +1,16 @@
+{
+  "name": "Toakeur",
+  "emoji": "🏠",
+  "visible": true,
+  "order": 14,
+  "repo": "teiki5320/toakeur",
+  "platforms": [
+    "Web"
+  ],
+  "tagline": "La vitrine du groupe : une seule adresse, cinq maisons Keur.",
+  "services": [
+    "github",
+    "hebergement-web",
+    "nom-de-domaine"
+  ]
+}

@@ -23,6 +23,7 @@ const SITES = {
   keurfoot: 'https://keurfoot.com',
   keurkado: 'https://keurkado.com',
   erea: 'https://erea.toakeur.com',
+  toakeur: 'https://toakeur.com',
 };
 
 // Gardé 10 minutes. Au-delà, on montre tout de suite le dernier état connu et
