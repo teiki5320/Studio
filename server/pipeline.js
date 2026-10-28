@@ -2083,9 +2083,10 @@ export const EREA_VOIX = {
   dynamique: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[excited]' } },
   // Petite histoire : toujours Troy — intrigant pour la phrase choc, conteur vif
   // et habité pour le récit, ému pour la chute (Jean, 28/10 : le récit était plat).
-  mystere: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[mysterious]' } },
-  recit: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[dramatic]' } },
-  touchant: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[emotional]' } },
+  // tempo 1.12 : Troy en v3 parle lentement, Jean veut une voix bien rythmée.
+  mystere: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[mysterious]', tempo: 1.12 } },
+  recit: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[dramatic]', tempo: 1.12 } },
+  touchant: { voice: '4TfTGcPwoefWe878B0rm', settings: { model: 'eleven_v3', stability: 0.5, tag: '[emotional]', tempo: 1.12 } },
 };
 export const ACCROCHE_EREA = 'Avec Erea, devenez les maîtres du temps.';
 export function accrocheErea(fonts) {
@@ -2344,13 +2345,13 @@ export const EREA_PREMIERES = {
     ecran: "Elle va changer l'Amérique… assise",
     accroche: "Cette femme va changer l'Amérique… sans se lever.",
     moment1: {
-      voix: 'Montgomery, 1955. On lui ordonne de céder sa place. Rosa Parks refuse.',
+      voix: "Montgomery, décembre 1955. Le bus est plein. Le chauffeur lui ordonne de céder sa place à un Blanc. Rosa Parks ne bouge pas. Elle dit non.",
       imagePrompt:
         'Montgomery, Alabama, December 1955, inside a 1950s city bus: Rosa Parks, a dignified African-American woman in her forties (round glasses, hair pinned up, dark wool coat, small hat), sits calmly by the window, hands on her handbag, looking straight ahead with quiet determination; the bus driver stands in the aisle; warm dim winter light, realistic cinematic photo, close shot, everyone with closed mouths, vertical 9:16, no text, no logo, no watermark',
       motionPrompt: 'Rosa Parks stays perfectly still and calm, she slowly turns her head toward the window; the driver gestures in the aisle; slow push-in on her face',
     },
     moment2: {
-      voix: 'Le lendemain, les bus roulent vides. Pendant 381 jours, on marche.',
+      voix: "Le lendemain, les bus roulent vides. Des milliers de gens marchent au travail, sous la pluie, pendant 381 jours. La ville finit par céder.",
       imagePrompt:
         'Montgomery, Alabama, 1956: a wide street at dawn, hundreds of African-American men and women in 1950s coats walking together to work along the sidewalks while an empty city bus passes by, dignified and determined, realistic cinematic wide shot, vertical 9:16, no text, no logo, no watermark',
       motionPrompt: 'the crowd walks steadily forward along the street, the empty bus drives slowly past, gentle crane shot rising above the marchers',
@@ -2417,12 +2418,12 @@ function verifieFormatErea(fmt, raw, cartes = []) {
     if (/brevet|disponible sur/i.test(JSON.stringify(raw))) {
       return 'mot interdit (« brevet » ou « disponible sur »)';
     }
-    // 20 secondes en tout : les textes doivent rester très courts.
+    // ~40 secondes en tout (Jean, 28/10 : 32 s, c'était trop court).
     const mots = (t) => String(t || '').split(/\s+/).filter(Boolean).length;
     const trop = [
       ['accroche', raw.accroche, 12],
-      ['moment1.voix', m1.voix, 16],
-      ['moment2.voix', m2.voix, 16],
+      ['moment1.voix', m1.voix, 28],
+      ['moment2.voix', m2.voix, 28],
       ['chute', raw.chute, 11],
     ]
       .filter(([, t, max]) => mots(t) > max)
@@ -2641,7 +2642,8 @@ export async function createEreaFormatAd(project, fmt, update) {
       motionPersonnes: true,
       clip: true,
       fixedDuration: true,
-      durationSec: 9,
+      // Clip de 10 s (Jean, 28/10) : il couvre tout le passage sans être rejoué.
+      durationSec: 10,
     });
     sujet = carte.titre;
     raw.title = raw.title || carte.titre;

@@ -260,7 +260,7 @@ function buildVideoInstruction({ prompt, imageUrl, referenceUrls, durationSec })
   return `Tu as accès aux outils MCP OpenArt. Génère UN SEUL clip VIDÉO via OpenArt :
 - Prompt : ${prompt}
 - Format : vertical 9:16 (par exemple 1080x1920).
-- Durée cible : ${durationSec} secondes — choisis l'option de durée disponible la plus proche, et en cas de doute la PLUS COURTE (maîtrise des crédits).${source}
+- Durée cible : ${durationSec} secondes — choisis l'option de durée disponible la plus proche${durationSec >= 10 ? ', SANS descendre en dessous (un clip trop court serait rejoué au montage)' : ', et en cas de doute la PLUS COURTE (maîtrise des crédits)'}.${source}
 - Modèle : ${
     process.env.OPENART_VIDEO_MODEL
       ? `utilise EXACTEMENT le modèle "${process.env.OPENART_VIDEO_MODEL}".`

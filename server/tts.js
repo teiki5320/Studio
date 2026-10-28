@@ -6,6 +6,7 @@ import { ROOT } from './config.js';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { parseFile } from 'music-metadata';
+import { findFfmpeg } from './studio.js';
 
 const SYNTH_TIMEOUT_MS = 25_000;
 
@@ -243,6 +244,14 @@ async function synthesizeEleven(text, voiceId, outPath, settings = null) {
     throw new Error('ElevenLabs : audio vide.');
   }
   fs.writeFileSync(outPath, buf);
+  // eleven_v3 ignore « speed » : un rôle peut demander un débit plus vif
+  // (settings.tempo, ex. 1.12), appliqué ensuite sans changer la hauteur.
+  const tempo = Number(settings?.tempo);
+  if (isV3 && tempo && tempo !== 1) {
+    const tmp = `${outPath}.tempo.mp3`;
+    await execFileP(findFfmpeg(), ['-y', '-i', outPath, '-filter:a', `atempo=${Math.min(1.3, Math.max(0.8, tempo))}`, '-b:a', '128k', tmp]);
+    fs.renameSync(tmp, outPath);
+  }
   return audioDurationSec(outPath);
 }
 
