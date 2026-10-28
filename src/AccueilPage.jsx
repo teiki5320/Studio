@@ -250,10 +250,20 @@ function PanneauMails({ mails, onCorbeille }) {
   const proteges = (mails.groupes || []).filter((g) => g.protege);
   const basculer = (id) => setCoches((c) => (c.includes(id) ? c.filter((x) => x !== id) : [...c, id]));
   const total = groupes.filter((g) => coches.includes(g.id)).reduce((t, g) => t + nombre(g), 0);
+  // « Tout cocher » ne prend que les lignes encore à trier (pas celles déjà envoyées).
+  const libres = groupes.filter((g) => !g.etat).map((g) => g.id);
+  const tout = libres.length > 0 && libres.every((id) => coches.includes(id));
   return (
     <div className="ac-pan-liste">
       {mails.erreur ? <p className="pm-vide">{mails.erreur}</p> : null}
       {!groupes.length ? <p className="pm-vide">Rien à trier : {mails.total ?? 0} mails en boîte.</p> : null}
+      {libres.length > 1 ? (
+        <label className="ac-mail ac-mail-tout">
+          <input type="checkbox" checked={tout} onChange={() => setCoches(tout ? [] : libres)} />
+          <span className="nom">Tout cocher</span>
+          <b>{groupes.filter((g) => !g.etat).reduce((t, g) => t + nombre(g), 0)}</b>
+        </label>
+      ) : null}
       {groupes.map((g) => (
         <label key={g.id} className={`ac-mail${g.etat ? ` ${g.etat}` : ''}`}>
           <input type="checkbox" disabled={Boolean(g.etat)} checked={coches.includes(g.id) || Boolean(g.etat)} onChange={() => basculer(g.id)} />
