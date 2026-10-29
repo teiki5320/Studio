@@ -306,7 +306,7 @@ Les fiches viennent du dépôt ${app?.repo || site} : infra.md = docs/INFRA.md, 
 // Produits masqués exprès, à remettre dès leur retour sur Amazon.fr (décision
 // de Jean du 19/10/2026 : guedj et café Touba de Keur Cook).
 const MASQUES = { keurcook: { B0DK3SVDJN: 'guedj', B0B52RYJS8: 'café Touba' } };
-const AMAZON_TAGS = { keurcook: 'keurcookfr-21', keurbook: 'keurbookfr-21', keurfoot: 'keurfootfr-21', keurkado: 'keurkadofr-21' };
+const AMAZON_TAGS = { keurcook: 'keurcookfr-21', keurbook: 'keurbookfr-21', keurfoot: 'keurfootfr-21', keurkado: 'keurkadofr-21', keurbible: 'keurbible-21' };
 let citesCache = { at: 0, data: new Map() };
 // Les ASIN encore cités dans le dépôt (git grep : rapide, suit .gitignore).
 function encoreCites(dossier, asins) {

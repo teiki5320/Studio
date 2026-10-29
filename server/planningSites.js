@@ -31,6 +31,7 @@ const SITES = [
   { cle: 'solelis', nom: 'Solelis', domaine: 'solelis.com', dossier: 'Solelis', articles: [{ dir: 'content/conseils', champ: 'date', titre: 'title', url: (s) => `https://solelis.com/conseils/${s}` }] },
   { cle: 'keurfoot', nom: 'Keur Foot', domaine: 'keurfoot.com', dossier: 'Keurfoot', articles: [{ dir: 'content/conseils', champ: 'date', titre: 'title', url: (s) => `https://keurfoot.com/conseils/${s}` }] },
   { cle: 'keurkado', nom: 'Keur Kado', domaine: 'keurkado.com', dossier: 'keurkado', articles: [{ dir: 'content/conseils', champ: 'date', titre: 'title', url: (s) => `https://keurkado.com/conseils/${s}` }] },
+  { cle: 'keurbible', nom: 'Keur Bible', domaine: 'keurbible.com', dossier: 'Keurbible', articles: [{ dir: 'content/conseils', champ: 'date', titre: 'title', url: (s) => `https://keurbible.com/conseils/${s}` }] },
 ];
 
 const lireJson = (f, defaut) => {
