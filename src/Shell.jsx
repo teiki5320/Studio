@@ -577,6 +577,67 @@ function RecettesEntry({ projects, loaded, onCreate }) {
 }
 
 // ---------- Réglages : ma marque, voix françaises ----------
+// Buffer : publie en public sur TikTok (TikTok refuse notre appli maison).
+// On colle la clé API de Buffer ; les comptes branchés dans Buffer suivent.
+function BufferCard() {
+  const [etat, setEtat] = useState(null);
+  const [cle, setCle] = useState('');
+  const [changer, setChanger] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    api.buffer().then(setEtat).catch((e) => setError(e.message));
+  }, []);
+  if (!etat) {
+    return null;
+  }
+  return (
+    <div className="rg-carte">
+      <div className="rg-yt">
+        <LogoReseau id="tiktok" taille={44} seul />
+        <span className="t">
+          <b>TikTok via Buffer</b>
+          <span className={`rg-etat-txt ${etat.comptes.length ? 'ok' : 'none'}`}>
+            <i />
+            {etat.comptes.length ? `Le Studio publie en public sur : ${etat.comptes.join(', ')}` : etat.configure ? 'Clé enregistrée, aucun compte TikTok dans Buffer' : 'Pas connecté'}
+          </span>
+        </span>
+        {etat.configure ? (
+          <div className="rg-actions">
+            <button className="clay-btn ghost small" onClick={() => setChanger(!changer)}>
+              Changer la clé
+            </button>
+          </div>
+        ) : null}
+      </div>
+      {!etat.configure || changer ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 560 }}>
+          <span className="clay-muted small">
+            Sur <a href="https://publish.buffer.com/settings/api" target="_blank" rel="noreferrer">publish.buffer.com → Réglages → API</a>, crée une clé et colle-la ici.
+          </span>
+          <input className="rp-input" type="password" placeholder="Clé API Buffer" value={cle} onChange={(e) => setCle(e.target.value)} />
+          <button
+            className="clay-btn"
+            onClick={() =>
+              api
+                .bufferCle(cle)
+                .then((e) => {
+                  setEtat(e);
+                  setCle('');
+                  setChanger(false);
+                  setError('');
+                })
+                .catch((e) => setError(e.message))
+            }
+          >
+            Enregistrer la clé
+          </button>
+        </div>
+      ) : null}
+      {error && <p className="error small">{error}</p>}
+    </div>
+  );
+}
+
 // TikTok : coller les clés de l'appli « Toa Studio » (developers.tiktok.com),
 // puis connecter chaque compte TikTok du Planning.
 function TiktokCard() {
@@ -780,6 +841,7 @@ function ReglagesPage({ arg }) {
         ) : (
           <>
             <YoutubeCard />
+            <BufferCard />
             <TiktokCard />
             <ComptesReseauxCard />
           </>

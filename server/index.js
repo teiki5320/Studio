@@ -117,6 +117,7 @@ import { listeAfaire, deposer as deposerAfaire, envoyer as envoyerAfaire, fileAf
 import { routines } from './routines.js';
 import { audience, etatCloudflare, enregistrerCle as enregistrerCleCloudflare, oublierCle as oublierCleCloudflare } from './audience.js';
 import { comptes, changerEtat as changerEtatCompte } from './comptes.js';
+import { etatBuffer, enregistrerCleBuffer, chaineBuffer, publierViaBuffer, videoPublique, HOTE_VIDEOS } from './buffer.js';
 import { etatTiktok, enregistrerClesTiktok, urlConnexionTiktok, terminerConnexionTiktok, deconnecterTiktok, publierTiktok } from './tiktok.js';
 import { jourParis } from './planningSites.js';
 import { etatYoutube, enregistrerCles, urlConnexion, terminerConnexion, deconnecter as deconnecterYoutube, publierShort } from './youtube.js';
@@ -153,6 +154,17 @@ const app = express();
 const LOCAL_HOSTS = new Set(['localhost', '127.0.0.1', '[::1]']);
 app.use((req, res, next) => {
   const host = String(req.headers.host || '').toLowerCase().replace(/:\d+$/, '');
+  // videos.toakeur.com : seulement les vidéos confiées à Buffer, rien d'autre.
+  if (host === HOTE_VIDEOS) {
+    const m = req.method === 'GET' || req.method === 'HEAD' ? /^\/v\/([a-f0-9]{32})\.mp4$/.exec(req.path) : null;
+    const fichier = m && videoPublique(m[1]);
+    if (fichier) {
+      res.sendFile(fichier, { headers: { 'Content-Type': 'video/mp4' } });
+    } else {
+      res.status(404).send('Introuvable.');
+    }
+    return;
+  }
   if (LOCAL_HOSTS.has(host)) {
     next();
     return;
@@ -1308,7 +1320,7 @@ app.get('/api/planning/sites', (req, res) => {
 
 app.get('/api/planning', (req, res) => {
   try {
-    res.json({ ...planning(), youtube: etatYoutube().chaine, tiktok: Object.keys(etatTiktok().comptes) });
+    res.json({ ...planning(), youtube: etatYoutube().chaine, tiktok: [...Object.keys(etatTiktok().comptes), ...listeComptes().filter((c) => c.reseau === 'tiktok' && chaineBuffer(c.nom)).map((c) => c.id)] });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -1623,6 +1635,17 @@ app.post('/api/planning/:id/youtube', (req, res) => {
   res.json({ jobId: job.id });
 });
 
+// ---------- Buffer ----------
+app.get('/api/buffer', (req, res) => res.json(etatBuffer()));
+app.post('/api/buffer/cle', async (req, res) => {
+  try {
+    await enregistrerCleBuffer(req.body?.cle);
+    res.json(etatBuffer());
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+
 // ---------- TikTok ----------
 app.get('/api/tiktok', (req, res) => res.json(etatTiktok()));
 app.post('/api/tiktok/cles', (req, res) => {
@@ -1669,6 +1692,13 @@ function lancerPublication(e) {
   }
   const fichier = path.join(projectDir(p.id), ep.renderedFile);
   const titre = String(ep.title || ep.topic).slice(0, 60);
+  if (compte.reseau === 'tiktok' && chaineBuffer(compte.nom)) {
+    return startJob(`TikTok — ${p.title} · ${titre}`, async (update) => {
+      const r = await publierViaBuffer(compte.nom, fichier, tiktokCaption(p, ep), update);
+      noterPublication(e.id, { url: r.url, prive: false });
+      return r;
+    }, { projectId: p.id });
+  }
   if (compte.reseau === 'tiktok') {
     if (!(compte.id in etatTiktok().comptes)) {
       throw new Error(`« ${compte.nom} » n’est pas connecté à TikTok (Réglages → TikTok).`);
@@ -1717,7 +1747,7 @@ function publierLesPublicationsDuJour() {
   const comptes = new Map(listeComptes().map((c) => [c.id, c]));
   const prete = (pub) => {
     const c = comptes.get(pub.compte);
-    const branche = c && ((c.reseau === 'tiktok' && c.id in branches) || (c.reseau === 'youtube' && chaine && c.nom.toLowerCase() === chaine));
+    const branche = c && ((c.reseau === 'tiktok' && (c.id in branches || chaineBuffer(c.nom))) || (c.reseau === 'youtube' && chaine && c.nom.toLowerCase() === chaine));
     return branche && !pub.publie && !pub.essaiAuto && (pub.date < aujourdhui || (pub.date === aujourdhui && heure >= 18));
   };
   let liste = [];

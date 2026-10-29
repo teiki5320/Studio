@@ -110,6 +110,8 @@ export const api = {
     request('/api/youtube/cles', { method: 'POST', body: JSON.stringify({ clientId, clientSecret }) }),
   youtubeDeconnecter: () => request('/api/youtube/deconnecter', { method: 'POST' }),
   publierYoutube: (id) => request(`/api/planning/${id}/youtube`, { method: 'POST' }),
+  buffer: () => request('/api/buffer'),
+  bufferCle: (cle) => request('/api/buffer/cle', { method: 'POST', body: JSON.stringify({ cle }) }),
   tiktok: () => request('/api/tiktok'),
   tiktokCles: (clientKey, clientSecret) => request('/api/tiktok/cles', { method: 'POST', body: JSON.stringify({ clientKey, clientSecret }) }),
   tiktokDeconnecter: (compte) => request('/api/tiktok/deconnecter', { method: 'POST', body: JSON.stringify({ compte }) }),
