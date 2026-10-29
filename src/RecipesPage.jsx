@@ -260,7 +260,19 @@ export function RecipesPage({ projectId }) {
             ))}
             {failed && active.length === 0 && (
               <p className="error small">
-                La dernière vidéo ({failed.label}) a échoué : {failed.error}
+                La dernière vidéo ({failed.label}) a échoué : {failed.error}{' '}
+                <button
+                  className="clay-btn ghost small"
+                  title="Effacer ce message (la vidéo n'est pas refaite)"
+                  onClick={() =>
+                    api
+                      .removeFromQueue(failed.id)
+                      .then(() => setQueue((q) => q.filter((it) => it.id !== failed.id)))
+                      .catch((err) => alert(err.message))
+                  }
+                >
+                  ✕ Effacer
+                </button>
               </p>
             )}
           </div>
