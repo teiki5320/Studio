@@ -282,7 +282,16 @@ export function RecipesPage({ projectId }) {
         )}
 
         <div className="clay-block">
-          <h3>{dossier ? '📁 Validées' : '🎞️ Mes vidéos de recettes'}</h3>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+            <h3 style={{ margin: 0 }}>{dossier ? '📁 Validées' : '🎞️ Mes vidéos de recettes'}</h3>
+            <button
+              className="clay-btn ghost small"
+              title="Les vidéos validées (envoyées au planning) sont rangées dans ce dossier"
+              onClick={() => setDossier((d) => !d)}
+            >
+              {dossier ? '← Retour' : `📁 Validées (${episodes.filter((e) => e.validation === 'validee').length})`}
+            </button>
+          </div>
           {liste.length === 0 && <p className="clay-muted small">{dossier ? 'Aucune vidéo validée pour l’instant.' : 'Aucune vidéo pour l’instant.'}</p>}
           {liste.map((ep) => (
             <div
@@ -330,13 +339,6 @@ export function RecipesPage({ projectId }) {
                 🔧 Retoucher
               </a>
             )}
-            <button
-              className="clay-btn ghost small"
-              title="Les vidéos validées (envoyées au planning) sont rangées dans ce dossier"
-              onClick={() => setDossier((d) => !d)}
-            >
-              {dossier ? '← Retour' : `📁 Validées (${episodes.filter((e) => e.validation === 'validee').length})`}
-            </button>
           </div>
         </div>
       </div>
