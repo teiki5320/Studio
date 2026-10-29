@@ -46,7 +46,10 @@ export function temoins(app, site) {
 
 // L'étiquette d'état d'une carte : [classe, libellé]. Une appli « en pause » ou
 // « archivée » (choisi par Jean, champ etat d'app.json) n'est pas en panne : gris.
+// Sur les cartes, un symbole de lecteur à la place du mot (Jean, 29/10) ; le mot
+// reste en infobulle.
 export const enPause = (app) => app.etat === 'pause';
+export const SYMBOLE = { 'Bloqué': '⏹', 'Archivé': '⏏', 'En pause': '⏸', 'À surveiller': '⚠︎', 'Au vert': '▶︎' };
 export function etatApp(app, site) {
   const k = pire(app, site);
   if (k === 'ko') return ['ko', 'Bloqué'];
@@ -75,7 +78,9 @@ export function Encart({ app, site, envoi, entre, rang = 0 }) {
             {quand ? ` · ${quand}` : ''}
           </small>
         </span>
-        <span className={`ap-etat ${cls}`}>{lib}</span>
+        <span className={`ap-etat ${cls}`} title={lib} aria-label={lib}>
+          {SYMBOLE[lib]}
+        </span>
       </span>
       {app.tagline ? <span className="ap-accroche">{accroche(app)}</span> : null}
       <span className="ap-temoins">

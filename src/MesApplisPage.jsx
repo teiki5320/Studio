@@ -9,7 +9,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { api, followJob } from './api.js';
 import './applis.css';
-import { Encart, LegendeTemoins, aVoir, etatApp, temoins, accroche } from './Temoins.jsx';
+import { Encart, LegendeTemoins, aVoir, etatApp, temoins, accroche, SYMBOLE } from './Temoins.jsx';
 
 const TINTS = ['mint', 'peach', 'sun', 'sky', 'lilac'];
 const BADGES = { requis: 'Requis', optionnel: 'Optionnel', gratuit: 'Gratuit' };
@@ -778,7 +778,9 @@ function FicheApp({ app, data, ext, volet, famTint, ouvrir, recharger }) {
                 {p}
               </span>
             ))}
-            <span className={`fa-tag ${etat[0]}`}>{etat[1]}</span>
+            <span className={`fa-tag ${etat[0]}`} title={etat[1]} aria-label={etat[1]}>
+              {SYMBOLE[etat[1]]}
+            </span>
             <ChoixEtat app={app} recharger={recharger} />
           </div>
           <h2>{app.name}</h2>
