@@ -1,0 +1,17 @@
+{
+  "name": "Keur Désir",
+  "emoji": "🌺",
+  "visible": true,
+  "order": 15,
+  "repo": "teiki5320/keurdesir",
+  "platforms": [
+    "Web"
+  ],
+  "tagline": "Guide du djongué : bine-bine, thiouraye, soins et tenues.",
+  "services": [
+    "github",
+    "hebergement-web",
+    "nom-de-domaine",
+    "affiliation"
+  ]
+}

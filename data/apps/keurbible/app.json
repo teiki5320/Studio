@@ -1,0 +1,17 @@
+{
+  "name": "Keur Bible",
+  "emoji": "✝️",
+  "visible": true,
+  "order": 16,
+  "repo": "teiki5320/keurbible",
+  "platforms": [
+    "Web"
+  ],
+  "tagline": "Objets chrétiens pour la maison et à offrir.",
+  "services": [
+    "github",
+    "hebergement-web",
+    "nom-de-domaine",
+    "affiliation"
+  ]
+}

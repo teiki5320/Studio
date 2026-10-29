@@ -31,6 +31,8 @@ const COULEURS = {
   optiled: ['#FAEEDA', '#412402'],
   keurfoot: ['#E3F1E6', '#1B4D2B'],
   keurkado: ['#FBE9E7', '#7A1F12'],
+  keurdesir: ['#F7E6EE', '#6B1E45'],
+  keurbible: ['#EEF0F7', '#26315C'],
 };
 const teinte = (v) => COULEURS[v?.depot] || ['#F1EFE8', '#2C2C2A'];
 

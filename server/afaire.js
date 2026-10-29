@@ -79,6 +79,8 @@ const SITES = [
   ['Solelis', 'Solelis', ['solelis', 'solelis.com']],
   ['Keur Foot', 'Keurfoot', ['keurfoot', 'keurfoot.com', 'keur foot']],
   ['Keur Kado', 'keurkado', ['keurkado', 'keurkado.com', 'keur kado']],
+  ['Keur Désir', 'Keur Desir', ['keurdesir', 'keurdesir.com', 'keur desir', 'keur désir']],
+  ['Keur Bible', 'Keurbible', ['keurbible', 'keurbible.com', 'keur bible']],
   ['Erea', 'erea', ['erea', 'erea.toakeur.com']],
   ['Palabre', 'palabre', ['palabre']],
   ['Kultiva', 'kultiva', ['kultiva']],
