@@ -2326,14 +2326,16 @@ export const EREA_PREMIERES = {
       'A playful cinematic tabletop diorama on a long antique wooden timeline ruler: on the left a miniature golden Egyptian pyramid, in the middle a small elegant figurine of Cleopatra (black bob, golden headdress, white linen dress), on the right a modern black smartphone standing upright; warm parchment and gold tones, soft museum light, shallow depth of field, vertical 9:16, no text, no letters, no numbers, no logo, no watermark',
     motionPrompt: 'slow lateral camera dolly along the timeline ruler, from the pyramid past the Cleopatra figurine to the smartphone, dust particles floating in the warm light',
   },
+  // 3 sujets et 3 époques différents (Jean, 30/10 : trois dates du même
+  // sujet, c'était trop rapproché).
   interro: {
-    title: 'Interro surprise : 3 dates de France',
-    theme: "l'histoire de France contemporaine",
+    title: 'Interro surprise : 3 époques',
+    theme: 'Alésia, Charlemagne, la Lune',
     intro: "Interro surprise ! 3 questions, c'est parti !",
     questions: [
-      { question: "La Révolution française… c'est en quelle année ?", annee: 1789, affichage: '1789', legende: 'La Révolution française', reponse: '1789 !' },
-      { question: 'La Première Guerre mondiale… elle commence en quelle année ?', annee: 1914, affichage: '1914', legende: 'La Première Guerre mondiale', reponse: '1914 !' },
-      { question: 'La Ve République… elle est née en quelle année ?', annee: 1958, affichage: '1958', legende: 'La Ve République', reponse: '1958 !' },
+      { question: "La bataille d'Alésia… c'est en quelle année ?", annee: -52, affichage: '52 av. J.-C.', legende: "La bataille d'Alésia", reponse: '52 avant Jésus-Christ !' },
+      { question: 'Charlemagne… il est sacré empereur en quelle année ?', annee: 800, affichage: '800', legende: 'Charlemagne sacré empereur', reponse: '800 !' },
+      { question: "Le premier homme sur la Lune… c'est en quelle année ?", annee: 1969, affichage: '1969', legende: "L'homme sur la Lune", reponse: '1969 !' },
     ],
     fin: 'Tu les avais toutes ? Révise-les en jouant, avec Erea !',
   },
@@ -2437,11 +2439,19 @@ function verifieFormatErea(fmt, raw, cartes = []) {
   if (q.length !== 3 || q.some((x) => !x || !Number.isFinite(Number(x.annee)) || Number(x.annee) < -3000 || Number(x.annee) > 2026 || !x.question || !x.reponse)) {
     return 'il faut 3 questions valides';
   }
+  // Une question par époque de la frise : des dates bien éloignées.
+  const epoques = q.map((x) => EPOQUES_FRISE.findIndex(([, fin]) => Number(x.annee) <= fin));
+  if (new Set(epoques).size !== 3) {
+    return 'deux questions tombent dans la même époque de la frise : il faut 3 sujets différents, dans 3 époques différentes';
+  }
   if (/brevet/i.test(JSON.stringify(raw))) {
     return 'le mot « brevet » est interdit';
   }
   return '';
 }
+
+// Les époques de la frise du jeu (leur année de fin), comme dans EreaFrise.jsx.
+const EPOQUES_FRISE = [['Âge du bronze', -1200], ['Âge du fer', -500], ['Antiquité', 476], ['Moyen Âge', 1492], ['Époque moderne', 1789], ['Époque contemporaine', 2026]];
 
 // Ce que chaque format a déjà raconté (pour que Claude change de sujet).
 function resumeErea(fmt, raw) {
