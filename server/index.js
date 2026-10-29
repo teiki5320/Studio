@@ -1919,12 +1919,24 @@ app.patch('/api/projects/:id/episodes/:n/scenes/:sceneId', (req, res) => {
   });
 });
 
+// Retouche d'une vidéo déjà montée (pub, recette, chaîne) : la vidéo finale est
+// remontée tout de suite avec la nouvelle image, le nouveau clip ou la nouvelle
+// voix — sinon « c'est fait » mais la vidéo regardée ne change pas (Jean, 29/10).
+async function remonterApresRetouche(p, ep, update) {
+  if (!ep.renderedFile) return;
+  update('Remontage de la vidéo avec la retouche…');
+  await renderEpisode(p, ep, update);
+}
+
 app.post('/api/projects/:id/episodes/:n/scenes/:sceneId/image', (req, res) => {
   withScene(req, res, (p, ep, scene) => {
     if (typeof req.body.imagePrompt === 'string' && req.body.imagePrompt.trim()) {
       scene.imagePrompt = req.body.imagePrompt.trim();
     }
-    const job = startJob(`Nouvelle image — ${p.title} · plan ${ep.scenes.indexOf(scene) + 1}`, (update) => regenerateSceneImage(p, ep, scene, update), { projectId: p.id });
+    const job = startJob(`Nouvelle image — ${p.title} · plan ${ep.scenes.indexOf(scene) + 1}`, async (update) => {
+      await regenerateSceneImage(p, ep, scene, update);
+      await remonterApresRetouche(p, ep, update);
+    }, { projectId: p.id });
     res.json({ jobId: job.id });
   });
 });
@@ -1939,6 +1951,7 @@ app.post('/api/projects/:id/episodes/:n/scenes/:sceneId/video', (req, res) => {
       if (wantsLipsync(p) && lipsyncSpeaker(scene)) {
         await lipsyncSceneVideo(p, ep, scene, update);
       }
+      await remonterApresRetouche(p, ep, update);
     }, { projectId: p.id });
     res.json({ jobId: job.id });
   });
@@ -1963,7 +1976,10 @@ app.delete('/api/projects/:id/episodes/:n/scenes/:sceneId/video', (req, res) => 
 
 app.post('/api/projects/:id/episodes/:n/scenes/:sceneId/audio', (req, res) => {
   withScene(req, res, (p, ep, scene) => {
-    const job = startJob(`Nouvelle voix — ${p.title} · plan ${ep.scenes.indexOf(scene) + 1}`, (update) => regenerateSceneAudio(p, ep, scene, update), { projectId: p.id });
+    const job = startJob(`Nouvelle voix — ${p.title} · plan ${ep.scenes.indexOf(scene) + 1}`, async (update) => {
+      await regenerateSceneAudio(p, ep, scene, update);
+      await remonterApresRetouche(p, ep, update);
+    }, { projectId: p.id });
     res.json({ jobId: job.id });
   });
 });
