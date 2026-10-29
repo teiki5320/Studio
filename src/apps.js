@@ -36,6 +36,7 @@ export const LOGOS = {
   keurkado: 'logos/keurkado.webp?v=2',
   toakeur: 'logos/toakeur.webp',
   keurdesir: 'logos/keurdesir.webp',
+  keurbible: 'logos/keurbible.webp',
 };
 const simple = (t) =>
   String(t || '')
