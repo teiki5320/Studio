@@ -65,7 +65,10 @@ export function etatBuffer() {
 
 export async function enregistrerCleBuffer(cle) {
   const k = String(cle || '').trim();
-  if (k.length < 16) {
+  if (/•|\*{3}/.test(k)) {
+    throw new Error('C’est la clé masquée (avec des points) : Buffer ne montre la vraie clé qu’au moment où on la crée. Crée-en une nouvelle et copie-la tout de suite.');
+  }
+  if (k.length < 16 || /[^\x21-\x7e]/.test(k)) {
     throw new Error('Clé Buffer invalide (copie-la depuis publish.buffer.com → Réglages → API).');
   }
   const chaines = await chainesTiktok(k);
