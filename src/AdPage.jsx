@@ -549,6 +549,8 @@ export function AdPage({ projectId, onAdvanced }) {
   const [studio, setStudio] = useState(null);
   const [queue, setQueue] = useState([]);
   const [selected, setSelected] = useState(null);
+  // Dossier des validées (Jean, 29/10) : une vidéo validée part au planning et se range ici.
+  const [dossier, setDossier] = useState(false);
   const [idea, setIdea] = useState('');
   const [custom, setCustom] = useState('');
   const [ideasBusy, setIdeasBusy] = useState(false);
@@ -638,6 +640,7 @@ export function AdPage({ projectId, onAdvanced }) {
   const episodes = [...(project.episodes || [])].sort((a, b) => b.number - a.number);
   const shown =
     episodes.find((e) => e.number === selected) || episodes.find((e) => e.renderedFile) || episodes[0] || null;
+  const liste = episodes.filter((e) => (e.validation === 'validee') === dossier);
   const active = queue.filter((it) => it.status === 'running' || it.status === 'waiting');
   const failed = queue.filter((it) => it.status === 'error').slice(-1)[0];
   const subject = custom.trim() || idea;
@@ -792,9 +795,9 @@ export function AdPage({ projectId, onAdvanced }) {
         )}
 
         <div className="clay-block">
-          <h3>{isPub ? '🎞️ Mes pubs' : '🎞️ Mes vidéos'}</h3>
-          {episodes.length === 0 && <p className="clay-muted small">Rien pour l'instant.</p>}
-          {episodes.map((ep) => (
+          <h3>{dossier ? '📁 Validées' : isPub ? '🎞️ Mes pubs' : '🎞️ Mes vidéos'}</h3>
+          {liste.length === 0 && <p className="clay-muted small">{dossier ? 'Aucune vidéo validée pour l’instant.' : 'Rien pour l’instant.'}</p>}
+          {liste.map((ep) => (
             <div
               key={ep.number}
               className={`rp-ep${shown && shown.number === ep.number ? ' on' : ''}`}
@@ -830,6 +833,13 @@ export function AdPage({ projectId, onAdvanced }) {
               🔧 Retoucher
             </button>
             <CasesBoutiques project={project} onChange={loadProject} />
+            <button
+              className="clay-btn ghost small"
+              title="Les vidéos validées (envoyées au planning) sont rangées dans ce dossier"
+              onClick={() => setDossier((d) => !d)}
+            >
+              {dossier ? '← Retour' : `📁 Validées (${episodes.filter((e) => e.validation === 'validee').length})`}
+            </button>
           </div>
         </div>
       </div>
