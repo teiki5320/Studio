@@ -15,6 +15,7 @@ export const APP_LOOKS = {
   keurfoot: { name: 'Keur Foot', icon: '⚽' },
   keurkado: { name: 'Keur Kado', icon: '🎁' },
   solelis: { name: 'Solelis', icon: '🧭' },
+  toakeur: { name: 'Toakeur', icon: '🏢' },
   survival: { name: 'Survival', icon: '🏕️' },
 };
 
@@ -24,13 +25,14 @@ export const LOGOS = {
   erea: 'logos/erea.webp',
   solelis: 'logos/solelis.webp',
   palabre: 'logos/palabre.webp',
-  keurcook: 'logos/alohash.webp',
+  keurcook: 'logos/alohash.webp?v=2',
   optiled: 'logos/optiled.webp?v=kultiled',
   kultiled: 'logos/optiled.webp?v=kultiled',
   keurdeco: 'logos/keurdeco.webp',
   keurbook: 'logos/keurbook.webp',
-  keurfoot: 'logos/keurfoot.webp',
-  keurkado: 'logos/keurkado.webp',
+  keurfoot: 'logos/keurfoot.webp?v=2',
+  keurkado: 'logos/keurkado.webp?v=2',
+  toakeur: 'logos/toakeur.webp',
 };
 const simple = (t) =>
   String(t || '')
