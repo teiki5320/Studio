@@ -717,6 +717,14 @@
 .pl-grille.appli {
   min-width: 700px;
 }
+/* Planning d'une appli : peu de comptes, on laisse la place aux jours. */
+.pl-grille.appli .pl-rang {
+  grid-template-columns: 112px repeat(7, minmax(0, 1fr));
+  gap: 5px;
+}
+.pl-grille.appli .pl-case {
+  padding: 4px;
+}
 .pl-rang {
   display: grid;
   grid-template-columns: 140px repeat(7, minmax(0, 1fr));
@@ -889,9 +897,6 @@
 .pl-case.passe:not(.auj) {
   background: color-mix(in srgb, var(--carte) 60%, transparent);
 }
-.pl-case.conflit {
-  box-shadow: inset 0 0 0 2px var(--ko);
-}
 .pl-case.survol {
   box-shadow: inset 0 0 0 2px var(--accent);
 }
@@ -907,7 +912,7 @@
 .pl-conflit-t {
   font-size: 10.5px;
   font-weight: 600;
-  color: var(--ko);
+  color: var(--c-muted);
 }
 .pl-poser {
   flex: 1;
@@ -978,7 +983,7 @@
   line-height: 1.3;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
 .pl-puce > .pl-net {
@@ -1160,6 +1165,58 @@
   flex-direction: row;
   align-items: center;
   gap: 10px;
+}
+/* Planning d'une appli : toutes les vidéos à placer d'un coup d'œil (Jean, 30/10). */
+.pl-aplacer.tout {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  overflow: visible;
+}
+.pl-aplacer.tout .pl-puce .titre {
+  -webkit-line-clamp: 2;
+}
+/* Carte programmée : la croix dans le coin, le titre, puis l'état en mots */
+.pl-case .pl-puce {
+  position: relative;
+}
+.pl-case .pl-puce .titre {
+  padding-right: 16px;
+}
+.pl-retirer {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 20px;
+  height: 20px;
+}
+.pl-etat {
+  align-self: stretch;
+  min-width: 0;
+  text-align: center;
+  border: 0;
+  border-radius: 999px;
+  padding: 3px 4px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  background: color-mix(in srgb, var(--c-muted) 14%, transparent);
+  color: var(--c-muted);
+}
+.pl-etat.auto {
+  background: var(--accent-doux);
+  color: var(--accent);
+}
+.pl-etat.ok {
+  background: color-mix(in srgb, var(--ok) 16%, transparent);
+  color: var(--ok);
+}
+.pl-etat.ko {
+  background: color-mix(in srgb, var(--ko) 16%, transparent);
+  color: var(--ko);
 }
 
 /* Fiche de la vidéo (panneau à droite) */

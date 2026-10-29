@@ -411,33 +411,34 @@ export function PlanningPage({ appli } = {}) {
         onClick={() => !glisse.current && setFiche(cle(p))}
         title={v.titre}
       >
-        <div className="haut">
-          <LogoAppli de={v.depot === 'recettes' ? 'keurcook' : v.depot} taille={20} seul />
-          <span className="appli">{v.appli}</span>
-          {/* Diode : verte = publiée, orange = à publier, rouge = en retard (toucher pour changer) */}
-          <button
-            className="pl-mini-btn"
-            title={p.publie ? 'Publiée — toucher pour annuler' : `${retard ? 'En retard' : 'À publier'} — toucher une fois publiée`}
-            onClick={(e) => {
-              e.stopPropagation();
-              basculer(p);
-            }}
-          >
-            <span className={`pl-diode${p.publie ? ' ok' : retard ? ' ko' : ''}`} />
-          </button>
-          <button
-            className="pl-mini-btn"
-            title="Enlever du planning"
-            onClick={(e) => {
-              e.stopPropagation();
-              act(api.retirerPlanning(p.id));
-            }}
-          >
-            <Ic n="croix" taille={13} />
-          </button>
-        </div>
+        <button
+          className="pl-mini-btn pl-retirer"
+          title="Enlever du planning"
+          onClick={(e) => {
+            e.stopPropagation();
+            act(api.retirerPlanning(p.id));
+          }}
+        >
+          <Ic n="croix" taille={13} />
+        </button>
+        {/* Dans le planning d'une appli, son logo serait répété sur chaque carte. */}
+        {!appli && (
+          <div className="haut">
+            <LogoAppli de={v.depot === 'recettes' ? 'keurcook' : v.depot} taille={20} seul />
+          </div>
+        )}
         <span className="titre">{v.titre}</span>
-        {r ? <Net r={r} /> : null}
+        {/* L'état, en clair (Jean, 30/10 : les diodes ne disaient rien) — toucher pour changer. */}
+        <button
+          className={`pl-etat${p.publie ? ' ok' : retard ? ' ko' : direct(p) ? ' auto' : ''}`}
+          title={p.publie ? 'Publiée — toucher pour annuler' : direct(p) ? 'Le Studio la publie seul ce jour-là, à partir de 18 h' : 'À publier toi-même — toucher une fois publiée'}
+          onClick={(e) => {
+            e.stopPropagation();
+            basculer(p);
+          }}
+        >
+          {p.publie ? '✓ Publiée' : retard ? 'En retard' : direct(p) ? 'Auto 18 h' : 'À publier'}
+        </button>
       </div>
     );
   };
@@ -577,8 +578,9 @@ export function PlanningPage({ appli } = {}) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <b>À placer</b>
             <span className="clay-state run">{aPlacer.length}</span>
+            <small className="clay-muted">{sel ? 'touche maintenant le ＋ du jour voulu, dans le calendrier' : 'touche une vidéo, puis le ＋ du jour voulu (ou fais-la glisser)'}</small>
           </div>
-          <div className="pl-aplacer">
+          <div className="pl-aplacer tout">
             {aPlacer.map((v) => {
               const k = cle(v);
               return (
@@ -589,10 +591,7 @@ export function PlanningPage({ appli } = {}) {
                   onClick={() => !glisse.current && (setSel(sel === k ? null : k), setFiche(k))}
                 >
                   <Apercu v={v} w={24} h={42} />
-                  <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <span className="appli">{v.appli}</span>
-                    <span style={{ fontSize: 12.5, lineHeight: 1.25, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>{v.titre}</span>
-                  </div>
+                  <span className="titre">{v.titre}</span>
                 </div>
               );
             })}
@@ -751,16 +750,19 @@ export function PlanningPage({ appli } = {}) {
                               <div className="pl-compte">
                                 <div className="t">
                                   <b title={c.nom}>
-                                    {(c.applis || []).slice(0, 3).map((a) => (
-                                      <LogoAppli key={a} de={a} taille={20} />
-                                    ))}
+                                    {!appli &&
+                                      (c.applis || []).slice(0, 3).map((a) => (
+                                        <LogoAppli key={a} de={a} taille={20} />
+                                      ))}
                                     <span className="nom">{c.nom}</span>
                                   </b>
                                   <small>{publications.filter((p) => p.compte === c.id && dansSemaine(p)).length} cette semaine</small>
                                 </div>
-                                <button className="pl-masquer" title="Masquer ce compte" onClick={() => setRangement((x) => ({ ...x, masques: { ...x.masques, [c.id]: true } }))}>
-                                  <Ic n="croix" taille={14} />
-                                </button>
+                                {!appli && (
+                                  <button className="pl-masquer" title="Masquer ce compte" onClick={() => setRangement((x) => ({ ...x, masques: { ...x.masques, [c.id]: true } }))}>
+                                    <Ic n="croix" taille={14} />
+                                  </button>
+                                )}
                               </div>
                               {jours.map((d) => {
                                 const j = iso(d);
@@ -780,7 +782,7 @@ export function PlanningPage({ appli } = {}) {
                                         <Ic n="plus" />
                                       </button>
                                     )}
-                                    {ici.length > 1 && <span className="pl-conflit-t">{ici.length} le même jour</span>}
+                                    {ici.length > 1 && <span className="pl-conflit-t">{ici.length} vidéos ce jour-là</span>}
                                   </div>
                                 );
                               })}
