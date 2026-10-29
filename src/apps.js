@@ -35,8 +35,8 @@ export const LOGOS = {
   keurfoot: 'logos/keurfoot.webp?v=2',
   keurkado: 'logos/keurkado.webp?v=2',
   toakeur: 'logos/toakeur.webp',
-  keurdesir: 'logos/keurdesir.webp',
-  keurbible: 'logos/keurbible.webp',
+  keurdesir: 'logos/keurdesir.webp?v=2',
+  keurbible: 'logos/keurbible.webp?v=2',
 };
 const simple = (t) =>
   String(t || '')
