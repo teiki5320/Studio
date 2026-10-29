@@ -577,6 +577,87 @@ function RecettesEntry({ projects, loaded, onCreate }) {
 }
 
 // ---------- Réglages : ma marque, voix françaises ----------
+// TikTok : coller les clés de l'appli « Toa Studio » (developers.tiktok.com),
+// puis connecter chaque compte TikTok du Planning.
+function TiktokCard() {
+  const [etat, setEtat] = useState(null);
+  const [comptes, setComptes] = useState([]);
+  const [cle, setCle] = useState('');
+  const [secret, setSecret] = useState('');
+  const [changer, setChanger] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    api.tiktok().then(setEtat).catch((e) => setError(e.message));
+    api.comptesReseaux().then((l) => setComptes(l.filter((c) => c.reseau === 'tiktok'))).catch(() => {});
+  }, []);
+  if (!etat) {
+    return null;
+  }
+  return (
+    <div className="rg-carte">
+      <div className="rg-yt">
+        <LogoReseau id="tiktok" taille={44} seul />
+        <span className="t">
+          <b>TikTok</b>
+          <span className={`rg-etat-txt ${Object.keys(etat.comptes).length ? 'ok' : 'none'}`}>
+            <i />
+            {Object.keys(etat.comptes).length ? `${Object.keys(etat.comptes).length} compte(s) branché(s) : le Studio publie seul` : etat.configure ? 'Clés enregistrées, aucun compte branché' : 'Pas connecté'}
+          </span>
+        </span>
+        {etat.configure ? (
+          <div className="rg-actions">
+            <button className="clay-btn ghost small" onClick={() => setChanger(!changer)}>
+              Changer les clés
+            </button>
+          </div>
+        ) : null}
+      </div>
+      {etat.configure && !changer ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {comptes.map((c) => (
+            <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <b style={{ minWidth: 120 }}>{c.nom}</b>
+              <span className="clay-muted small">{c.id in etat.comptes ? `branché${etat.comptes[c.id] ? ` (${etat.comptes[c.id]})` : ''}` : 'pas branché'}</span>
+              <a className="clay-btn ghost small" href={`/api/tiktok/connecter?compte=${encodeURIComponent(c.id)}`}>
+                {c.id in etat.comptes ? 'Reconnecter' : 'Connecter'}
+              </a>
+              {c.id in etat.comptes ? (
+                <button className="clay-btn ghost small" onClick={() => api.tiktokDeconnecter(c.id).then(setEtat)}>
+                  Déconnecter
+                </button>
+              ) : null}
+            </div>
+          ))}
+          {!comptes.length ? <p className="clay-muted small">Ajoute d'abord ton compte TikTok dans « Comptes des réseaux » ci-dessous.</p> : null}
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 560 }}>
+          <input className="rp-input" placeholder="Client key" value={cle} onChange={(e) => setCle(e.target.value)} />
+          <input className="rp-input" type="password" placeholder="Client secret" value={secret} onChange={(e) => setSecret(e.target.value)} />
+          <button
+            className="clay-btn"
+            onClick={() =>
+              api
+                .tiktokCles(cle, secret)
+                .then((e) => {
+                  setEtat(e);
+                  setCle('');
+                  setSecret('');
+                  setChanger(false);
+                  setError('');
+                })
+                .catch((e) => setError(e.message))
+            }
+          >
+            Enregistrer les clés
+          </button>
+        </div>
+      )}
+      {error && <p className="error small">{error}</p>}
+    </div>
+  );
+}
+
 // YouTube : coller les clés du projet Google « Studio », puis se connecter.
 function YoutubeCard() {
   const [etat, setEtat] = useState(null);
@@ -699,6 +780,7 @@ function ReglagesPage({ arg }) {
         ) : (
           <>
             <YoutubeCard />
+            <TiktokCard />
             <ComptesReseauxCard />
           </>
         )}

@@ -300,7 +300,7 @@ export function PlanningPage({ appli } = {}) {
   // chaîne connectée dans les Réglages.
   const direct = (p) => {
     const c = compteDe[p.compte];
-    return c?.reseau === 'youtube' && data.youtube && c.nom.toLowerCase() === String(data.youtube).toLowerCase();
+    return (c?.reseau === 'youtube' && data.youtube && c.nom.toLowerCase() === String(data.youtube).toLowerCase()) || (c?.reseau === 'tiktok' && (data.tiktok || []).includes(c.id));
   };
 
   const placer = (k, compte, date) => {
@@ -386,7 +386,7 @@ export function PlanningPage({ appli } = {}) {
   const publierYoutube = (p) => {
     setEnvoi(p.id);
     api
-      .publierYoutube(p.id)
+      .publierPlanning(p.id)
       .then(({ jobId }) => followJob(jobId))
       .then(load)
       .catch((e) => setError(e.message))
@@ -525,6 +525,8 @@ export function PlanningPage({ appli } = {}) {
                     </button>
                   )}
                 </div>
+                {!p.publie && p.erreur ? <span className="error small">L’envoi automatique a échoué : {p.erreur}</span> : null}
+                {p.publie && p.prive ? <span className="clay-muted small">Publiée en privé (TikTok n’a pas encore validé l’appli).</span> : null}
               </div>
             );
           })}

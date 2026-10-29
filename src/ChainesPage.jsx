@@ -51,7 +51,8 @@ function chiffres(data, compte) {
 }
 
 // YouTube branché = le compte qui porte le nom de la chaîne connectée.
-const publieSeul = (data, c) => c.reseau === 'youtube' && data.youtube && c.nom.toLowerCase() === String(data.youtube).toLowerCase();
+const publieSeul = (data, c) =>
+  (c.reseau === 'youtube' && data.youtube && c.nom.toLowerCase() === String(data.youtube).toLowerCase()) || (c.reseau === 'tiktok' && (data.tiktok || []).includes(c.id));
 
 // `menu` : contenu affiché sous la carte quand on la touche (au lieu
 // d'ouvrir la page de la chaîne).

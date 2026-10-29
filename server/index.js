@@ -89,7 +89,7 @@ import { fetchSiteBrief } from './sitebrief.js';
 import { publicHosts, verifyAccessToken } from './cfaccess.js';
 import { listQueue, addToQueue, removeFromQueue, startQueue } from './queue.js';
 import { planningSites } from './planningSites.js';
-import { planning, placer, modifier as modifierPlanning, retirer as retirerPlanning, retirerVideo as retirerVideoPlanning, publicationsDuCompte, entree as entreePlanning, noterPublication } from './planning.js';
+import { planning, placer, modifier as modifierPlanning, retirer as retirerPlanning, retirerVideo as retirerVideoPlanning, publicationsDuCompte, entree as entreePlanning, noterPublication, noterEssai } from './planning.js';
 import { listeComptes, ajouterCompte, modifierCompte, retirerCompte } from './reseaux.js';
 import {
   etatIndexation,
@@ -117,6 +117,8 @@ import { listeAfaire, deposer as deposerAfaire, envoyer as envoyerAfaire, fileAf
 import { routines } from './routines.js';
 import { audience, etatCloudflare, enregistrerCle as enregistrerCleCloudflare, oublierCle as oublierCleCloudflare } from './audience.js';
 import { comptes, changerEtat as changerEtatCompte } from './comptes.js';
+import { etatTiktok, enregistrerClesTiktok, urlConnexionTiktok, terminerConnexionTiktok, deconnecterTiktok, publierTiktok } from './tiktok.js';
+import { jourParis } from './planningSites.js';
 import { etatYoutube, enregistrerCles, urlConnexion, terminerConnexion, deconnecter as deconnecterYoutube, publierShort } from './youtube.js';
 import {
   RECIPE_SECONDS,
@@ -1306,7 +1308,7 @@ app.get('/api/planning/sites', (req, res) => {
 
 app.get('/api/planning', (req, res) => {
   try {
-    res.json({ ...planning(), youtube: etatYoutube().chaine });
+    res.json({ ...planning(), youtube: etatYoutube().chaine, tiktok: Object.keys(etatTiktok().comptes) });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -1620,6 +1622,138 @@ app.post('/api/planning/:id/youtube', (req, res) => {
   }, { projectId: p.id });
   res.json({ jobId: job.id });
 });
+
+// ---------- TikTok ----------
+app.get('/api/tiktok', (req, res) => res.json(etatTiktok()));
+app.post('/api/tiktok/cles', (req, res) => {
+  try {
+    enregistrerClesTiktok(req.body || {});
+    res.json(etatTiktok());
+  } catch (e) {
+    res.status(400).json({ error: e.message });
+  }
+});
+// Connexion d'un compte du Planning (?compte=<id>) ; TikTok renvoie toujours
+// sur l'adresse publique déclarée dans l'appli.
+app.get('/api/tiktok/connecter', (req, res) => {
+  try {
+    res.redirect(urlConnexionTiktok(String(req.query.compte || '')));
+  } catch (e) {
+    res.status(400).send(e.message);
+  }
+});
+app.get('/api/tiktok/retour', async (req, res) => {
+  if (req.query.error) {
+    res.redirect('/#/reglages');
+    return;
+  }
+  try {
+    await terminerConnexionTiktok(String(req.query.code || ''), String(req.query.state || ''));
+    res.redirect('/#/reglages');
+  } catch (e) {
+    res.status(400).send(`Connexion TikTok impossible : ${e.message}`);
+  }
+});
+app.post('/api/tiktok/deconnecter', (req, res) => {
+  deconnecterTiktok(String(req.body?.compte || ''));
+  res.json(etatTiktok());
+});
+
+// Publie une publication du planning sur son compte (TikTok ou YouTube branché).
+function lancerPublication(e) {
+  const compte = listeComptes().find((c) => c.id === e.compte);
+  const p = loadProject(e.projectId);
+  const ep = p && (p.episodes || []).find((x) => x.number === e.number);
+  if (!compte || !ep || !ep.renderedFile) {
+    throw new Error('Vidéo introuvable.');
+  }
+  const fichier = path.join(projectDir(p.id), ep.renderedFile);
+  const titre = String(ep.title || ep.topic).slice(0, 60);
+  if (compte.reseau === 'tiktok') {
+    if (!(compte.id in etatTiktok().comptes)) {
+      throw new Error(`« ${compte.nom} » n’est pas connecté à TikTok (Réglages → TikTok).`);
+    }
+    return startJob(`TikTok — ${p.title} · ${titre}`, async (update) => {
+      const r = await publierTiktok(compte.id, fichier, tiktokCaption(p, ep), update);
+      noterPublication(e.id, { url: r.url, prive: r.prive });
+      return r;
+    }, { projectId: p.id });
+  }
+  const chaine = etatYoutube().chaine;
+  if (compte.reseau !== 'youtube' || !chaine || chaine.toLowerCase() !== compte.nom.toLowerCase()) {
+    throw new Error(`« ${compte.nom} » se publie à la main.`);
+  }
+  return startJob(`YouTube — ${p.title} · ${titre}`, async (update) => {
+    const r = await publierShort(fichier, { titre: ep.title || ep.topic, description: tiktokCaption(p, ep) }, update);
+    noterPublication(e.id, { url: r.url, prive: r.prive });
+    return r;
+  }, { projectId: p.id });
+}
+app.post('/api/planning/:id/tiktok', (req, res) => {
+  const e = entreePlanning(req.params.id);
+  if (!e) {
+    res.status(404).json({ error: 'Publication introuvable.' });
+    return;
+  }
+  try {
+    res.json({ jobId: lancerPublication(e).id });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Publication automatique : le jour prévu, à partir de 18 h (heure de Paris),
+// chaque publication d'un compte branché part toute seule. Un seul essai :
+// en cas d'échec, l'erreur reste sur la publication et on la relance à la main.
+let publicationAuto = false;
+function publierLesPublicationsDuJour() {
+  if (publicationAuto) {
+    return;
+  }
+  const heure = parseInt(new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }).format(new Date()), 10);
+  const aujourdhui = jourParis();
+  const branches = etatTiktok().comptes;
+  const chaine = String(etatYoutube().chaine || '').toLowerCase();
+  const comptes = new Map(listeComptes().map((c) => [c.id, c]));
+  const prete = (pub) => {
+    const c = comptes.get(pub.compte);
+    const branche = c && ((c.reseau === 'tiktok' && c.id in branches) || (c.reseau === 'youtube' && chaine && c.nom.toLowerCase() === chaine));
+    return branche && !pub.publie && !pub.essaiAuto && (pub.date < aujourdhui || (pub.date === aujourdhui && heure >= 18));
+  };
+  let liste = [];
+  try {
+    liste = planning().publications.filter(prete);
+  } catch {
+    return;
+  }
+  const suivante = liste[0];
+  if (!suivante) {
+    return;
+  }
+  publicationAuto = true;
+  noterEssai(suivante.id, { essaiAuto: new Date().toISOString() });
+  let job;
+  try {
+    job = lancerPublication(suivante);
+  } catch (err) {
+    noterEssai(suivante.id, { erreur: err.message });
+    publicationAuto = false;
+    return;
+  }
+  const attendre = setInterval(() => {
+    const j = getJob(job.id);
+    if (!j || j.status === 'running') {
+      return;
+    }
+    clearInterval(attendre);
+    if (j.status === 'error') {
+      noterEssai(suivante.id, { erreur: String(j.error || 'échec') });
+    }
+    publicationAuto = false;
+    publierLesPublicationsDuJour();
+  }, 15000);
+}
+setInterval(publierLesPublicationsDuJour, 10 * 60 * 1000);
 
 // ---------- Synchronisation dossiers du Bureau ⇄ Studio ----------
 // Le Finder fait foi : une vidéo glissée de « À valider » à « Validées » est

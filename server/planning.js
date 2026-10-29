@@ -206,3 +206,15 @@ export function noterPublication(id, infos) {
   Object.assign(p, infos, { publie: true });
   ecrire(pubs);
 }
+
+// Essai de publication automatique (réussi ou non) : noté pour ne jamais
+// réessayer tout seul (un seul essai automatique, règle de Jean).
+export function noterEssai(id, infos) {
+  const pubs = lire();
+  const p = pubs.find((x) => x.id === id);
+  if (!p) {
+    return;
+  }
+  Object.assign(p, infos);
+  ecrire(pubs);
+}
