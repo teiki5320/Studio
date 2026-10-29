@@ -17,7 +17,8 @@ publications réelles, ou routine qui publie).
 
 - [fait] **Aujourd'hui** : affiliation Amazon Partenaires (tag `keurkadofr-21`) ; le site ne vend rien.
 - [en cours] **Publicité AdSense** : script et ads.txt en ligne, examen du site demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 28 octobre 2026), blocs d'annonces à créer.
-- **Liens Amazon directs** : 53 cadeaux sur 95 mènent à leur fiche ; étendre les ASIN vérifiés aux autres.
+- **Liens Amazon directs** : 58 cadeaux sur 98 mènent à leur fiche au 28 octobre 2026 (3 bijoux, des figurines et un recueil de proverbes ajoutés ce jour-là) ; les 40 autres gardent une recherche faute d’article fidèle et bien noté.
+- [fait] **Mise en avant (28 octobre 2026)** : Top 10 de la prochaine fête sous le compte à rebours de l'accueil (depuis le 28 octobre au soir : 8 cadeaux illustrés, chacun mène à sa place dans le Top 10, sans lien Amazon sur l'accueil), Top 10 et trois idées sous chaque fête du calendrier, un encadré de 1 ou 2 cadeaux dans chaque conseil, bouton Amazon juste après la description des cartes, plus aucun renvoi vers Keurbook ni Keur Cook.
 - **Saison des fêtes** : Noël et colis de fin d'année, période où l'affiliation rapporte le plus.
 - **Partenariats** : mises en avant payées par des créateurs ou boutiques africaines, une fois l'audience mesurée.
 
@@ -31,9 +32,11 @@ publications réelles, ou routine qui publie).
 
 - ✅ Site en ligne sur `keurkado.com` depuis le 20 octobre 2026.
 - ✅ Référencement naturel : propriété `keurkado.com` dans Google Search Console, sitemap envoyé le
-  20 octobre 2026 ; 12 articles Conseils, dont 5 publiés et 7 programmés jusqu'au 14 décembre,
-  republiés chaque lundi, mercredi et vendredi. Depuis le 25 octobre 2026, pages signalées aussi à
-  Bing et aux autres moteurs par IndexNow (`scripts/indexnow.mjs`).
+  20 octobre 2026 ; 24 articles Conseils au 29 octobre 2026, dont 5 publiés et 19 programmés jusqu'au 14 décembre
+  (12 ajoutés le 29 octobre, du 30 octobre au 9 décembre), republiés chaque lundi, mercredi et vendredi. Depuis le 25 octobre 2026, pages signalées aussi à
+  Bing et aux autres moteurs par IndexNow (`scripts/indexnow.mjs`, lancé par GitHub après chaque
+  publication et chaque lundi depuis le 28 octobre 2026) ; site ajouté à Bing Webmaster Tools
+  le 28 octobre 2026 (balise `msvalidate.01`), sitemap envoyé le même jour.
 - ✅ Pinterest : compte Keur Kado créé, domaine revendiqué, 21 épingles programmées dans Pinterest
   (une par jour à partir du 21 octobre 2026) ; pas branché au Planning du Studio. Publication
   automatique par l'API (comme Keur Déco) en place depuis le 23 octobre 2026, clé du compte créée le
@@ -46,8 +49,8 @@ publications réelles, ou routine qui publie).
 
 - **Pages indexées par Google** : 61 sur 62 (relevé du Studio, 27 octobre 2026 ; 9 sur 61 au 21 octobre)
 - **Pages pas encore indexées** : 1, inconnue de Google (l'article « cadeau belle-mère africaine »)
-- **Liens Amazon directs** : 53 cadeaux sur 95
-- **Articles Conseils** : 5 publiés, 7 programmés
+- **Liens Amazon directs** : 58 cadeaux sur 98
+- **Articles Conseils** : 5 publiés, 19 programmés (au 29 octobre 2026)
 - **Visites** : à instrumenter
 - **Clics et revenus Amazon** : à vérifier dans la console
 - **Revenus AdSense** : aucun tant que les blocs d'annonces ne sont pas créés
@@ -58,5 +61,5 @@ publications réelles, ou routine qui publie).
   et renseigner leurs identifiants, pour que les annonces s'affichent.
 - Faire indexer la dernière page manquante et suivre les positions dans Google (61 pages sur 62
   indexées au 27 octobre 2026).
-- Liens Amazon directs : relever les ASIN vérifiés des 42 cadeaux qui ouvrent encore une recherche
-  Amazon (53 sur 95 mènent à leur fiche), en commençant par ceux des Top 10 de Noël.
+- Liens Amazon directs : relever les ASIN vérifiés des 40 cadeaux qui ouvrent encore une recherche
+  Amazon (58 sur 98 mènent à leur fiche ; relevé du 28 octobre 2026 sur la page Noël, le wax et la déco : rien de fidèle pour le reste, voir docs/AMAZON-ASIN.md).

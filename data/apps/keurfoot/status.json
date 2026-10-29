@@ -3,8 +3,9 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-28T05:46:57Z",
-    "url": "https://github.com/teiki5320/keurfoot/actions/runs/40639842818"
+    "updatedAt": "2026-10-29T05:45:21Z",
+    "url": "https://github.com/teiki5320/keurfoot/actions/runs/40825057979",
+    "enCours": true
   },
-  "fetchedAt": "2026-10-28T05:47:57.823Z"
+  "fetchedAt": "2026-10-29T05:45:32.567Z"
 }

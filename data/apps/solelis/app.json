@@ -14,7 +14,8 @@
     "nom-de-domaine",
     "base-sql",
     "email-transactionnel",
-    "api-tierce"
+    "api-tierce",
+    "analytics"
   ],
   "etat": "actif"
 }

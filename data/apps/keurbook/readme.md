@@ -1,6 +1,6 @@
 # Keurbook — les livres des auteurs d'Afrique subsaharienne
 
-Site en français qui présente des **livres et BD d'auteurs d'Afrique subsaharienne** (et de leur diaspora), écrits en français ou traduits : fiches livres, fiches auteurs, littérature de chaque pays et une rubrique **Conseils** (articles le lundi, le mercredi et le vendredi) et des pages **Top 10** (11 onglets), plus des **Actus du livre africain** lues en direct depuis la veille actus (depuis le 27 octobre 2026). Le site ne vend rien : les boutons « Acheter sur Amazon » mènent à Amazon.fr (programme Partenaires).
+Site en français qui présente des **livres et BD d'auteurs d'Afrique subsaharienne** (et de leur diaspora), écrits en français ou traduits : fiches livres, fiches auteurs, littérature de chaque pays et une rubrique **Conseils** (articles le lundi, le mercredi et le vendredi) et des pages **Top 10** (11 onglets), plus des **Actus du livre africain** lues en direct depuis la veille actus (depuis le 27 octobre 2026). Le site ne vend rien : les boutons « Voir sur Amazon » mènent à Amazon.fr (programme Partenaires).
 
 - **Site** : https://keurbook.com (`www.keurbook.com` sert le même site ; adresse canonique sans www). Publié sur Cloudflare Pages (projet `keurbook`).
 - **Dépôt** : https://github.com/teiki5320/keurbook.
@@ -18,7 +18,7 @@ Le site est **100 % statique** : pas de serveur, pas de base de données. Livres
 
 | Page | Adresse |
 | --- | --- |
-| Accueil | `/` |
+| Accueil (dont « Nos coups de cœur » : le livre illustré le mieux classé de 8 Top 10, liens internes, sans Amazon ; puis les 11 Top 10) | `/` |
 | Livres (recherche, filtres pays, genre, public, thème, époque) | `/livres`, `/livre/<slug>` |
 | BD (recherche, filtres pays et public) | `/bd`, `/bd/<slug>` |
 | Auteurs | `/auteurs`, `/auteur/<slug>` |
@@ -54,6 +54,8 @@ Règles de rédaction : [`docs/REDACTION.md`](docs/REDACTION.md). Champs exacts 
 
 - Liens construits par `src/lib/amazon.ts` avec le tag `keurbookfr-21` (`NEXT_PUBLIC_AMAZON_TAG` pour le changer). Ce tag vient du nouveau compte Amazon Partenaires ouvert le 18 octobre 2026 (l'ancien compte a été fermé par Amazon).
 - Si le champ `amazonAsin` d'un livre est rempli (ASIN vérifié sur Amazon.fr), le bouton mène à la fiche ; sinon à une **recherche Amazon** (ISBN, ou titre + auteur, rayon Livres).
+- Code de suivi par emplacement (fiche, top, conseil, rubrique) : table unique `AMAZON_TAGS` de `src/lib/amazon.ts` (tous à `keurbookfr-21` pour l'instant).
+- ASIN vérifiés : `src/lib/demo/amazon-asins.json` (436 livres au 29 octobre 2026). Disponibilité : `npm run verifier-produits` sur le Mac (Chrome + Playwright), voir `scripts/verifier-produits.mjs`.
 - `priceCents` : prix indicatif relevé à la main (affiché seulement s'il est rempli).
 - Mention obligatoire dans le pied de page et les pages légales.
 
@@ -85,17 +87,22 @@ Ouvrez http://localhost:3000. Variables facultatives : `cp .env.example .env.loc
 | `npm run lint` | ESLint |
 | `npm run typecheck` | Vérification des types |
 | `npm test` | Tests des contenus et des articles |
+| `npm run test:sortie` | Contrôle du site construit (`out/`), après `npm run build` |
 
 ## Publication
 
-Même fonctionnement que Keur Cook : le workflow `.github/workflows/deploy.yml` vérifie, construit et publie sur Cloudflare Pages (projet `keurbook`) à chaque push sur `main`, chaque lundi, mercredi et vendredi (articles programmés) et à la main. Il ne publie que si les secrets GitHub `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` sont présents. Le workflow « Maintenance » met le site en pause ou le rouvre (`content/maintenance.json`).
+Même fonctionnement que Keur Cook : le workflow `.github/workflows/deploy.yml` vérifie, construit et publie sur Cloudflare Pages (projet `keurbook`) à chaque push sur `main`, chaque lundi, mercredi et vendredi (articles programmés) et à la main. Avant la mise en ligne, il contrôle le site construit (`npm run test:sortie`) ; il échoue (en rouge) si les secrets GitHub `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID` manquent ; après la mise en ligne, il vérifie pendant 3 minutes au plus que `https://keurbook.com/version.txt` sert bien la nouvelle version (depuis le 28 octobre 2026). Le workflow « Maintenance » met le site en pause ou le rouvre (`content/maintenance.json`). Depuis le 28 octobre 2026, une règle de cache Cloudflare garde les pages HTML de keurbook.com 10 minutes (voir docs/INFRA.md) : une page republiée apparaît en 10 minutes au plus.
 
-**IndexNow (Bing, Yandex, Seznam…)** : le workflow `.github/workflows/indexnow.yml` lit le sitemap publié et signale toutes ses pages, chaque lundi à 2 h UTC et à la demande (onglet Actions → « IndexNow » → « Run workflow »). En local : `node scripts/indexnow.mjs`. La clé, publique par conception, est dans `public/86e162766f5615ec8020869f4b66761d.txt` et dans le script.
+**Dates du plan du site** : chaque page du sitemap porte la date de son dernier vrai changement, lue dans `src/lib/lastmod.json` (empreinte du contenu + jour). Depuis le 28 octobre 2026, le registre est mis à jour tout seul avant chaque construction (`prebuild` → `scripts/lastmod.mjs`) : une page changée pas encore commitée prend la date du jour, sinon le jour du commit qui l'a changée (la publication récupère tout l'historique git pour cela). `npx tsx scripts/lastmod.mjs --historique` reconstruit tout le registre depuis git.
+
+**Vignettes d'images** : `scripts/vignettes.mjs` (lancé avant `next dev` et `next build`) crée des versions légères des illustrations (300 et 400 px) et des portraits (200 et 400 px) dans `public/*/w<largeur>/`, non suivies par git ; les listes les utilisent (`src/lib/images.ts`).
+
+**IndexNow (Bing, Yandex, Seznam…)** : le workflow `.github/workflows/indexnow.yml` lit le sitemap publié et signale toutes ses pages après chaque publication réussie de `main` (depuis le 28 octobre 2026), chaque lundi à 2 h UTC et à la demande (onglet Actions → « IndexNow » → « Run workflow »). En local : `node scripts/indexnow.mjs`. La clé, publique par conception, est dans `public/86e162766f5615ec8020869f4b66761d.txt` et dans le script.
 
 ### Publicité (Google AdSense)
 
 - Compte AdSense `pub-2680784147246798` (comptes de gestion sur `admin@toakeur.com`). Le script est chargé sur les pages (`src/app/layout.tsx`, identifiant dans `src/lib/config.ts`) et `public/ads.txt` est publié.
-- **Le site n'est pas encore validé par Google** : première demande le 12 octobre 2026, refusée le 21 octobre (contenu jugé trop mince) ; fiches rallongées, nouvel examen demandé le 22 octobre 2026, « En préparation » dans la console (vérifié le 28 octobre 2026). Aucune annonce ne s'affiche tant que Google n'a pas validé le site. Détail : [`docs/PUBLICITE.md`](docs/PUBLICITE.md).
+- **Le site n'est pas encore validé par Google** : première demande le 12 octobre 2026, refusée le 21 octobre (contenu jugé trop mince) ; fiches rallongées, nouvel examen demandé le 22 octobre 2026, « En préparation » dans la console (vérifié le 29 octobre 2026). Aucune annonce ne s'affiche tant que Google n'a pas validé le site. Détail : [`docs/PUBLICITE.md`](docs/PUBLICITE.md).
 
 ### État de la mise en route
 

@@ -32,7 +32,7 @@ Node 22.18 ou plus récent (les scripts `.ts` sont exécutés directement par No
 | `build/rubriques.ts` | Pages de rubriques (pièces, matières, occasions), liste des articles, glossaire, blocs de l'accueil |
 | `build/rapport.ts` | Rapport affiché à chaque build |
 | `build/icones.ts` | Icônes (une par type d'objet) et logo SVG |
-| `src/amazon.ts` | `AMAZON_TAG` (seul endroit), liens `https://www.amazon.fr/dp/<ASIN>?tag=<TAG>` |
+| `src/amazon.ts` | `AMAZON_TAG` et table `CODES_SUIVI` (code de suivi par emplacement : ambiance, guide, top, conseil, rubrique ; seul endroit), liens `https://www.amazon.fr/dp/<ASIN>?tag=<TAG>` |
 | `src/taxonomie.ts` | Pièces, matières et styles, occasions |
 | `src/data/produits.json`, `src/data/glossaire.json`, `src/data/images.json` | Données |
 | `src/theme.css` | **Thème** : toutes les couleurs et polices (palette « Terre de Dakar ») |
@@ -117,7 +117,7 @@ Chaque build affiche : les articles programmés à venir, les produits `a_select
 
 Onglet « Conseils », comme sur Kultiled et Keur Cook : une question pratique par page (entretenir, associer, choisir, accrocher, comprendre), publiée à sa date.
 
-- Un fichier par conseil : `contenu/conseils/<slug>.md` (en-tête YAML : `titre` = la question, `description`, `publie_le`, `theme`, `reponse` = réponse courte affichée en tête, `matieres[]` et `epingles[]` facultatifs). `{{produit: <id>}}` insère un encadré produit.
+- Un fichier par conseil : `contenu/conseils/<slug>.md` (en-tête YAML : `titre` = la question, `description`, `publie_le`, `theme`, `reponse` = réponse courte affichée en tête, `matieres[]` et `epingles[]` facultatifs). `{{produit: <id>}}` insère un encadré produit (1 à 3 par conseil, jamais collé à une annonce). En bas de chaque conseil et de chaque fiche du glossaire, un lien « Notre sélection » mène vers le Top 10 ou l'ambiance assortis (`build/selection.ts`).
 - Pages générées par `build/conseils.ts` : `conseils.html` (par thème) et `conseil-<slug>.html` (réponse courte, données structurées FAQ, conseils proches).
 - Épingles Pinterest automatiques : un visuel typographique (la question dans une arche, sur le motif du thème) par titre, publié dans le tableau « general ».
 - Les tests vérifient que les liens internes d'un conseil mènent à des pages déjà publiées à sa date.
@@ -152,8 +152,12 @@ Règles (vérifiées par les tests) :
 
 - **Jamais d'ASIN, de note, d'avis ni de prix inventés** ; aucun prix affiché.
 - Un produit `a_selectionner` ou `indisponible` n'est jamais affiché.
-- **Aucune photo Amazon** : chaque carte produit montre une icône du type d'objet.
-- Liens : `https://www.amazon.fr/dp/<ASIN>?tag=keurdecofr-21`, `rel="sponsored nofollow noopener"`, `target="_blank"`.
+- **Aucune photo Amazon** : chaque carte produit montre une vignette découpée dans nos images IA ou une icône du type d'objet.
+- Accueil (depuis le 28 octobre 2026) : bloc « Nos coups de cœur » juste après la porte en arche, 8 produits (un par Top 10, le mieux classé qui a sa vignette maison, la table et la lumière d'abord pour les fêtes), chaque carte menant à sa place dans le Top 10 (`top-10/<sujet>#n-<rang>`), lien « Tout voir » vers les Top 10 ; aucun lien Amazon ni prix sur l'accueil (`coupsDeCoeur()` dans `build/top10.ts`, marqueur `<!--#coups-de-coeur-->`).
+- Pages de pièces et de matières : bandeau de 4 produits filtrés depuis `produits.json` (`pieces[]` ou `matieres[]`), rien s'il en manque. Cartes des ambiances : « Pourquoi » et « Idéal pour » repris des Top 10 (sinon des pages Top, puis les pièces du produit), rien d'inventé.
+- Boutons « Voir sur Amazon » de 44 px de haut au moins, toujours avec leur texte.
+- `npm run verifier-produits -- --ecrire --ids a,b` ne vérifie que les produits indiqués (par exemple ceux qu'on vient de placer).
+- Liens : `https://www.amazon.fr/dp/<ASIN>?tag=<code de l'emplacement>` (table `CODES_SUIVI`, tous à keurdecofr-21 au 28 octobre 2026), `rel="sponsored nofollow noopener"`, `target="_blank"`.
 - La mention Partenaires figure près des liens, dans le pied de page et les mentions légales.
 
 Tests : format d'ASIN (`/^[A-Z0-9]{10}$/`), unicité des identifiants, produits référencés existants, `verifie_le` pour tout produit actif, points entre 0 et 100 %, images existantes avec texte alternatif, tableaux Pinterest existants, liens internes valides.
@@ -164,14 +168,14 @@ Tout est détaillé dans [`docs/pinterest.md`](docs/pinterest.md), y compris les
 
 - **Sur le site** : Open Graph complet + données structurées `Article` (Rich Pins), balise `p:domain_verify` (variable `PINTEREST_VERIFY`), bouton « Épingler » sans script externe.
 - **Au build** (`scripts/epingles.ts`, sharp) : pour chaque article publié, une épingle 1000 × 1500 JPG par titre de `epingles[]`, 4 gabarits qui alternent (bandeau haut, bandeau bas, cadre, split) ; sortie `public/epingles/<slug>-<n>.jpg` et manifeste `epingles.json` (slug, image, titre, description avec mots-clés, lien avec `utm_source=pinterest`, tableau).
-- **Publication** (`scripts/pinterest-publier.mjs`, workflow quotidien 4 h 17 UTC) : lit le manifeste publié et `data/pinterest-etat.json`, publie au plus 5 épingles (config) sans deux épingles du même article le même jour, `POST /v5/pins` avec `media_source` `image_url`, tableau choisi via `config/tableaux-pinterest.json`, puis commit de l'état sur `main`. Le workflow échoue si un tableau n'a pas de `board_id`, et ouvre un ticket GitHub quand Pinterest renouvelle le refresh token (à recopier dans le secret). OAuth : `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`, `PINTEREST_REFRESH_TOKEN` (jeton d'accès renouvelé automatiquement). `PINTEREST_SANDBOX=1` : `https://api-sandbox.pinterest.com`. Sans secrets : mode à blanc.
+- **Publication** (`scripts/pinterest-publier.mjs`, workflow quotidien 4 h 17 UTC) : lit le manifeste publié et `data/pinterest-etat.json`, publie au plus 5 épingles (config) sans deux épingles du même article le même jour, `POST /v5/pins` avec `media_source` `image_url`, tableau choisi via `config/tableaux-pinterest.json`, puis commit de l'état sur `main`. Le workflow échoue si un tableau n'a pas de `board_id`, et, quand Pinterest renvoie un nouveau refresh token, garde un seul ticket GitHub ouvert pour rappeler de refaire la clé avant son échéance (environ 60 jours). OAuth : `PINTEREST_APP_ID`, `PINTEREST_APP_SECRET`, `PINTEREST_REFRESH_TOKEN` (jeton d'accès renouvelé automatiquement). `PINTEREST_SANDBOX=1` : `https://api-sandbox.pinterest.com`. Sans secrets : mode à blanc.
 - **Import manuel** : le build écrit aussi `public/epingles-pinterest.csv` (format d'import en masse de Pinterest). Des épingles importées ainsi sont programmées jusqu'au 18 novembre 2026 (2 par jour), en plus de celles publiées par l'API.
-- **État au 28 octobre 2026** : accès standard à l'API Pinterest accordé ; le workflow publie 5 épingles par passage (correctif du 20 octobre, commit `3529a05`) ; il a publié ses 5 premières épingles le 20 octobre et 60 au total au 28 octobre. Le secret `PINTEREST_REFRESH_TOKEN` a été renouvelé le 20 octobre ; comme Pinterest renvoie un nouveau refresh token à chaque renouvellement, GitHub peut rouvrir un ticket demandant de le recopier dans le secret (le jeton actuel reste valable environ 60 jours).
+- **État au 29 octobre 2026** : accès standard à l'API Pinterest accordé ; le workflow publie 5 épingles par passage (correctif du 20 octobre, commit `3529a05`) ; il a publié ses 5 premières épingles le 20 octobre et 70 au total au 29 octobre. Le secret `PINTEREST_REFRESH_TOKEN` a été renouvelé le 20 octobre (valable environ 60 jours). Depuis le 28 octobre 2026, comme Keur Kado : un seul ticket de rappel (au lieu d'un par jour, n° 15 ouvert le 29 octobre ; les 13 anciens tickets n° 2 à 14 ont été fermés le 28 octobre 2026) et `npm run pinterest:secrets` range la clé de `.env` dans les secrets GitHub sans l'afficher.
 - **`npm run pinterest:auth`** : serveur local (http://localhost:8085/) qui mène le parcours OAuth complet et affiche le refresh token, les tableaux et un formulaire d'épingle de démonstration (pour la vidéo exigée par Pinterest).
 
 ## Déploiement (GitHub Pages)
 
-`.github/workflows/pages.yml` : à chaque push sur `main`, chaque lundi, mercredi et vendredi à 5 h UTC, chaque jour à 11 h 50 et 18 h 50 UTC (articles d'actus de la veille) et à la demande : `npm ci`, tests, build (épingles comprises), test de bout en bout Chromium, puis déploiement GitHub Pages.
+`.github/workflows/pages.yml` : à chaque push sur `main`, chaque lundi, mercredi et vendredi à 5 h UTC, chaque jour à 11 h 50 et 18 h 50 UTC (articles d'actus de la veille) et à la demande : `npm ci`, tests, build (épingles comprises), test de bout en bout Chromium, déploiement GitHub Pages, puis vérification que https://www.keurdeco.com/version.txt sert bien la nouvelle version (commit + numéro de lancement, 3 minutes au plus, sinon échec), réactivation de la tâche programmée (passages programmés) et signalement des pages à Bing par IndexNow (après chaque publication, envois sur `main` compris).
 
 Réglages facultatifs (*Settings* › *Secrets and variables* › *Actions* › *Variables*) : `SITE_URL` (par défaut `https://www.keurdeco.com/`), `CLOUDFLARE_WEB_ANALYTICS` (token public du « JS Snippet » de Cloudflare Web Analytics : mesure d'audience sans cookie, en place), `PLAUSIBLE_DOMAIN` (alternative : Plausible), `PINTEREST_VERIFY`, `GOOGLE_VERIFY` (code de la Search Console, balise `google-site-verification`).
 

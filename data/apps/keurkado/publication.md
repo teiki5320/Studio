@@ -16,8 +16,8 @@
 | | 🌐 Site |
 |---|---|
 | État | [ok] En ligne, réponse 200 |
-| Hébergement | [ok] Worker de fichiers statiques Cloudflare « keurkado » |
-| Domaine | [ok] keurkado.com, www sert les mêmes pages |
+| Hébergement | [ok] Worker Cloudflare « keurkado » (fichiers statiques et redirections 301) |
+| Domaine | [ok] keurkado.com ; http et www redirigent en 301 depuis le 28 octobre 2026 |
 | SSL | [ok] Certificat Cloudflare, HSTS actif |
 | Indexation | [ok] 61 / 62 pages indexées par Google (27 octobre 2026) |
 | Mesure d'audience | [pas encore] Aucune mesure sur le site |
@@ -38,7 +38,7 @@
 | | |
 |---|---|
 | Adresse | **En ligne** sur https://keurkado.com (vérifié le 28 octobre 2026 : réponse 200) |
-| Hébergeur | Cloudflare, Worker de fichiers statiques `keurkado`, workflow `deploy.yml` |
+| Hébergeur | Cloudflare, Worker `keurkado` (fichiers statiques et script de redirections), workflow `deploy.yml` |
 | Dernière publication | 28 octobre 2026 (2 h 20 UTC, republication programmée du mercredi), publication réussie |
 | Mise en ligne | 20 octobre 2026 |
 | Dépôt | https://github.com/teiki5320/keurkado |
@@ -48,7 +48,8 @@
 ## Domaine & SSL
 
 - **Domaine** : `keurkado.com` (adresse canonique), enregistré le 20 octobre 2026, échéance le
-  20 octobre 2027 ; `www.keurkado.com` sert les mêmes pages avec l'adresse canonique sans www.
+  20 octobre 2027 ; `www.keurkado.com` redirige en 301 vers keurkado.com depuis le 28 octobre 2026
+  (du 20 au 28 octobre, il servait les mêmes pages avec l'adresse canonique sans www).
 - **Registraire et DNS** : Cloudflare.
 - **SSL** : certificat fourni et renouvelé par Cloudflare (valide jusqu'au 18 janvier 2027) ;
   HSTS activé dans `public/_headers`.
@@ -57,20 +58,25 @@
 
 ## Visibilité
 
-- **Sitemap** : https://keurkado.com/sitemap.xml répond (62 adresses) ; `robots.txt` répond.
+- **Sitemap** : https://keurkado.com/sitemap.xml répond (62 adresses) ; `robots.txt` répond. Depuis le
+  28 octobre 2026, la date des rubriques, du quiz et des pages fixes est celle du dernier commit de leurs
+  fichiers (plus de date à changer à la main) ; Top 10 et conseils gardent leur champ « maj ».
 - **Google Search Console** : propriété de domaine `keurkado.com`, sitemap envoyé et lu le
   20 octobre 2026, sans erreur, relu le 23 octobre. Au 27 octobre 2026 (relevé du Studio) : 61 pages
   indexées sur 62, 1 pas encore (inconnue de Google) ; il n'y en avait que 9 sur 61 au 21 octobre.
 - **Bing et autres moteurs (IndexNow)** : depuis le 25 octobre 2026, `node scripts/indexnow.mjs`
-  signale les pages du sitemap à Bing, DuckDuckGo, Ecosia et Yandex (clé publique servie à la
-  racine du site). Journal du référencement page par page : `docs/referencement.md`.
+  (lancé par GitHub depuis le 28 octobre 2026 : `.github/workflows/indexnow.yml`, après chaque publication
+  réussie sur main et chaque lundi) signale les pages du sitemap à Bing, DuckDuckGo, Ecosia et Yandex (clé publique servie à la
+  racine du site). Bing Webmaster Tools : site ajouté le 28 octobre 2026, vérifié par la balise
+  `msvalidate.01` du layout, sitemap envoyé le même jour. Journal du référencement page par page :
+  `docs/referencement.md`.
 - **Pinterest** : compte Keur Kado créé, domaine revendiqué (balise publiée sur le site) ;
   21 épingles programmées dans Pinterest, une par jour à partir du 21 octobre 2026. Publication
   automatique (`.github/workflows/pinterest.yml`, chaque jour à 4 h 17 UTC, 5 épingles au plus) en
   place depuis le 23 octobre 2026 ; secrets `PINTEREST_*` créés le même jour, connexion au compte
   réussie chaque jour du 24 au 28 octobre 2026 (aucune épingle de plus à publier : les 21 sont déjà programmées).
 - **Mesure d'audience** : aucune (la page Confidentialité l'indique).
-- **Publicité** : script AdSense chargé, `https://keurkado.com/ads.txt` répond ; aucun bloc
+- **Publicité** : script AdSense chargé après l'affichage de la page (depuis le 28 octobre 2026), `https://keurkado.com/ads.txt` répond ; aucun bloc
   d'annonce créé ; examen du site demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 28 octobre 2026) ; la console y affiche
   encore `ads.txt` « Introuvable » alors que le fichier répond (200) : elle ne l'a pas revérifié ; aucune
   annonce affichée pour l'instant.

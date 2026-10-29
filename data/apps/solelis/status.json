@@ -3,8 +3,9 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-28T05:46:48Z",
-    "url": "https://github.com/teiki5320/Solelis/actions/runs/40639673634"
+    "updatedAt": "2026-10-28T22:57:15Z",
+    "url": "https://github.com/teiki5320/Solelis/actions/runs/40783301380",
+    "enCours": true
   },
-  "fetchedAt": "2026-10-28T05:48:07.364Z"
+  "fetchedAt": "2026-10-29T05:45:41.940Z"
 }

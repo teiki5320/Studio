@@ -3,11 +3,11 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-28T05:45:12Z",
-    "url": "https://github.com/teiki5320/palabre/actions/runs/40639730601",
+    "updatedAt": "2026-10-29T05:43:02Z",
+    "url": "https://github.com/teiki5320/palabre/actions/runs/40824918763",
     "enCours": true
   },
-  "fetchedAt": "2026-10-28T05:48:05.467Z",
+  "fetchedAt": "2026-10-29T05:45:39.777Z",
   "boutiques": {
     "appStore": null,
     "googlePlay": null
