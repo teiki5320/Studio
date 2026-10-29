@@ -595,6 +595,33 @@ export function PlanningPage({ appli } = {}) {
           </div>
             </>
           )}
+          {/* Planning général : les vidéos validées se placent dans le planning de leur appli
+              (page de l’appli → Son planning) ; ici, un rappel qui y mène (Jean, 29/10). */}
+          {!appli && aPlacer.length > 0 && (
+            <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <b>À placer</b>
+            <span className="clay-state run">{aPlacer.length}</span>
+            <small className="clay-muted">touche une appli pour placer ses vidéos dans son planning</small>
+          </div>
+          <div className="pl-aplacer">
+            {[...aPlacer.reduce((m, v) => {
+              const depot = v.depot === 'recettes' ? 'keurcook' : v.depot;
+              const g = m.get(depot) || { v, n: 0 };
+              g.n += 1;
+              return m.set(depot, g);
+            }, new Map())].map(([depot, g]) => (
+              <a key={depot} className="pl-puce" href={`#/appli/${depot}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                <Apercu v={g.v} w={24} h={42} />
+                <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span className="appli">{g.v.appli}</span>
+                  <span style={{ fontSize: 12.5, lineHeight: 1.25 }}>{g.n} vidéo{g.n > 1 ? 's' : ''} à placer →</span>
+                </div>
+              </a>
+            ))}
+          </div>
+            </>
+          )}
 
           {/* Semaine */}
           <div className="pl-tete pl-monte">
