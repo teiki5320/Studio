@@ -1,5 +1,10 @@
 {
   "release": null,
-  "ci": null,
-  "fetchedAt": null
+  "ci": {
+    "status": "completed",
+    "conclusion": "success",
+    "updatedAt": "2026-10-29T18:07:32Z",
+    "url": "https://github.com/teiki5320/keurdesir/actions/runs/40927802036"
+  },
+  "fetchedAt": "2026-10-29T18:59:39.995Z"
 }

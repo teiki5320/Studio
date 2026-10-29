@@ -1,5 +1,10 @@
 {
   "release": null,
-  "ci": null,
-  "fetchedAt": null
+  "ci": {
+    "status": "completed",
+    "conclusion": "success",
+    "updatedAt": "2026-10-29T18:18:41Z",
+    "url": "https://github.com/teiki5320/keurbible/actions/runs/40929552203"
+  },
+  "fetchedAt": "2026-10-29T18:59:33.371Z"
 }

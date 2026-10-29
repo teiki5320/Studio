@@ -21,7 +21,7 @@ s = s.replace(a, """  # videos.toakeur.com : uniquement les vidéos confiées à
 open(p, "w").write(s)
 EOF
 fi
-cloudflared tunnel ingress validate --config "$CONF"
-cloudflared tunnel route dns drama-studio videos.toakeur.com || true
+cloudflared tunnel --config "$CONF" ingress validate
+# DNS : la zone toakeur.com se règle dans le tableau Cloudflare (CNAME videos → <tunnel>.cfargotunnel.com, proxy orange).
 launchctl kickstart -k "gui/$(id -u)/com.teiki.drama-studio-tunnel"
 echo "✅ videos.toakeur.com est ouvert."
