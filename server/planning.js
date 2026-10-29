@@ -204,6 +204,7 @@ export function noterPublication(id, infos) {
     return;
   }
   Object.assign(p, infos, { publie: true });
+  delete p.erreur;
   ecrire(pubs);
 }
 
