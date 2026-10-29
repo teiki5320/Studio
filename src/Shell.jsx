@@ -614,7 +614,7 @@ function BufferCard() {
           <span className="clay-muted small">
             Sur <a href="https://publish.buffer.com/settings/api" target="_blank" rel="noreferrer">publish.buffer.com → Réglages → API</a>, crée une clé et colle-la ici.
           </span>
-          <input className="rp-input" type="password" placeholder="Clé API Buffer" value={cle} onChange={(e) => setCle(e.target.value)} />
+          <input className="rp-input" type="text" autoComplete="off" spellCheck={false} name="cle-buffer" placeholder="Clé API Buffer" value={cle} onChange={(e) => setCle(e.target.value)} />
           <button
             className="clay-btn"
             onClick={() =>
