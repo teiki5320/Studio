@@ -138,6 +138,7 @@ import {
   removeOutro,
   saveChannelOutro,
   removeChannelOutroFile,
+  findFfmpeg,
 } from './studio.js';
 
 const app = express();
@@ -2026,8 +2027,47 @@ app.get('/files/:id/*', (req, res) => {
     res.download(resolved, nom);
     return;
   }
+  // ?apercu=1 : version légère d'une vidéo rendue (540 px, ~4 Mo au lieu de ~40),
+  // pour la regarder vite sur l'iPad à travers le tunnel. Gardée dans renders/apercus/
+  // tant que la vidéo ne change pas ; l'enregistrement (?dl=1) reste en pleine qualité.
+  if (req.query.apercu && rel.startsWith('renders/') && resolved.endsWith('.mp4')) {
+    apercuDe(resolved)
+      .then((f) => res.sendFile(f))
+      .catch((err) => {
+        console.error('Aperçu vidéo :', err.message);
+        res.sendFile(resolved);
+      });
+    return;
+  }
   res.sendFile(resolved);
 });
+
+const apercusEnCours = new Map();
+function apercuDe(source) {
+  const cible = path.join(path.dirname(source), 'apercus', path.basename(source));
+  if (fs.existsSync(cible) && fs.statSync(cible).mtimeMs >= fs.statSync(source).mtimeMs) return Promise.resolve(cible);
+  if (apercusEnCours.has(cible)) return apercusEnCours.get(cible);
+  fs.mkdirSync(path.dirname(cible), { recursive: true });
+  const tmp = `${cible}.tmp.mp4`;
+  const p = new Promise((resolve, reject) => {
+    execFile(
+      findFfmpeg() || 'ffmpeg',
+      ['-v', 'error', '-y', '-i', source, '-vf', 'scale=540:-2', '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '26', '-maxrate', '1600k', '-bufsize', '3200k', '-c:a', 'aac', '-b:a', '96k', '-movflags', '+faststart', tmp],
+      { timeout: 120000 },
+      (err) => {
+        if (err) {
+          fs.rmSync(tmp, { force: true });
+          reject(err);
+          return;
+        }
+        fs.renameSync(tmp, cible);
+        resolve(cible);
+      },
+    );
+  }).finally(() => apercusEnCours.delete(cible));
+  apercusEnCours.set(cible, p);
+  return p;
+}
 
 // ---------- Front (build Vite) ----------
 if (fs.existsSync(DIST_DIR)) {

@@ -31,7 +31,7 @@ function Apercu({ project, episode, studio }) {
       <video
         key={episode.renderedFile}
         className="rp-video"
-        src={`/files/${project.id}/${episode.renderedFile}?v=${encodeURIComponent(project.updatedAt || '')}#t=0.5`}
+        src={`/files/${project.id}/${episode.renderedFile}?apercu=1&v=${encodeURIComponent(project.updatedAt || '')}#t=0.5`}
         preload="metadata"
         controls
         playsInline
