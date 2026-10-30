@@ -1,0 +1,223 @@
+/* Planning — vue Jour (maquette D) et filtre par appli (Jean, 30/10). */
+
+.pl-filtre {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pl-fpuce {
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 4px 14px 4px 6px;
+  border-radius: 999px;
+  background: var(--carte);
+  color: var(--texte);
+  box-shadow: inset 0 0 0 1px var(--ligne);
+}
+.pl-filtre .pl-fpuce:first-child {
+  padding-left: 14px;
+}
+.pl-fpuce.on {
+  background: var(--accent-doux);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+
+.pl-vj {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pl-vj-jours {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pl-vj-jour {
+  font: inherit;
+  position: relative;
+  flex: 1 1 0;
+  min-width: 64px;
+  border: 0;
+  cursor: pointer;
+  border-radius: 16px;
+  padding: 10px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--carte);
+  color: var(--c-muted);
+  box-shadow: inset 0 0 0 1px var(--ligne);
+}
+.pl-vj-jour .aj {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pl-vj-jour b {
+  font-family: var(--titre);
+  font-size: 22px;
+  color: var(--texte);
+}
+.pl-vj-jour small {
+  font-size: 12px;
+}
+.pl-vj-jour.passe {
+  opacity: 0.75;
+}
+.pl-vj-jour.on {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: none;
+  opacity: 1;
+}
+.pl-vj-jour.on b {
+  color: var(--accent-ink);
+}
+.pl-vj-jour .pt {
+  position: absolute;
+  top: 9px;
+  right: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: var(--run);
+}
+.pl-vj-jour.on .pt {
+  background: var(--accent-ink);
+}
+
+.pl-vj-tete {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+.pl-vj-tete h3 {
+  margin: 0;
+  font-family: var(--titre);
+  font-size: 22px;
+}
+.pl-vj-tete span {
+  font-size: 14px;
+}
+.pl-vj-sites {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pl-vj-cartes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 12px;
+}
+.pl-vj-carte {
+  display: flex;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 18px;
+  background: var(--carte);
+  box-shadow: var(--clay-sm);
+}
+.pl-vj-carte.on {
+  box-shadow: 0 0 0 2px var(--accent);
+}
+.pl-vj-apercu {
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+  align-self: flex-start;
+}
+.pl-vj-corps {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pl-vj-titre {
+  font: inherit;
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--texte);
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 15px;
+  line-height: 1.3;
+}
+.pl-vj-ligne {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 6px 6px 10px;
+  border-radius: 12px;
+  background: var(--carte-2);
+  min-height: 44px;
+  box-sizing: border-box;
+}
+.pl-vj-ligne .nom {
+  flex: 1;
+  min-width: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pl-vj-ligne .pl-etat {
+  flex: none;
+  align-self: center;
+  padding: 3px 10px;
+  cursor: default;
+}
+
+.pl-vj-placer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 4px;
+}
+.pl-vj-placer .lab {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.pl-vj-puces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pl-vj-puces .pl-fpuce {
+  border-radius: 14px;
+  padding-right: 12px;
+  max-width: 100%;
+}
+.pl-vj-puces .t {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 260px;
+}
+.pl-vj-puces .plus {
+  color: var(--accent);
+  font-size: 18px;
+  line-height: 1;
+}

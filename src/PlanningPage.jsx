@@ -9,6 +9,7 @@ import { LogoReseau } from './LogoReseau.jsx';
 import { LogoAppli } from './LogoAppli.jsx';
 import { api, copyText } from './api.js';
 import { surLeMac } from './VideoSave.jsx';
+import './planning-jour.css';
 
 const RESEAUX = [
   ['tiktok', 'TikTok', 'TT'],
@@ -229,6 +230,133 @@ function DetailSite({ sites, caseSite, fermer }) {
   );
 }
 
+// Vue Jour (maquette D, Jean, 30/10) : sept boutons pour la semaine, puis les
+// vidéos du jour choisi, une carte par vidéo avec une ligne par compte et une
+// seule action. En bas, les vidéos validées à placer sur ce jour.
+function VueJour({ jours, jourChoisi, setJourSel, aujourdhui, publications, compteDe, ordre, etat, direct, envoi, publierMaintenant, basculer, fiche, setFiche, aPlacer, placerJour, listeSites, setCaseSite, appliActive }) {
+  const ici = publications.filter((p) => p.date === jourChoisi).sort((a, b) => ordre[a.compte] - ordre[b.compte]);
+  const groupes = new Map();
+  ici.forEach((p) => groupes.set(cle(p), [...(groupes.get(cle(p)) || []), p]));
+  const d0 = depuisIso(jourChoisi);
+  const titre = `${jourChoisi === aujourdhui ? 'Aujourd’hui · ' : ''}${JOURS_LONGS[(d0.getDay() + 6) % 7]} ${d0.getDate()} ${MOIS[d0.getMonth()]}`;
+  const faites = ici.filter((p) => p.publie).length;
+  const sorties = listeSites
+    .map((s) => ({ s, l: s.jours[jourChoisi] || [] }))
+    .filter((x) => x.l.length);
+  return (
+    <div className="pl-vj">
+      <div className="pl-vj-jours" role="tablist" aria-label="Jours de la semaine">
+        {jours.map((d) => {
+          const j = iso(d);
+          const n = publications.filter((p) => p.date === j).length;
+          const aFaire = j <= aujourdhui && publications.some((p) => p.date === j && !p.publie);
+          return (
+            <button
+              key={j}
+              type="button"
+              role="tab"
+              aria-selected={j === jourChoisi}
+              className={`pl-vj-jour${j === jourChoisi ? ' on' : ''}${j < aujourdhui ? ' passe' : ''}`}
+              onClick={() => setJourSel(j)}
+            >
+              {aFaire ? <i className="pt" aria-label="à publier" /> : null}
+              <span className="aj">{j === aujourdhui ? 'Auj.' : JOURS[(d.getDay() + 6) % 7]}</span>
+              <b>{d.getDate()}</b>
+              <small>{n ? pluriel(n, 'pub') : '—'}</small>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="pl-vj-tete">
+        <h3>{titre}</h3>
+        <span className="clay-muted">
+          {ici.length ? `${pluriel(ici.length, 'publication')} · ${faites === ici.length ? 'tout est publié' : `${ici.length - faites} à faire`}` : 'Rien de prévu sur les réseaux'}
+        </span>
+      </div>
+
+      {sorties.length > 0 && (
+        <div className="pl-vj-sites">
+          {sorties.map(({ s, l }) => {
+            const a = l.filter((e) => e.type === 'article').length;
+            const e = l.length - a;
+            return (
+              <button key={s.cle} type="button" className="pl-fpuce" onClick={() => setCaseSite(`${s.cle}|${jourChoisi}`)}>
+                <LogoAppli de={s.domaine} taille={20} seul />
+                {s.nom} · {[a ? pluriel(a, 'article') : '', e ? pluriel(e, 'épingle') : ''].filter(Boolean).join(', ')}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="pl-vj-cartes">
+        {[...groupes].map(([k, ps]) => {
+          const v = ps[0].video;
+          return (
+            <article key={k} className={`pl-vj-carte${fiche === k ? ' on' : ''}`}>
+              <button type="button" className="pl-vj-apercu" onClick={() => setFiche(k)} aria-label={`Ouvrir la fiche : ${v.titre}`}>
+                <Apercu v={v} w={54} h={96} />
+              </button>
+              <div className="pl-vj-corps">
+                <button type="button" className="pl-vj-titre" onClick={() => setFiche(k)}>
+                  {!appliActive && <LogoAppli de={v.depot === 'recettes' ? 'keurcook' : v.depot} taille={18} seul />}
+                  <b>{v.titre}</b>
+                </button>
+                {ps.map((p) => {
+                  const c = compteDe[p.compte] || { nom: p.compte, reseau: '' };
+                  const [texte, classe] = etat(p);
+                  const libre = !p.publie && !p.envoi && !p.enFile;
+                  return (
+                    <div key={p.id} className="pl-vj-ligne">
+                      <LogoReseau id={c.reseau} taille={16} seul />
+                      <span className="nom" title={c.nom}>
+                        {c.nom}
+                      </span>
+                      <span className={`pl-etat ${classe}`}>{texte}</span>
+                      {libre && direct(p) ? (
+                        <button className="clay-btn small" disabled={envoi === `${k}|${c.id}`} onClick={() => publierMaintenant(k, c)}>
+                          {p.erreur ? 'Relancer' : 'Publier'}
+                        </button>
+                      ) : libre ? (
+                        <button className="clay-btn ghost small" onClick={() => basculer(p)}>
+                          ✓ Fait
+                        </button>
+                      ) : p.url ? (
+                        <a className="clay-btn ghost small" href={p.url} target="_blank" rel="noreferrer">
+                          Voir
+                        </a>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+
+      {aPlacer.length > 0 && (
+        <section className="pl-vj-placer">
+          <span className="lab">À placer sur ce jour · {aPlacer.length}</span>
+          <div className="pl-vj-puces">
+            {aPlacer.map((v) => (
+              <button key={cle(v)} type="button" className="pl-fpuce" onClick={() => placerJour(v, jourChoisi)} title="Placer ce jour-là sur ses comptes proposés">
+                <Apercu v={v} w={18} h={32} />
+                {!appliActive && <LogoAppli de={v.depot === 'recettes' ? 'keurcook' : v.depot} taille={18} seul />}
+                <span className="t">{v.titre}</span>
+                <span className="plus" aria-hidden="true">
+                  +
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}
+
 export function PlanningPage({ appli } = {}) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
@@ -241,6 +369,7 @@ export function PlanningPage({ appli } = {}) {
   const [sites, setSites] = useState(null); // ce qui sort sur chaque site (lecture seule)
   const [caseSite, setCaseSite] = useState(null); // « cle|jour » ouverte dans le détail
   const [ouvertes, setOuvertes] = useState({}); // cases dépliées (« + N autres »)
+  const [jourSel, setJourSel] = useState(null); // jour ouvert dans la vue Jour (iso)
   const drag = useRef(null);
   const glisse = useRef(false); // vrai juste après un glisser (le clic qui suit est ignoré)
 
@@ -248,7 +377,7 @@ export function PlanningPage({ appli } = {}) {
     api
       .planning()
       .then((d) => {
-        setData(filtrer(d, appli));
+        setData(d);
         setError('');
       })
       .catch((e) => setError(e.message));
@@ -275,9 +404,20 @@ export function PlanningPage({ appli } = {}) {
     return <div className="clay-content clay-muted">{error || 'Chargement…'}</div>;
   }
 
+  // Filtre par appli (Jean, 30/10) : le planning général remplace la page de
+  // chaque appli. Le choix est retenu sur l'appareil.
+  const appliActive = appli || rangement.appli || null;
+  const applisListe = [];
+  [...data.aPlacer, ...data.publications.map((p) => p.video)].forEach((v) => {
+    const d = v?.depot === 'recettes' ? 'keurcook' : v?.depot;
+    if (d && !applisListe.some((a) => a.cle === d)) {
+      applisListe.push({ cle: d, nom: v.depot === 'recettes' ? 'Keur Cook' : v.appli || d });
+    }
+  });
+  const vu = filtrer(data, appliActive);
   const act = (p) => p.then(load).catch((e) => setError(e.message));
   const aujourdhui = iso(new Date());
-  const { comptes, aPlacer, publications } = data;
+  const { comptes, aPlacer, publications } = vu;
   const compteDe = Object.fromEntries(comptes.map((c) => [c.id, c]));
   const ordre = Object.fromEntries(comptes.map((c, i) => [c.id, i]));
   const videos = new Map();
@@ -295,8 +435,11 @@ export function PlanningPage({ appli } = {}) {
   const dansSemaine = (p) => p.date >= premier && p.date <= dernier;
   // Planning général sans aucune vidéo programmée : on ne montre que ce qui
   // sort vraiment sur les sites (les lignes TikTok, YouTube… seraient vides).
-  const sansVideos = !appli && !publications.length;
-  const liste = rangement.vue === 'liste';
+  const sansVideos = !appliActive && !publications.length;
+  const vue = rangement.vue || 'jour';
+  const liste = vue === 'liste';
+  const jourChoisi =
+    jourSel && jourSel >= premier && jourSel <= dernier ? jourSel : aujourdhui >= premier && aujourdhui <= dernier ? aujourdhui : premier;
   const semaine = (n) => {
     const d = new Date(debut);
     d.setDate(d.getDate() + 7 * n);
@@ -341,6 +484,18 @@ export function PlanningPage({ appli } = {}) {
     setFiche(k);
     setSel(k);
     act(api.placerPlanning({ projectId: v.projectId, number: v.number, comptes: [compte], date }));
+  };
+  const placerJour = (v, date) => {
+    const deps = depotsDe(v.depot === 'recettes' ? 'keurcook' : v.depot);
+    const ids = comptes.map((c) => c.id);
+    const proposes = (v.proposes || []).filter((id) => ids.includes(id));
+    const cs = proposes.length ? proposes : comptes.filter((c) => (c.applis || []).some((a) => deps.includes(a))).map((c) => c.id);
+    if (!cs.length) {
+      setError(`Aucune chaîne n’est reliée à ${v.appli || 'cette appli'} : relie-en une dans Mes applis.`);
+      return;
+    }
+    setFiche(cle(v));
+    act(api.placerPlanning({ projectId: v.projectId, number: v.number, comptes: cs, date }));
   };
   const deplacer = (id, compte, date) => {
     const p = publications.find((x) => x.id === id);
@@ -454,7 +609,7 @@ export function PlanningPage({ appli } = {}) {
         title={`${v.titre} — ${texte}`}
       >
         <span className={`pl-point ${classe}`} />
-        {!appli && <LogoAppli de={v.depot === 'recettes' ? 'keurcook' : v.depot} taille={16} seul />}
+        {!appliActive && <LogoAppli de={v.depot === 'recettes' ? 'keurcook' : v.depot} taille={16} seul />}
         <span className="titre">{v.titre}</span>
       </div>
     );
@@ -602,7 +757,7 @@ export function PlanningPage({ appli } = {}) {
   );
 
   // Ce qui sort sur les sites cette semaine (pour le sous-titre).
-  const listeSites = (sites?.sites || []).filter((s) => !appli || s.cle === appli);
+  const listeSites = (sites?.sites || []).filter((s) => !appliActive || s.cle === appliActive);
   const sortiesSites = listeSites.reduce((t, s) => t + Object.entries(s.jours).filter(([j]) => j >= premier && j <= dernier).reduce((u, [, l]) => u + l.length, 0), 0);
   const nSemaine = publications.filter(dansSemaine).length;
   let rang = 0; // ordre d'arrivée des lignes (entrée en cascade)
@@ -612,7 +767,7 @@ export function PlanningPage({ appli } = {}) {
       {error && <p className="error small" style={{ padding: '16px clamp(16px, 3vw, 40px) 0', margin: 0 }}>{error}</p>}
       <div className="pl-corps">
           {/* À placer : dans le planning d'une appli seulement (le général ne fait que montrer) */}
-          {appli && aPlacer.length > 0 && (
+          {vue !== 'jour' && appliActive && aPlacer.length > 0 && (
             <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <b>À placer</b>
@@ -639,12 +794,12 @@ export function PlanningPage({ appli } = {}) {
           )}
           {/* Planning général : les vidéos validées se placent dans le planning de leur appli
               (page de l’appli → Son planning) ; ici, un rappel qui y mène (Jean, 29/10). */}
-          {!appli && aPlacer.length > 0 && (
+          {vue !== 'jour' && !appliActive && aPlacer.length > 0 && (
             <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             <b>À placer</b>
             <span className="clay-state run">{aPlacer.length}</span>
-            <small className="clay-muted">touche une appli pour placer ses vidéos dans son planning</small>
+            <small className="clay-muted">touche une appli pour placer ses vidéos</small>
           </div>
           <div className="pl-aplacer">
             {[...aPlacer.reduce((m, v) => {
@@ -653,13 +808,13 @@ export function PlanningPage({ appli } = {}) {
               g.n += 1;
               return m.set(depot, g);
             }, new Map())].map(([depot, g]) => (
-              <a key={depot} className="pl-puce" href={`#/appli/${depot}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              <button key={depot} type="button" className="pl-puce" onClick={() => setRangement((x) => ({ ...x, appli: depot }))} style={{ font: 'inherit', color: 'inherit', textAlign: 'left' }}>
                 <Apercu v={g.v} w={24} h={42} />
                 <div style={{ minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
                   <span className="appli">{g.v.appli}</span>
                   <span style={{ fontSize: 12.5, lineHeight: 1.25 }}>{g.n} vidéo{g.n > 1 ? 's' : ''} à placer →</span>
                 </div>
-              </a>
+              </button>
             ))}
           </div>
             </>
@@ -695,18 +850,37 @@ export function PlanningPage({ appli } = {}) {
               <button className={`pl-pill${aujourdhui >= premier && aujourdhui <= dernier ? ' on' : ''}`} onClick={() => setDebut(lundi(new Date()))}>
                 Aujourd'hui
               </button>
-              {!sansVideos && (
-                <div className="pl-vues">
-                  <button className={`pl-pill petite${liste ? '' : ' on'}`} onClick={() => setRangement((x) => ({ ...x, vue: 'semaine' }))}>
-                    Semaine
+              <div className="pl-vues">
+                {[
+                  ['jour', 'Jour'],
+                  ['semaine', 'Semaine'],
+                  ['liste', 'Liste'],
+                ].map(([id, nom]) => (
+                  <button key={id} className={`pl-pill petite${vue === id ? ' on' : ''}`} onClick={() => setRangement((x) => ({ ...x, vue: id }))}>
+                    {nom}
                   </button>
-                  <button className={`pl-pill petite${liste ? ' on' : ''}`} onClick={() => setRangement((x) => ({ ...x, vue: 'liste' }))}>
-                    Liste
-                  </button>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
           </div>
+
+          {!appli && applisListe.length > 1 && (
+            <div className="pl-filtre" role="group" aria-label="Filtrer par appli">
+              <button className={`pl-fpuce${appliActive ? '' : ' on'}`} onClick={() => setRangement((x) => ({ ...x, appli: null }))}>
+                Toutes
+              </button>
+              {applisListe.map((a) => (
+                <button
+                  key={a.cle}
+                  className={`pl-fpuce${appliActive === a.cle ? ' on' : ''}`}
+                  onClick={() => setRangement((x) => ({ ...x, appli: x.appli === a.cle ? null : a.cle }))}
+                >
+                  <LogoAppli de={a.cle} taille={22} seul />
+                  {a.nom}
+                </button>
+              ))}
+            </div>
+          )}
 
           {(enCours || enAttente.length > 0) && (
             <div className="pl-file">
@@ -732,7 +906,11 @@ export function PlanningPage({ appli } = {}) {
             </div>
           )}
 
-          {liste && !sansVideos ? (
+          {vue === 'jour' ? (
+            <VueJour
+              {...{ jours, jourChoisi, setJourSel, aujourdhui, publications, compteDe, ordre, etat, direct, envoi, publierMaintenant, basculer, fiche, setFiche, aPlacer, placerJour, listeSites, setCaseSite, appliActive }}
+            />
+          ) : liste && !sansVideos ? (
             <div className="pl-liste">
               {jours.map((d) => {
                 const j = iso(d);
@@ -760,7 +938,7 @@ export function PlanningPage({ appli } = {}) {
                             <b>{p.video.titre}</b>
                             <span className="clay-muted small">
                               <LogoReseau id={c.reseau} taille={13} seul /> {c.nom}
-                              {!appli ? ` · ${p.video.appli}` : ''}
+                              {!appliActive ? ` · ${p.video.appli}` : ''}
                             </span>
                           </div>
                           <span className={`pl-etat ${classe}`}>{texte}</span>
@@ -789,7 +967,7 @@ export function PlanningPage({ appli } = {}) {
             </div>
           ) : (
             <div className="pl-defile">
-              <div className={`pl-grille${appli ? ' appli' : ''}`}>
+              <div className={`pl-grille${appliActive ? ' appli' : ''}`}>
                 <div className="pl-rang pl-jours">
                   <span />
                   {jours.map((d) => {
@@ -864,7 +1042,7 @@ export function PlanningPage({ appli } = {}) {
                               <div className="pl-compte">
                                 <div className="t">
                                   <b title={c.nom}>
-                                    {!appli &&
+                                    {!appliActive &&
                                       (c.applis || []).slice(0, 3).map((a) => (
                                         <LogoAppli key={a} de={a} taille={20} />
                                       ))}
@@ -910,7 +1088,7 @@ export function PlanningPage({ appli } = {}) {
                     </React.Fragment>
                   );
                 })}
-                <LignesSites sites={sites} appli={appli} jours={jours} aujourdhui={aujourdhui} caseSite={caseSite} setCaseSite={setCaseSite} rang0={rang} />
+                <LignesSites sites={sites} appli={appliActive} jours={jours} aujourdhui={aujourdhui} caseSite={caseSite} setCaseSite={setCaseSite} rang0={rang} />
               </div>
             </div>
           )}
