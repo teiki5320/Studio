@@ -102,7 +102,7 @@ function oublier(jeton) {
   ecrire(PUBLIQUES, toutes);
 }
 
-export async function publierViaBuffer(nom, fichier, legende, update = () => {}) {
+export async function publierViaBuffer(nom, fichier, legende, update = () => {}, { vignetteMs = 1000 } = {}) {
   const chaine = chaineBuffer(nom);
   if (!chaine) {
     throw new Error(`« ${nom} » n’est pas branché dans Buffer.`);
@@ -120,7 +120,7 @@ export async function publierViaBuffer(nom, fichier, legende, update = () => {})
           text: String(legende || '').slice(0, 2200),
           schedulingType: 'automatic',
           mode: 'shareNow',
-          assets: [{ video: { url: `https://${HOTE_VIDEOS}/v/${jeton}.mp4`, metadata: { thumbnailOffset: 1000 } } }],
+          assets: [{ video: { url: `https://${HOTE_VIDEOS}/v/${jeton}.mp4`, metadata: { thumbnailOffset: Math.max(0, Math.round(vignetteMs)) } } }],
         },
       },
     );

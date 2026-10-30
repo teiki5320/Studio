@@ -1683,6 +1683,27 @@ app.post('/api/tiktok/deconnecter', (req, res) => {
   res.json(etatTiktok());
 });
 
+// Miniature TikTok (Jean, 30/10) : une vraie image de la vidéo, pas le logo du
+// début (toutes les pubs Erea se ressemblaient dans le profil). On prend la
+// première scène illustrée ; sinon la première scène après le logo et le
+// carton d'ouverture.
+function vignetteMs(ep) {
+  const scenes = ep.scenes || [];
+  const debut = [];
+  let t = 0;
+  for (const sc of scenes) {
+    debut.push(t);
+    t += Number(sc.durationSec) || 0;
+  }
+  const dans = (i) => Math.round((debut[i] + Math.min(2.5, (Number(scenes[i].durationSec) || 0) / 2)) * 1000);
+  const illustree = scenes.findIndex((sc) => sc.image || sc.imagePrompt);
+  if (illustree >= 0) {
+    return dans(illustree);
+  }
+  const contenu = scenes.findIndex((sc, i) => !sc.carton && !(i === 0 && (Number(sc.durationSec) || 0) <= 1.5));
+  return contenu >= 0 ? dans(contenu) : 1000;
+}
+
 // Publie une publication du planning sur son compte (TikTok ou YouTube branché).
 function lancerPublication(e) {
   const compte = listeComptes().find((c) => c.id === e.compte);
@@ -1695,7 +1716,7 @@ function lancerPublication(e) {
   const titre = String(ep.title || ep.topic).slice(0, 60);
   if (compte.reseau === 'tiktok' && chaineBuffer(compte.nom)) {
     return startJob(`TikTok — ${p.title} · ${titre}`, async (update) => {
-      const r = await publierViaBuffer(compte.nom, fichier, tiktokCaption(p, ep), update);
+      const r = await publierViaBuffer(compte.nom, fichier, tiktokCaption(p, ep), update, { vignetteMs: vignetteMs(ep) });
       noterPublication(e.id, { url: r.url, prive: false });
       return r;
     }, { projectId: p.id });
