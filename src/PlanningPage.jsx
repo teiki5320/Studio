@@ -300,6 +300,8 @@ export function PlanningPage({ appli } = {}) {
   };
   // Publication directe : seulement le compte YouTube qui porte le nom de la
   // chaîne connectée dans les Réglages.
+  const directCompte = (c) =>
+    (c?.reseau === 'youtube' && data.youtube && c.nom.toLowerCase() === String(data.youtube).toLowerCase()) || (c?.reseau === 'tiktok' && (data.tiktok || []).includes(c.id));
   const direct = (p) => {
     const c = compteDe[p.compte];
     return (c?.reseau === 'youtube' && data.youtube && c.nom.toLowerCase() === String(data.youtube).toLowerCase()) || (c?.reseau === 'tiktok' && (data.tiktok || []).includes(c.id));
@@ -385,14 +387,28 @@ export function PlanningPage({ appli } = {}) {
     window.addEventListener('pointercancel', fin);
   };
   const basculer = (p) => act(api.modifierPlanning(p.id, { publie: !p.publie }));
-  const publierYoutube = (p) => {
-    setEnvoi(p.id);
-    api
-      .publierPlanning(p.id)
-      .then(({ jobId }) => followJob(jobId))
-      .then(load)
-      .catch((e) => setError(e.message))
-      .finally(() => setEnvoi(null));
+  // Publier tout de suite sur un compte branché (Jean, 30/10) : la vidéo est
+  // placée aujourd'hui si elle n'y est pas encore, puis envoyée.
+  const publierMaintenant = async (k, compte) => {
+    const v = videos.get(k);
+    const deja = pubsDe(k).find((p) => p.compte === compte.id && !p.publie);
+    setEnvoi(`${k}|${compte.id}`);
+    try {
+      const id = deja ? deja.id : (await api.placerPlanning({ projectId: v.projectId, number: v.number, comptes: [compte.id], date: aujourdhui }))[0]?.id;
+      if (!deja) {
+        await load();
+      }
+      if (deja && deja.date !== aujourdhui) {
+        await api.modifierPlanning(id, { date: aujourdhui });
+      }
+      const { jobId } = await api.publierPlanning(id);
+      await followJob(jobId);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setEnvoi(null);
+      load();
+    }
   };
   const lienTelechargement = (v) =>
     surLeMac() ? v.video : `${v.video}?dl=1&name=${encodeURIComponent(v.legende.slice(0, 120) + '.mp4')}`;
@@ -431,10 +447,14 @@ export function PlanningPage({ appli } = {}) {
         {/* L'état, en clair (Jean, 30/10 : les diodes ne disaient rien) — toucher pour changer. */}
         <button
           className={`pl-etat${p.publie ? ' ok' : retard ? ' ko' : direct(p) ? ' auto' : ''}`}
-          title={p.publie ? 'Publiée — toucher pour annuler' : direct(p) ? 'Le Studio la publie seul ce jour-là, à partir de 18 h' : 'À publier toi-même — toucher une fois publiée'}
+          title={p.publie ? 'Publiée — toucher pour annuler' : direct(p) ? 'Le Studio la publie seul ce jour-là, à partir de 18 h — toucher pour la publier tout de suite' : 'À publier toi-même — toucher une fois publiée'}
           onClick={(e) => {
             e.stopPropagation();
-            basculer(p);
+            if (!p.publie && direct(p)) {
+              setFiche(cle(p));
+            } else {
+              basculer(p);
+            }
           }}
         >
           {p.publie ? '✓ Publiée' : retard ? 'En retard' : direct(p) ? 'Auto 18 h' : 'À publier'}
@@ -497,7 +517,7 @@ export function PlanningPage({ appli } = {}) {
                     </span>
                     <span style={{ fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.nom}>{c.nom}</span>
                   </div>
-                  <span className={`clay-state ${p.publie ? 'ok' : retard ? 'ko' : 'run'}`}>{p.publie ? '✓ Publiée' : retard ? 'En retard' : 'À publier'}</span>
+                  <span className={`clay-state ${p.publie ? 'ok' : retard ? 'ko' : 'run'}`}>{p.publie ? '✓ Publiée' : retard ? 'En retard' : direct(p) ? 'Auto 18 h' : 'À publier'}</span>
                   <button title="Retirer ce compte" onClick={() => act(api.retirerPlanning(p.id))} style={{ ...petitBouton, background: 'transparent', color: 'var(--c-muted)' }}>
                     ✕
                   </button>
@@ -519,8 +539,8 @@ export function PlanningPage({ appli } = {}) {
                     </a>
                   )}
                   {!p.publie && direct(p) ? (
-                    <button className="clay-btn small" disabled={envoi === p.id} onClick={() => publierYoutube(p)}>
-                      {envoi === p.id ? '⏳ Envoi…' : '▶️ Publier'}
+                    <button className="clay-btn small" disabled={Boolean(envoi)} onClick={() => publierMaintenant(fiche, c)}>
+                      {envoi === `${fiche}|${c.id}` ? '⏳ Envoi…' : '🚀 Publier maintenant'}
                     </button>
                   ) : (
                     <button className={`clay-btn small${p.publie ? ' ghost' : ''}`} onClick={() => basculer(p)}>
@@ -533,6 +553,23 @@ export function PlanningPage({ appli } = {}) {
               </div>
             );
           })}
+        </div>
+      )}
+      {comptes.some((c) => directCompte(c) && !dejaSur(fiche, c.id)) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span className="clay-muted small" style={{ fontWeight: 800 }}>
+            Publier tout de suite sur…
+          </span>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {comptes
+              .filter((c) => directCompte(c) && !dejaSur(fiche, c.id))
+              .map((c) => (
+                <button key={c.id} className="clay-btn small" disabled={Boolean(envoi)} onClick={() => publierMaintenant(fiche, c)}>
+                  {envoi === `${fiche}|${c.id}` ? '⏳ Envoi…' : <>🚀 <LogoReseau id={c.reseau} taille={14} /> {c.nom}</>}
+                </button>
+              ))}
+          </div>
+          {envoi && envoi.startsWith(`${fiche}|`) ? <span className="clay-muted small">Envoi en cours : ça prend une à deux minutes.</span> : null}
         </div>
       )}
       {comptes.some((c) => !dejaSur(fiche, c.id)) && (
