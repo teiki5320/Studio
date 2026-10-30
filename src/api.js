@@ -42,6 +42,7 @@ export const api = {
   kultivaPlan: (id) => request(`/api/kultiva/ad-plan/${id}`),
   palabrePlan: (id) => request(`/api/palabre/ad-plan/${id}`),
   ereaPlan: (id) => request(`/api/erea/ad-plan/${id}`),
+  sitePubPlan: (id) => request(`/api/sitepub/plan/${id}`),
   addToQueue: (item) => request('/api/queue', { method: 'POST', body: JSON.stringify(item) }),
   removeFromQueue: (id) => request(`/api/queue/${id}`, { method: 'DELETE' }),
   recipes: () => request('/api/recipes'),

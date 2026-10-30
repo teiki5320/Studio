@@ -18,6 +18,7 @@ import { loadProject } from './projects.js';
 import { RECIPE_IMAGE_STYLES, RECIPE_SCRIPT_STYLES } from './claudegen.js';
 import {
   createChannelVideo,
+  createSitePubVideo,
   createRecipeVideo,
   createKeurCookAd,
   keurCookAdPlan,
@@ -38,6 +39,7 @@ import {
 } from './pipeline.js';
 import { renderEpisode } from './render.js';
 import { sceneShots } from '../shared/catalog.js';
+import { sitePubPlan } from './sitepubs.js';
 
 const FILE = path.join(STUDIO_DIR, 'queue.json');
 const KEEP_FINISHED = 30;
@@ -119,6 +121,14 @@ export function addToQueue(raw) {
       angle,
       label: `${isPub ? 'Pub' : 'Vidéo'} ${project.title} — « ${angle.slice(0, 70)} »`,
     };
+  } else if (raw.kind === 'sitepub') {
+    // Pub d'un site, dans son format validé (Jean, 30/10).
+    const formats = sitePubPlan(project).formats;
+    const f = formats.find((x) => x.id === raw.format);
+    if (project.kind !== 'pub' || !f) {
+      throw new Error('Format de pub inconnu pour ce site.');
+    }
+    item = { kind: 'sitepub', format: f.id, label: `Pub ${project.title} — ${f.label.replace(/^\S+\s/, '')}` };
   } else if (raw.kind === 'keurcook') {
     // Pub Keur Cook « Tour d'Afrique » : le pays suivant, ou celui choisi.
     if (project.kind !== 'pub') {
@@ -295,6 +305,8 @@ async function produceItem(it, update) {
         )
       : it.kind === 'keurcook'
       ? await createKeurCookAd(p, { pays: it.pays, seconds: it.seconds }, step('Script', 0, 0.05))
+      : it.kind === 'sitepub'
+      ? await createSitePubVideo(p, it.format, step('Script', 0, 0.05))
       : it.kind === 'pub' || it.kind === 'chaine'
       ? await createChannelVideo(p, it.angle, step('Script', 0, 0.05))
       : await createRecipeVideo(

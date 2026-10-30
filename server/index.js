@@ -117,6 +117,7 @@ import { listeAfaire, deposer as deposerAfaire, envoyer as envoyerAfaire, fileAf
 import { routines } from './routines.js';
 import { audience, etatCloudflare, enregistrerCle as enregistrerCleCloudflare, oublierCle as oublierCleCloudflare } from './audience.js';
 import { comptes, changerEtat as changerEtatCompte } from './comptes.js';
+import { sitePubPlan } from './sitepubs.js';
 import { etatBuffer, enregistrerCleBuffer, chaineBuffer, publierViaBuffer, videoPublique, HOTE_VIDEOS } from './buffer.js';
 import { etatTiktok, enregistrerClesTiktok, urlConnexionTiktok, terminerConnexionTiktok, deconnecterTiktok, publierTiktok } from './tiktok.js';
 import { jourParis } from './planningSites.js';
@@ -1965,6 +1966,15 @@ app.get('/api/palabre/ad-plan/:id', (req, res) => {
   }
 });
 
+// Pubs des sites : le format validé de chaque site (sitepubs.js).
+app.get('/api/sitepub/plan/:id', (req, res) => {
+  const p = loadProject(req.params.id);
+  if (!p) {
+    res.status(404).json({ error: 'Projet introuvable' });
+    return;
+  }
+  res.json(sitePubPlan(p));
+});
 app.get('/api/erea/ad-plan/:id', (req, res) => {
   const p = loadProject(req.params.id);
   if (!p) {

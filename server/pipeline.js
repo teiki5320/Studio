@@ -63,6 +63,7 @@ import { composeMusic, composeSfx } from './music.js';
 import { chargeLivres, logoKeurbook } from './keurbook.js';
 import { chargeCultures, optiledRepo } from './optiled.js';
 import { iconeErea, evenementsCelebres, fichiersFrise, cartesDuJeu, sujetEvite } from './erea.js';
+import { briefSitePub, noterSitePub } from './sitepubs.js';
 import { cartesJouables, carteSerment, finsDuJeu, palais, fichiersPalabre, sonDeLaReponse, applique, JAUGES, palabreRepo } from './palabre.js';
 import { chargeEspeces, aSemer, tamassi, fondPastel, iconeKultiva, REGIONS, MOIS } from './kultiva.js';
 import { applyVoicePreset } from './voicepresets.js';
@@ -3404,7 +3405,21 @@ export async function createPalabreAd(project, { format = 'question', carte: car
   return { number };
 }
 
-export async function createChannelVideo(project, topic, update) {
+// Pub d'un site, dans un format validé (sitepubs.js) : la consigne est
+// écrite d'après le site, puis la fabrication est celle d'une pub ordinaire.
+export async function createSitePubVideo(project, format, update) {
+  const b = briefSitePub(project, format);
+  update(`Écriture du script « ${b.sujet} » par Claude…`);
+  const { number } = await createChannelVideo(project, b.angle, () => {}, { site: b.site });
+  const ep = project.episodes.find((e) => e.number === number);
+  ep.topic = `${b.label.replace(/^\S+\s/, '')} — ${ep.title || b.sujet}`.slice(0, 160);
+  ep.siteFormat = format;
+  noterSitePub(project, format, b.cle || ep.title || b.sujet);
+  saveProject(project);
+  return { number };
+}
+
+export async function createChannelVideo(project, topic, update, { site = '' } = {}) {
   if (project.mode !== 'chaine') {
     throw new Error('Réservé aux chaînes.');
   }
@@ -3412,7 +3427,7 @@ export async function createChannelVideo(project, topic, update) {
   update(`Écriture du script « ${topic.slice(0, 60)} » par Claude…`);
   const raw = await askClaudeForJson(
     project.kind === 'pub'
-      ? buildAdVideoPrompt(project, topic, number)
+      ? buildAdVideoPrompt(project, topic, number, site)
       : buildChannelVideoPrompt(project, topic, number),
   );
   ensureUsage(project).claudeCalls += 1;

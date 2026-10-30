@@ -751,7 +751,9 @@ Réponds UNIQUEMENT avec un objet JSON valide (aucun texte autour) :
 }`;
 }
 
-export function buildAdVideoPrompt(project, angle, number) {
+// site : domaine d'un site web (pubs des sites) — on ne parle plus d'appli
+// à télécharger, on invite à visiter le site (qui ne vend rien).
+export function buildAdVideoPrompt(project, angle, number, site = '') {
   const seconds = project.targetSeconds || 30;
   const words = Math.round(seconds * 2.2);
   const sMin = Math.max(4, Math.round(seconds / 5));
@@ -764,6 +766,9 @@ export function buildAdVideoPrompt(project, angle, number) {
     .map((c) => `  - id "${c.id}" : ${c.name} — ${c.visual}`)
     .join('\n');
 
+  if (site) {
+    return buildSiteAdVideoPrompt(project, angle, number, site, known);
+  }
   return `Tu écris des publicités vidéo verticales pour une appli mobile, diffusées sur TikTok.
 ${adDesc(project)}
 
@@ -804,6 +809,41 @@ Contraintes STRICTES :
 - GROS PLANS DE RÉACTION : quand un personnage est surpris ou bouleversé, coupe sur son visage en gros plan — c'est ce qui retient le pouce.
 - Chaque imagePrompt recopie MOT POUR MOT la description "visual" de chaque figure présente dans la scène : c'est ce qui garde le même visage d'un plan à l'autre.
 - "badge" situe le plan d'un coup d'œil (lieu, année). Utilise-le dès qu'une époque ou un lieu compte.`;
+}
+
+function buildSiteAdVideoPrompt(project, angle, number, site, known) {
+  const seconds = project.targetSeconds || 30;
+  const words = Math.round(seconds * 2.2);
+  return `Tu écris des publicités vidéo verticales pour un SITE WEB, diffusées sur TikTok et YouTube Shorts.
+Site « ${project.title} » (${site}) — ${project.pitch}
+Public visé : ${project.audience || 'grand public francophone'}
+Format : vidéo verticale de ${seconds} secondes environ, un NARRATEUR unique en voix off (aucun dialogue).
+
+CONSIGNE DE CETTE PUB (n°${number}) — à suivre à la lettre :
+${angle}
+${known ? `\nFIGURES DÉJÀ CRÉÉES (réutilise leur id ET leur description telle quelle si elles reviennent) :\n${known}\n` : ''}
+Réponds UNIQUEMENT avec un objet JSON valide (aucun texte autour) :
+{
+  "number": ${number},
+  "title": "titre court de la pub, qui nomme son sujet précis (usage interne)",
+  "figures": [0 à 4 personnages VISIBLES récurrents — [] si aucun : {"id": "slug_court", "name": "son rôle", "visual": "EN ANGLAIS : description physique très détaillée et STABLE"}],
+  "scenes": [les scènes du déroulé : {
+    "lines": [1 réplique : {"speaker": "narrator", "text": "phrase courte et orale en français, 14 mots maximum"}],
+    "screenshot": null,
+    "badge": "texte TRÈS court incrusté à l'écran (voir la consigne) — null si inutile",
+    "characters": [ids des figures VISIBLES dans cette scène, [] si aucune],
+    "imagePrompt": "EN ANGLAIS : le plan à générer, terminé par : ${channelImageSuffix(project)}"
+  }],
+  "cliffhanger": ""
+}
+
+Contraintes STRICTES :
+- C'est un SITE, gratuit, qui NE VEND RIEN : jamais « disponible sur… », « achète », « commande », « télécharge » ni « appli ». On invite à le visiter.
+- La seule adresse prononcée est « ${site} », dans la dernière scène.
+- Total des répliques ≈ ${words} mots (≈ ${seconds} secondes de voix) — phrases courtes, une idée par scène.
+- Aucun fait inventé, aucun faux avis, aucun chiffre qui ne vienne pas de la consigne ; pas de superlatif creux.
+- Jamais de texte, de lettres, de logo ni de marque dans les images.
+- Chaque imagePrompt recopie MOT POUR MOT la description "visual" de chaque figure présente.`;
 }
 
 // ---------- Recettes (mode « recette ») ----------

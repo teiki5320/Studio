@@ -545,6 +545,61 @@ function EreaAdControls({ projectId, project, onQueued }) {
   );
 }
 
+// Pubs des sites : le format validé par Jean pour ce site (30/10), en un clic.
+function SitePubControls({ projectId, onQueued }) {
+  const [formats, setFormats] = useState([]);
+  const [format, setFormat] = useState('');
+  const [error, setError] = useState('');
+  const [ok, setOk] = useState('');
+  useEffect(() => {
+    api
+      .sitePubPlan(projectId)
+      .then((r) => {
+        setFormats(r.formats || []);
+        setFormat((r.formats || [])[0]?.id || '');
+      })
+      .catch((e) => setError(e.message));
+  }, [projectId]);
+  if (!formats.length) {
+    return null;
+  }
+  return (
+    <div className="clay-block">
+      <h3>✨ Pub au format validé</h3>
+      {formats.length > 1 ? (
+        <select className="rp-input" value={format} onChange={(e) => setFormat(e.target.value)}>
+          {formats.map((f) => (
+            <option key={f.id} value={f.id}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <p style={{ margin: 0, fontWeight: 700 }}>{formats[0].label}</p>
+      )}
+      <p className="clay-muted small" style={{ margin: 0 }}>Le Studio choisit le contenu sur le site, puis écrit et fabrique la pub.</p>
+      <button
+        className="clay-btn rp-generate"
+        onClick={() => {
+          setError('');
+          setOk('');
+          api
+            .addToQueue({ kind: 'sitepub', projectId, format })
+            .then(() => {
+              setOk('Ajoutée à la fabrication.');
+              onQueued();
+            })
+            .catch((e) => setError(e.message));
+        }}
+      >
+        🎬 Générer la pub
+      </button>
+      {ok && <p className="clay-muted small">{ok}</p>}
+      {error && <p className="error small">{error}</p>}
+    </div>
+  );
+}
+
 export function AdPage({ projectId, onAdvanced }) {
   const [project, setProject] = useState(null);
   const [studio, setStudio] = useState(null);
@@ -691,6 +746,10 @@ export function AdPage({ projectId, onAdvanced }) {
           <Credits />
         </div>
 
+        <SitePubControls
+          projectId={projectId}
+          onQueued={() => api.queue().then((list) => setQueue(list.filter((it) => it.projectId === projectId)))}
+        />
         {isErea ? (
           <EreaAdControls
             projectId={projectId}
