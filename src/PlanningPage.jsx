@@ -7,7 +7,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { LogoReseau } from './LogoReseau.jsx';
 import { LogoAppli } from './LogoAppli.jsx';
-import { api, copyText, followJob } from './api.js';
+import { api, copyText } from './api.js';
 import { surLeMac } from './VideoSave.jsx';
 
 const RESEAUX = [
@@ -54,6 +54,8 @@ const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août'
 const jourCourt = (d) => `${JOURS[(d.getDay() + 6) % 7]} ${d.getDate()}`;
 const cle = (x) => `${x.projectId}:${x.number}`;
 const pluriel = (n, mot) => `${n} ${mot}${n > 1 ? 's' : ''}`;
+const MAX_CASE = 4; // au-delà, la case affiche « + N autres »
+const JOURS_LONGS = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi', 'Dimanche'];
 
 // Réseaux repliés et comptes masqués : retenus sur l'appareil.
 const RANGEMENT = 'drama-studio.planning';
@@ -238,6 +240,7 @@ export function PlanningPage({ appli } = {}) {
   const [envoi, setEnvoi] = useState(null);
   const [sites, setSites] = useState(null); // ce qui sort sur chaque site (lecture seule)
   const [caseSite, setCaseSite] = useState(null); // « cle|jour » ouverte dans le détail
+  const [ouvertes, setOuvertes] = useState({}); // cases dépliées (« + N autres »)
   const drag = useRef(null);
   const glisse = useRef(false); // vrai juste après un glisser (le clic qui suit est ignoré)
 
@@ -293,6 +296,7 @@ export function PlanningPage({ appli } = {}) {
   // Planning général sans aucune vidéo programmée : on ne montre que ce qui
   // sort vraiment sur les sites (les lignes TikTok, YouTube… seraient vides).
   const sansVideos = !appli && !publications.length;
+  const liste = rangement.vue === 'liste';
   const semaine = (n) => {
     const d = new Date(debut);
     d.setDate(d.getDate() + 7 * n);
@@ -305,6 +309,28 @@ export function PlanningPage({ appli } = {}) {
   const direct = (p) => {
     const c = compteDe[p.compte];
     return (c?.reseau === 'youtube' && data.youtube && c.nom.toLowerCase() === String(data.youtube).toLowerCase()) || (c?.reseau === 'tiktok' && (data.tiktok || []).includes(c.id));
+  };
+  // File d'envoi (Jean, 30/10) : le Studio envoie une publication à la fois.
+  const enAttente = publications.filter((p) => p.enFile && !p.envoi && !p.publie).sort((a, b) => a.enFile.localeCompare(b.enFile));
+  const enCours = publications.find((p) => p.envoi && !p.publie);
+  // L'état d'une publication, en mots : [texte, classe].
+  const etat = (p) => {
+    if (p.publie) {
+      return ['✓ Publiée', 'ok'];
+    }
+    if (p.envoi) {
+      return ['⏳ Envoi en cours', 'file'];
+    }
+    if (p.enFile) {
+      return [`⏳ En file · n° ${enAttente.findIndex((x) => x.id === p.id) + 1}`, 'file'];
+    }
+    if (p.erreur) {
+      return ['Échec', 'ko'];
+    }
+    if (enRetard(p)) {
+      return ['En retard', 'ko'];
+    }
+    return direct(p) ? ['Auto 18 h', 'auto'] : ['À publier', ''];
   };
 
   const placer = (k, compte, date) => {
@@ -401,8 +427,7 @@ export function PlanningPage({ appli } = {}) {
       if (deja && deja.date !== aujourdhui) {
         await api.modifierPlanning(id, { date: aujourdhui });
       }
-      const { jobId } = await api.publierPlanning(id);
-      await followJob(jobId);
+      await api.publierPlanning(id);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -415,50 +440,22 @@ export function PlanningPage({ appli } = {}) {
 
   // ---------- Vignette d'une publication dans la grille ----------
   // Puce : logo et nom de l'appli, diode, titre, étiquette du réseau.
+  // Une ligne par vidéo (Jean, 30/10 : beaucoup de vidéos par jour) : la
+  // pastille de couleur dit l'état, le titre complet est dans la fiche.
   const vignette = (p) => {
     const v = p.video;
-    const r = compteDe[p.compte]?.reseau;
-    const retard = enRetard(p);
+    const [texte, classe] = etat(p);
     return (
       <div
         key={p.id}
-        className={`pl-puce${fiche === cle(p) ? ' on' : ''}`}
+        className={`pl-puce compacte${fiche === cle(p) ? ' on' : ''}`}
         onPointerDown={(e) => glisser(e, { type: 'pub', id: p.id })}
         onClick={() => !glisse.current && setFiche(cle(p))}
-        title={v.titre}
+        title={`${v.titre} — ${texte}`}
       >
-        <button
-          className="pl-mini-btn pl-retirer"
-          title="Enlever du planning"
-          onClick={(e) => {
-            e.stopPropagation();
-            act(api.retirerPlanning(p.id));
-          }}
-        >
-          <Ic n="croix" taille={13} />
-        </button>
-        {/* Dans le planning d'une appli, son logo serait répété sur chaque carte. */}
-        {!appli && (
-          <div className="haut">
-            <LogoAppli de={v.depot === 'recettes' ? 'keurcook' : v.depot} taille={20} seul />
-          </div>
-        )}
+        <span className={`pl-point ${classe}`} />
+        {!appli && <LogoAppli de={v.depot === 'recettes' ? 'keurcook' : v.depot} taille={16} seul />}
         <span className="titre">{v.titre}</span>
-        {/* L'état, en clair (Jean, 30/10 : les diodes ne disaient rien) — toucher pour changer. */}
-        <button
-          className={`pl-etat${p.publie ? ' ok' : retard ? ' ko' : direct(p) ? ' auto' : ''}`}
-          title={p.publie ? 'Publiée — toucher pour annuler' : direct(p) ? 'Le Studio la publie seul ce jour-là, à partir de 18 h — toucher pour la publier tout de suite' : 'À publier toi-même — toucher une fois publiée'}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (!p.publie && direct(p)) {
-              setFiche(cle(p));
-            } else {
-              basculer(p);
-            }
-          }}
-        >
-          {p.publie ? '✓ Publiée' : retard ? 'En retard' : direct(p) ? 'Auto 18 h' : 'À publier'}
-        </button>
       </div>
     );
   };
@@ -517,7 +514,7 @@ export function PlanningPage({ appli } = {}) {
                     </span>
                     <span style={{ fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.nom}>{c.nom}</span>
                   </div>
-                  <span className={`clay-state ${p.publie ? 'ok' : retard ? 'ko' : 'run'}`}>{p.publie ? '✓ Publiée' : retard ? 'En retard' : direct(p) ? 'Auto 18 h' : 'À publier'}</span>
+                  <span className={`clay-state ${p.publie ? 'ok' : etat(p)[1] === 'ko' ? 'ko' : 'run'}`}>{etat(p)[0]}</span>
                   <button title="Retirer ce compte" onClick={() => act(api.retirerPlanning(p.id))} style={{ ...petitBouton, background: 'transparent', color: 'var(--c-muted)' }}>
                     ✕
                   </button>
@@ -538,9 +535,15 @@ export function PlanningPage({ appli } = {}) {
                       Voir{p.prive ? ' (privée)' : ''}
                     </a>
                   )}
-                  {!p.publie && direct(p) ? (
-                    <button className="clay-btn small" disabled={Boolean(envoi)} onClick={() => publierMaintenant(fiche, c)}>
-                      {envoi === `${fiche}|${c.id}` ? '⏳ Envoi…' : '🚀 Publier maintenant'}
+                  {!p.publie && p.envoi ? (
+                    <span className="clay-muted small">Envoi en cours…</span>
+                  ) : !p.publie && p.enFile ? (
+                    <button className="clay-btn ghost small" onClick={() => act(api.retirerFilePlanning(p.id))}>
+                      Retirer de la file
+                    </button>
+                  ) : !p.publie && direct(p) ? (
+                    <button className="clay-btn small" disabled={envoi === `${fiche}|${c.id}`} onClick={() => publierMaintenant(fiche, c)}>
+                      {p.erreur ? '🔁 Relancer' : '🚀 Publier maintenant'}
                     </button>
                   ) : (
                     <button className={`clay-btn small${p.publie ? ' ghost' : ''}`} onClick={() => basculer(p)}>
@@ -548,7 +551,7 @@ export function PlanningPage({ appli } = {}) {
                     </button>
                   )}
                 </div>
-                {!p.publie && p.erreur ? <span className="error small">L’envoi automatique a échoué : {p.erreur}</span> : null}
+                {!p.publie && p.erreur && !p.enFile ? <span className="error small">L’envoi a échoué : {p.erreur}</span> : null}
                 {p.publie && p.prive ? <span className="clay-muted small">Publiée en privé (TikTok n’a pas encore validé l’appli).</span> : null}
               </div>
             );
@@ -564,12 +567,11 @@ export function PlanningPage({ appli } = {}) {
             {comptes
               .filter((c) => directCompte(c) && !dejaSur(fiche, c.id))
               .map((c) => (
-                <button key={c.id} className="clay-btn small" disabled={Boolean(envoi)} onClick={() => publierMaintenant(fiche, c)}>
-                  {envoi === `${fiche}|${c.id}` ? '⏳ Envoi…' : <>🚀 <LogoReseau id={c.reseau} taille={14} /> {c.nom}</>}
+                <button key={c.id} className="clay-btn small" disabled={envoi === `${fiche}|${c.id}`} onClick={() => publierMaintenant(fiche, c)}>
+                  🚀 <LogoReseau id={c.reseau} taille={14} /> {c.nom}
                 </button>
               ))}
           </div>
-          {envoi && envoi.startsWith(`${fiche}|`) ? <span className="clay-muted small">Envoi en cours : ça prend une à deux minutes.</span> : null}
         </div>
       )}
       {comptes.some((c) => !dejaSur(fiche, c.id)) && (
@@ -693,8 +695,28 @@ export function PlanningPage({ appli } = {}) {
               <button className={`pl-pill${aujourdhui >= premier && aujourdhui <= dernier ? ' on' : ''}`} onClick={() => setDebut(lundi(new Date()))}>
                 Aujourd'hui
               </button>
+              {!sansVideos && (
+                <div className="pl-vues">
+                  <button className={`pl-pill petite${liste ? '' : ' on'}`} onClick={() => setRangement((x) => ({ ...x, vue: 'semaine' }))}>
+                    Semaine
+                  </button>
+                  <button className={`pl-pill petite${liste ? ' on' : ''}`} onClick={() => setRangement((x) => ({ ...x, vue: 'liste' }))}>
+                    Liste
+                  </button>
+                </div>
+              )}
             </div>
           </div>
+
+          {(enCours || enAttente.length > 0) && (
+            <div className="pl-file">
+              <b>📤 File d’envoi</b>
+              <span>
+                {enCours ? <>en cours : <b>{enCours.video.titre}</b></> : 'démarrage…'}
+                {enAttente.length ? ` · ${pluriel(enAttente.length, 'vidéo')} en attente` : ''}
+              </span>
+            </div>
+          )}
 
           {comptes.some((c) => rangement.masques?.[c.id]) && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
@@ -710,7 +732,62 @@ export function PlanningPage({ appli } = {}) {
             </div>
           )}
 
-          {(
+          {liste && !sansVideos ? (
+            <div className="pl-liste">
+              {jours.map((d) => {
+                const j = iso(d);
+                const ici = publications
+                  .filter((p) => p.date === j && !rangement.masques?.[p.compte])
+                  .sort((a, b) => ordre[a.compte] - ordre[b.compte]);
+                if (!ici.length && j !== aujourdhui) {
+                  return null;
+                }
+                return (
+                  <section key={j} className={`pl-liste-jour${j === aujourdhui ? ' auj' : ''}`}>
+                    <h3>
+                      {j === aujourdhui ? 'Aujourd’hui' : JOURS_LONGS[(d.getDay() + 6) % 7]} {d.getDate()} {MOIS[d.getMonth()]}
+                      <span className="clay-muted"> · {pluriel(ici.length, 'vidéo')}</span>
+                    </h3>
+                    {!ici.length && <p className="clay-muted small" style={{ margin: 0 }}>Rien de prévu.</p>}
+                    {ici.map((p) => {
+                      const c = compteDe[p.compte];
+                      const [texte, classe] = etat(p);
+                      const peutEnvoyer = !p.publie && !p.envoi && !p.enFile && direct(p);
+                      return (
+                        <div key={p.id} className={`pl-ligne${fiche === cle(p) ? ' on' : ''}`} onClick={() => setFiche(cle(p))}>
+                          <Apercu v={p.video} w={27} h={48} />
+                          <div className="texte">
+                            <b>{p.video.titre}</b>
+                            <span className="clay-muted small">
+                              <LogoReseau id={c.reseau} taille={13} seul /> {c.nom}
+                              {!appli ? ` · ${p.video.appli}` : ''}
+                            </span>
+                          </div>
+                          <span className={`pl-etat ${classe}`}>{texte}</span>
+                          <div className="actions" onClick={(e) => e.stopPropagation()}>
+                            <button style={petitBouton} title="Jour d’avant" onClick={() => deplacer(p.id, p.compte, decaler(p.date, -1))}>
+                              ‹
+                            </button>
+                            <button style={petitBouton} title="Jour d’après" onClick={() => deplacer(p.id, p.compte, decaler(p.date, 1))}>
+                              ›
+                            </button>
+                            {peutEnvoyer && (
+                              <button className="clay-btn small" disabled={envoi === `${cle(p)}|${c.id}`} onClick={() => publierMaintenant(cle(p), c)}>
+                                🚀
+                              </button>
+                            )}
+                            <button style={{ ...petitBouton, background: 'transparent', color: 'var(--c-muted)' }} title="Enlever du planning" onClick={() => act(api.retirerPlanning(p.id))}>
+                              ✕
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </section>
+                );
+              })}
+            </div>
+          ) : (
             <div className="pl-defile">
               <div className={`pl-grille${appli ? ' appli' : ''}`}>
                 <div className="pl-rang pl-jours">
@@ -811,15 +888,19 @@ export function PlanningPage({ appli } = {}) {
                                     data-case={k}
                                     data-compte={c.id}
                                     data-jour={j}
-                                    className={`pl-case${j === aujourdhui ? ' auj' : j < aujourdhui ? ' passe' : ''}${over === k ? ' survol' : ici.length > 1 ? ' conflit' : ''}`}
+                                    className={`pl-case${j === aujourdhui ? ' auj' : j < aujourdhui ? ' passe' : ''}${over === k ? ' survol' : ''}`}
                                   >
-                                    {ici.map(vignette)}
+                                    {(ouvertes[k] || ici.length <= MAX_CASE ? ici : ici.slice(0, MAX_CASE - 1)).map(vignette)}
+                                    {ici.length > MAX_CASE && (
+                                      <button className="pl-autres" onClick={() => setOuvertes((o) => ({ ...o, [k]: !o[k] }))}>
+                                        {ouvertes[k] ? 'Replier' : `+ ${ici.length - MAX_CASE + 1} autres`}
+                                      </button>
+                                    )}
                                     {sel && !dejaSur(sel, c.id) && (
                                       <button className="pl-poser" title="Placer ici" onClick={() => placer(sel, c.id, j)}>
                                         <Ic n="plus" />
                                       </button>
                                     )}
-                                    {ici.length > 1 && <span className="pl-conflit-t">{ici.length} vidéos ce jour-là</span>}
                                   </div>
                                 );
                               })}

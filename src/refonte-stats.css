@@ -1305,3 +1305,143 @@
     transform: none;
   }
 }
+
+/* Planning compact (Jean, 30/10) : une ligne par vidéo dans la semaine,
+   « + N autres » au-delà de 4, une vue Liste jour par jour, la file d'envoi. */
+.pl-case .pl-puce.compacte {
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+}
+.pl-case .pl-puce.compacte .titre {
+  padding-right: 0;
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  -webkit-line-clamp: 2;
+}
+.pl-point {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--c-muted);
+}
+.pl-point.auto {
+  background: var(--accent);
+}
+.pl-point.ok {
+  background: var(--ok);
+}
+.pl-point.ko {
+  background: var(--ko);
+}
+.pl-point.file {
+  background: #3b82f6;
+  animation: pl-clignote 1.2s ease-in-out infinite;
+}
+@keyframes pl-clignote {
+  50% {
+    opacity: 0.35;
+  }
+}
+.pl-etat.file {
+  background: color-mix(in srgb, #3b82f6 16%, transparent);
+  color: #2563eb;
+}
+.pl-autres {
+  border: 0;
+  border-radius: 8px;
+  padding: 5px 6px;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  background: transparent;
+  color: var(--accent);
+  cursor: pointer;
+  text-align: left;
+}
+.pl-autres:hover {
+  background: var(--accent-doux);
+}
+.pl-vues {
+  display: flex;
+  gap: 4px;
+}
+.pl-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, #3b82f6 10%, var(--carte));
+  font-size: 13.5px;
+}
+.pl-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.pl-liste-jour {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pl-liste-jour h3 {
+  margin: 0 0 2px;
+  font-size: 16px;
+}
+.pl-liste-jour.auj h3 {
+  color: var(--accent);
+}
+.pl-ligne {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: var(--carte);
+  box-shadow: inset 0 0 0 1px var(--ligne);
+  cursor: pointer;
+}
+.pl-ligne.on {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.pl-ligne .texte {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pl-ligne .texte b {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.pl-ligne .texte span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pl-ligne .pl-etat {
+  align-self: center;
+  flex: none;
+  padding: 4px 10px;
+  cursor: default;
+}
+.pl-ligne .actions {
+  display: flex;
+  gap: 4px;
+  flex: none;
+}
+@media (max-width: 700px) {
+  .pl-ligne {
+    flex-wrap: wrap;
+  }
+  .pl-ligne .texte {
+    flex-basis: calc(100% - 50px);
+  }
+}

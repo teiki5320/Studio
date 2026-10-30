@@ -1720,71 +1720,98 @@ function lancerPublication(e) {
     return r;
   }, { projectId: p.id });
 }
+// ---------- File d'envoi (Jean, 30/10) ----------
+// « Publier maintenant » met la publication dans une file ; le Studio les
+// envoie une par une, tout seul (jamais deux envois en même temps). Les
+// publications « Auto 18 h » passent par la même file, après celles demandées
+// à la main. Notes sur la publication : enFile (heure de la demande), envoi
+// (en cours), erreur. Un seul essai : un échec reste affiché, on relance à la main.
+function compteBranche(pub) {
+  const c = listeComptes().find((x) => x.id === pub.compte);
+  const chaine = String(etatYoutube().chaine || '').toLowerCase();
+  return Boolean(c && ((c.reseau === 'tiktok' && (c.id in etatTiktok().comptes || chaineBuffer(c.nom))) || (c.reseau === 'youtube' && chaine && c.nom.toLowerCase() === chaine)));
+}
+
 app.post('/api/planning/:id/tiktok', (req, res) => {
   const e = entreePlanning(req.params.id);
   if (!e) {
     res.status(404).json({ error: 'Publication introuvable.' });
     return;
   }
-  try {
-    res.json({ jobId: lancerPublication(e).id });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+  if (e.publie || e.envoi) {
+    res.json({ ok: true });
+    return;
   }
+  if (!compteBranche(e)) {
+    res.status(400).json({ error: 'Ce compte se publie à la main.' });
+    return;
+  }
+  noterEssai(e.id, { enFile: e.enFile || new Date().toISOString(), erreur: undefined });
+  traiterFile();
+  res.json({ ok: true });
+});
+// Retirer de la file (tant que l'envoi n'a pas commencé).
+app.delete('/api/planning/:id/file', (req, res) => {
+  const e = entreePlanning(req.params.id);
+  if (e && !e.envoi) {
+    noterEssai(e.id, { enFile: undefined });
+  }
+  res.json({ ok: true });
 });
 
-// Publication automatique : le jour prévu, à partir de 18 h (heure de Paris),
-// chaque publication d'un compte branché part toute seule. Un seul essai :
-// en cas d'échec, l'erreur reste sur la publication et on la relance à la main.
-let publicationAuto = false;
-function publierLesPublicationsDuJour() {
-  if (publicationAuto) {
+let envoiEnCours = false;
+function traiterFile() {
+  if (envoiEnCours) {
     return;
   }
   const heure = parseInt(new Intl.DateTimeFormat('fr-FR', { timeZone: 'Europe/Paris', hour: '2-digit', hour12: false }).format(new Date()), 10);
   const aujourdhui = jourParis();
-  const branches = etatTiktok().comptes;
-  const chaine = String(etatYoutube().chaine || '').toLowerCase();
-  const comptes = new Map(listeComptes().map((c) => [c.id, c]));
-  const prete = (pub) => {
-    const c = comptes.get(pub.compte);
-    const branche = c && ((c.reseau === 'tiktok' && (c.id in branches || chaineBuffer(c.nom))) || (c.reseau === 'youtube' && chaine && c.nom.toLowerCase() === chaine));
-    return branche && !pub.publie && !pub.essaiAuto && (pub.date < aujourdhui || (pub.date === aujourdhui && heure >= 18));
-  };
-  let liste = [];
+  let pubs = [];
   try {
-    liste = planning().publications.filter(prete);
+    pubs = planning().publications.filter((p) => !p.publie && !p.envoi && compteBranche(p));
   } catch {
     return;
   }
-  const suivante = liste[0];
+  const demandees = pubs.filter((p) => p.enFile).sort((a, b) => a.enFile.localeCompare(b.enFile));
+  const auto = pubs.filter((p) => !p.enFile && !p.essaiAuto && (p.date < aujourdhui || (p.date === aujourdhui && heure >= 18)));
+  const suivante = demandees[0] || auto[0];
   if (!suivante) {
     return;
   }
-  publicationAuto = true;
-  noterEssai(suivante.id, { essaiAuto: new Date().toISOString() });
+  envoiEnCours = true;
+  noterEssai(suivante.id, { envoi: new Date().toISOString(), erreur: undefined, ...(suivante.enFile ? {} : { essaiAuto: new Date().toISOString() }) });
+  const finir = (erreur) => {
+    noterEssai(suivante.id, { envoi: undefined, enFile: undefined, ...(erreur ? { erreur } : {}) });
+    envoiEnCours = false;
+    traiterFile();
+  };
   let job;
   try {
     job = lancerPublication(suivante);
   } catch (err) {
-    noterEssai(suivante.id, { erreur: err.message });
-    publicationAuto = false;
+    finir(err.message);
     return;
   }
   const attendre = setInterval(() => {
     const j = getJob(job.id);
-    if (!j || j.status === 'running') {
+    if (j && j.status === 'running') {
       return;
     }
     clearInterval(attendre);
-    if (j.status === 'error') {
-      noterEssai(suivante.id, { erreur: String(j.error || 'échec') });
-    }
-    publicationAuto = false;
-    publierLesPublicationsDuJour();
+    finir(j && j.status === 'error' ? String(j.error || 'échec') : '');
   }, 15000);
 }
-setInterval(publierLesPublicationsDuJour, 10 * 60 * 1000);
+// Au démarrage : un envoi coupé par un redémarrage n'est pas relancé tout seul
+// (Buffer l'a peut-être déjà reçu) — l'erreur le signale.
+try {
+  for (const p of planning().publications.filter((x) => x.envoi && !x.publie)) {
+    noterEssai(p.id, { envoi: undefined, enFile: undefined, erreur: 'Envoi coupé par un redémarrage du Studio : regarde sur TikTok avant de relancer.' });
+  }
+} catch {
+  // planning illisible : rien à reprendre
+}
+setInterval(traiterFile, 60 * 1000);
+setTimeout(traiterFile, 5000);
 
 // ---------- Synchronisation dossiers du Bureau ⇄ Studio ----------
 // Le Finder fait foi : une vidéo glissée de « À valider » à « Validées » est

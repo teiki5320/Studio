@@ -118,6 +118,7 @@ export const api = {
   tiktokDeconnecter: (compte) => request('/api/tiktok/deconnecter', { method: 'POST', body: JSON.stringify({ compte }) }),
   // Publie maintenant (TikTok ou YouTube branché).
   publierPlanning: (id) => request(`/api/planning/${id}/tiktok`, { method: 'POST' }),
+  retirerFilePlanning: (id) => request(`/api/planning/${id}/file`, { method: 'DELETE' }),
   planning: () => request('/api/planning'),
   planningSites: () => request('/api/planning/sites'),
   placerPlanning: (body) => request('/api/planning', { method: 'POST', body: JSON.stringify(body) }),
