@@ -13,10 +13,10 @@ export const VOICE_PRESETS = {
     narratorVoice: 'FvmvwvObRqIHojkEGh5N', // Adina
     voiceSettings: { stability: 0.38, similarity_boost: 0.8, style: 0.45, speed: 1.05 },
   },
-  // Pub Keur Déco : douce et inspirante, au vouvoiement.
+  // Pub Keur Déco : féminine, très douce, au vouvoiement (Jean, 30/10).
   'teiki5320/keurdeco': {
     narratorVoice: '6vTyAgAT8PncODBcLjRf', // Claire
-    voiceSettings: { stability: 0.6, similarity_boost: 0.8, style: 0.25, speed: 0.93 },
+    voiceSettings: { stability: 0.7, similarity_boost: 0.8, style: 0.15, speed: 0.9 },
   },
   // Pub Keurbook : posée et littéraire, au vouvoiement.
   'teiki5320/keurbook': {

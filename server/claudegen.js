@@ -1254,7 +1254,7 @@ CONTRAINTES : n'invente aucun prix ni aucune promesse ; tout le texte en frança
 - Le site ne VEND RIEN lui-même : jamais « disponible », « en vente », « achète », « achetez », « commande », « en stock », « livré », ni aucun prix. On invite à DÉCOUVRIR (la recette, l'idée, l'histoire), jamais à acheter.`;
   if (format === 'ambiance') {
     const n = Math.max(4, Math.round(seconds / 6));
-    return `Tu réalises une pub TikTok d'AMBIANCE pour Keur Déco, le site de décoration africaine (keurdeco.com) : ${seconds} secondes, verticale, SANS VOIX, apaisante et « satisfaisante » à regarder.
+    return `Tu réalises une pub TikTok d'AMBIANCE pour Keur Déco, le site de décoration africaine (keurdeco.com) : ${seconds} secondes, verticale, apaisante et « satisfaisante » à regarder, sur une musique douce. Une voix off FÉMININE très douce, presque murmurée, qui VOUVOIE, pose de rares phrases courtes (Jean, 30/10).
 Le principe : UNE pièce décorée à l'africaine, inspirée de l'article ci-dessous, qui s'ouvre sur une vue extraordinaire : ${vue}. Mouvements lents et doux : un rideau en lin qui ondule, la lumière qui glisse, une bougie qui vacille, la vue qui respire au loin.
 
 ${fiche}
@@ -1262,9 +1262,10 @@ ${fiche}
 ${commun}
 {
   "title": "titre court (usage interne)",
-  "music": "EN ANGLAIS : la musique d'ambiance à composer (instruments, tempo lent, humeur), africaine et apaisante",
+  "music": "EN ANGLAIS : la musique d'ambiance à composer, très douce (instruments africains acoustiques, tempo lent, sans voix), apaisante",
   "scenes": [${n} plans de 6 secondes, LA MÊME PIÈCE vue sous différents angles, de l'intérieur vers la vue : {
     "badge": "quelques mots élégants à l'écran, 6 mots maximum (ex. « Une chambre bogolan face à l'océan »), ou chaîne vide",
+    "lines": [1 phrase douce et évocatrice, 10 mots maximum : {"speaker": "narrator", "text": "…"}] — sur la DERNIÈRE scène, invite à découvrir l'idée sur keurdeco.com,
     "imagePrompt": "EN ANGLAIS : photo réaliste d'intérieur, vertical 9:16 — la pièce décorée (matières, objets, couleurs de l'article), décrite de façon IDENTIQUE d'un plan à l'autre, et la vue (${vue}) par une grande baie ou une terrasse ; lumière douce ; aucun personnage, no text, no logo, no watermark",
     "motionPrompt": "EN ANGLAIS : le mouvement lent de ce plan (ex. « linen curtain gently swaying in the breeze, slow push-in toward the ocean view »)"
   }]
@@ -1282,6 +1283,7 @@ ${commun}
 {
   "title": "titre court (usage interne)",
   "cta": "phrase du carton final, 10 mots maximum (ex. « Toute l'idée déco sur keurdeco.com »)",
+  "music": "EN ANGLAIS : la musique de fond à composer, très douce et apaisante (instruments africains acoustiques — kora, balafon doux, guitare — tempo lent, sans voix)",
   "avant": "EN ANGLAIS : la MÊME pièce que la description de la photo, même cadrage et même architecture, mais vide et banale : murs blancs nus, aucune décoration, aucun meuble décoratif, lumière froide ; photo réaliste ; no text",
   "scenes": [
     {"kind": "avant", "badge": "Avant", "lines": [{"speaker": "narrator", "text": "phrase courte, 14 mots maximum"}]},
@@ -1303,6 +1305,7 @@ ${commun}
 {
   "title": "titre court (usage interne)",
   "cta": "phrase du carton final, 10 mots maximum (ex. « Toute l'idée déco sur keurdeco.com »)",
+  "music": "EN ANGLAIS : la musique de fond à composer, très douce et apaisante (instruments africains acoustiques — kora, balafon doux, guitare — tempo lent, sans voix)",
   "scenes": [
     {"kind": "piece", "badge": "le nom de l'ambiance, 5 mots maximum", "lines": [{"speaker": "narrator", "text": "accroche douce qui donne envie, 14 mots maximum"}]},
     ${objets.map((o, i) => `{"kind": "objet", "objet": ${i + 1}, "badge": "nom court de l'objet, 4 mots maximum", "lines": [{"speaker": "narrator", "text": "ce que cet objet apporte à la pièce, 14 mots maximum"}]}`).join(',\n    ')},

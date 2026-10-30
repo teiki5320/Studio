@@ -1678,6 +1678,27 @@ export async function createKeurCookAd(project, { pays = '', seconds = 45 } = {}
 }
 
 // ---------- Pub Keur Déco : ambiance, visite déco, avant / après ----------
+const MUSIQUE_KEURDECO =
+  'very soft, calm and warm instrumental background music, gentle acoustic African instruments (kora, soft balafon, nylon guitar), slow tempo, peaceful and elegant, no vocals';
+// La musique de fond : celle que Claude décrit, sinon une musique douce par
+// défaut ; ElevenLabs est parfois saturé (429) : un second essai 20 s après.
+// Sous une voix, elle reste discrète.
+export async function musiqueKeurDeco(episode, description, secs, dir) {
+  const file = `e${episode.number}_musique.mp3`;
+  for (let essai = 0; essai < 2; essai++) {
+    try {
+      await composeMusic(String(description || MUSIQUE_KEURDECO).slice(0, 400), secs + 6, path.join(dir, file));
+      episode.musicFile = file;
+      episode.musicVolume = episode.scenes.some((sc) => (sc.lines || []).length) ? 0.22 : 0.75;
+      return;
+    } catch (e) {
+      console.error('Musique Keur Déco :', e.message);
+      if (essai === 0) {
+        await new Promise((ok) => setTimeout(ok, 20000));
+      }
+    }
+  }
+}
 export const KEURDECO_FORMATS = {
   ambiance: '🌅 Ambiance — une pièce face à une vue extraordinaire',
   visite: '🔍 Visite déco — zoom sur chaque objet',
@@ -1777,6 +1798,7 @@ export async function createKeurDecoAd(project, { format = 'ambiance', article =
       base(i, {
         badge: badge(sc),
         badgeStyle: 'doux',
+        lines: lines(sc).slice(0, 1),
         imagePrompt: String(sc.imagePrompt || '').trim(),
         motionPrompt: String(sc.motionPrompt || '').trim().slice(0, 300),
         clip: true,
@@ -1784,18 +1806,6 @@ export async function createKeurDecoAd(project, { format = 'ambiance', article =
         durationSec: Math.max(5, Math.min(8, Math.round(secs / Math.max(1, scenes.length)))),
       }),
     );
-    // Musique composée pour cette vidéo (la durée de la vidéo + le carton final).
-    if (raw.music) {
-      try {
-        update('Composition de la musique par ElevenLabs…');
-        const file = `e${number}_musique.mp3`;
-        await composeMusic(String(raw.music).slice(0, 400), secs + 6, path.join(dir, file));
-        episode.musicFile = file;
-        episode.musicVolume = 0.75;
-      } catch (e) {
-        console.error('Musique Keur Déco :', e.message);
-      }
-    }
   } else {
     const objets = a.objets;
     episode.scenes = (Array.isArray(raw.scenes) ? raw.scenes : []).slice(0, 9).map((sc, i) => {
@@ -1819,6 +1829,9 @@ export async function createKeurDecoAd(project, { format = 'ambiance', article =
   if (!episode.scenes.length) {
     throw new Error('Claude n’a rendu aucun plan pour cette pub.');
   }
+  // Une musique douce sur toutes les pubs Keur Déco (Jean, 30/10).
+  update('Composition de la musique douce…');
+  await musiqueKeurDeco(episode, raw.music, secs, dir);
 
   const logo = logoKeurDeco();
   if (logo && !project.ctaLogo) {
