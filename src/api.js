@@ -82,6 +82,8 @@ export const api = {
     }),
   activeJob: (id) => request(`/api/projects/${id}/active-job`),
   activeJobs: () => request('/api/active-jobs'),
+  ordrePub: () => request('/api/pub/ordre'),
+  rangerPub: (ordre) => request('/api/pub/ordre', { method: 'POST', body: JSON.stringify({ ordre }) }),
   indexation: () => request('/api/indexation'),
   verifierIndexation: () => request('/api/indexation/verifier', { method: 'POST' }),
   renvoyerPlan: (id) => request('/api/indexation/plan', { method: 'POST', body: JSON.stringify({ id }) }),

@@ -530,3 +530,19 @@ html[data-theme='clair'] .clay-shell .pb-fond {
     transform: none;
   }
 }
+
+/* Ranger les tuiles (appui long puis glisser) : la place vide de la tuile déplacée. */
+.clay-shell .pb-tuile {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.clay-shell .pb-tuile.rangee {
+  opacity: 0.25;
+  outline: 2px dashed var(--accent);
+  outline-offset: 2px;
+}
+.clay-shell .pb-tuile img {
+  -webkit-user-drag: none;
+  pointer-events: none;
+}

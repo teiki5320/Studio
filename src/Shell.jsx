@@ -370,7 +370,7 @@ function ilYa(iso) {
 }
 
 // Une tuile d'appli : bandeau avec le logo flouté en fond et net au centre.
-function TuilePub({ nom, logo, icone, n, derniere, href, onOuvrir }) {
+function TuilePub({ nom, logo, icone, n, derniere, href, onOuvrir, cle, onAppui, rangee, onClicCapture }) {
   const corps = (
     <>
       <span className="pb-bandeau">
@@ -385,7 +385,7 @@ function TuilePub({ nom, logo, icone, n, derniere, href, onOuvrir }) {
     </>
   );
   return (
-    <div className="pb-tuile">
+    <div className={`pb-tuile${rangee ? ' rangee' : ''}`} data-tuile={cle} onPointerDown={onAppui} onClickCapture={onClicCapture}>
       {href ? (
         <a className="pb-ouvrir" href={href}>
           {corps}
@@ -442,6 +442,75 @@ function PubPage({ projects, onOpenRepo }) {
     (p) => !p.repo || !(repos || []).some((r) => r.fullName.toLowerCase() === p.repo.toLowerCase()),
   );
   const count = (p) => (p ? (p.episodes || []).length : 0);
+
+  // Ranger les tuiles (Jean, 30/10) : appui long (un demi-seconde) puis on
+  // glisse la tuile à sa place, au doigt comme à la souris. Un glissé rapide
+  // fait défiler la page, un simple toucher ouvre l'appli.
+  const [ordre, setOrdre] = useState([]);
+  const [rangee, setRangee] = useState(null); // tuile en cours de déplacement
+  const ignorerClic = useRef(false);
+  useEffect(() => {
+    api.ordrePub().then((d) => setOrdre(d.ordre || [])).catch(() => {});
+  }, []);
+  const tuiles = [
+    ...(repos || []).map((r) => ({ cle: r.fullName.toLowerCase(), r })),
+    ...others.map((p) => ({ cle: `projet:${p.id}`, p })),
+  ];
+  const rang = (c) => (ordre.includes(c) ? ordre.indexOf(c) : ordre.length + tuiles.findIndex((t) => t.cle === c));
+  tuiles.sort((a, b) => rang(a.cle) - rang(b.cle));
+  const appui = (e, cle) => {
+    if (e.button > 0) return;
+    const source = e.currentTarget;
+    const [x0, y0] = [e.clientX, e.clientY];
+    let fantome = null;
+    let liste = tuiles.map((t) => t.cle);
+    const minuterie = setTimeout(() => {
+      const r = source.getBoundingClientRect();
+      fantome = source.cloneNode(true);
+      Object.assign(fantome.style, { position: 'fixed', zIndex: 60, pointerEvents: 'none', width: `${r.width}px`, left: `${r.left}px`, top: `${r.top}px`, opacity: 0.9, transform: 'scale(1.05) rotate(-2deg)', boxShadow: '0 24px 40px -18px rgba(0,0,0,.55)', margin: 0 });
+      fantome.dataset.dx = String(x0 - r.left);
+      fantome.dataset.dy = String(y0 - r.top);
+      document.body.appendChild(fantome);
+      setRangee(cle);
+      if (navigator.vibrate) navigator.vibrate(15);
+    }, 450);
+    const bouge = (ev) => {
+      if (!fantome) {
+        if (Math.hypot(ev.clientX - x0, ev.clientY - y0) > 10) fin();
+        return;
+      }
+      ev.preventDefault();
+      fantome.style.left = `${ev.clientX - Number(fantome.dataset.dx)}px`;
+      fantome.style.top = `${ev.clientY - Number(fantome.dataset.dy)}px`;
+      const sous = document.elementsFromPoint(ev.clientX, ev.clientY).map((el) => el.closest?.('[data-tuile]')).find((el) => el && el.dataset.tuile !== cle);
+      if (sous) {
+        const cible = sous.dataset.tuile;
+        const sans = liste.filter((c) => c !== cle);
+        const i = sans.indexOf(cible);
+        const avant = liste.indexOf(cle) > liste.indexOf(cible);
+        sans.splice(avant ? i : i + 1, 0, cle);
+        if (sans.join() !== liste.join()) {
+          liste = sans;
+          setOrdre(sans);
+        }
+      }
+    };
+    const fin = () => {
+      clearTimeout(minuterie);
+      window.removeEventListener('pointermove', bouge);
+      window.removeEventListener('pointerup', fin);
+      window.removeEventListener('pointercancel', fin);
+      if (!fantome) return;
+      fantome.remove();
+      setRangee(null);
+      ignorerClic.current = true;
+      setTimeout(() => (ignorerClic.current = false), 80);
+      api.rangerPub(liste).catch(() => {});
+    };
+    window.addEventListener('pointermove', bouge, { passive: false });
+    window.addEventListener('pointerup', fin);
+    window.addEventListener('pointercancel', fin);
+  };
   // « Créer une pub » : comme sur la page de l'appli (Keur Cook ouvre le choix Recettes / Publicité).
   const creer = (r) => (r.fullName.toLowerCase() === KEURCOOK_REPO ? go('keurcook') : onOpenRepo(r.fullName));
 
@@ -468,12 +537,34 @@ function PubPage({ projects, onOpenRepo }) {
       {error && <p className="pb-alerte">GitHub injoignable ({error}) : la liste vient de Mes applis.</p>}
       {!repos && !error && <p className="clay-muted">Chargement de tes dépôts…</p>}
       <div className="pb-grille">
-        {(repos || []).map((r) => {
+        {tuiles.map(({ cle, r, p: autre }) => {
+          const rangement = {
+            cle,
+            rangee: rangee === cle,
+            onAppui: (e) => appui(e, cle),
+            // Le clic qui suit un rangement n'ouvre pas l'appli.
+            onClicCapture: (e) => ignorerClic.current && (e.preventDefault(), e.stopPropagation()),
+          };
+          if (autre) {
+            return (
+              <TuilePub
+                key={cle}
+                {...rangement}
+                nom={autre.title}
+                logo={logoAppli(autre.title)}
+                icone={<Picto id="globe" petite={false} />}
+                n={count(autre)}
+                derniere={ilYa(autre.updatedAt)}
+                href={`#/projet/${autre.id}`}
+              />
+            );
+          }
           const look = appLook(r.name, r.label);
           const p = byRepo(r.fullName);
           return (
             <TuilePub
-              key={r.fullName}
+              key={cle}
+              {...rangement}
               nom={look.name}
               logo={logoAppli(r.name)}
               icone={look.icon}
@@ -483,17 +574,6 @@ function PubPage({ projects, onOpenRepo }) {
             />
           );
         })}
-        {others.map((p) => (
-          <TuilePub
-            key={p.id}
-            nom={p.title}
-            logo={logoAppli(p.title)}
-            icone={<Picto id="globe" petite={false} />}
-            n={count(p)}
-            derniere={ilYa(p.updatedAt)}
-            href={`#/projet/${p.id}`}
-          />
-        ))}
       </div>
       {repos && (
         <div className="pb-autres">

@@ -1523,6 +1523,21 @@ app.get('/api/applis', async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+// Ordre des tuiles de la page Publicité, rangé à la main (Jean, 30/10) :
+// gardé sur le Mac, donc le même sur l'iPad et l'ordinateur.
+const ORDRE_PUB = path.join(STUDIO_DIR, 'ordre-pub.json');
+app.get('/api/pub/ordre', (req, res) => {
+  try {
+    res.json({ ordre: JSON.parse(fs.readFileSync(ORDRE_PUB, 'utf8')) });
+  } catch {
+    res.json({ ordre: [] });
+  }
+});
+app.post('/api/pub/ordre', (req, res) => {
+  const ordre = (Array.isArray(req.body?.ordre) ? req.body.ordre : []).map((x) => String(x).slice(0, 120)).slice(0, 200);
+  fs.writeFileSync(ORDRE_PUB, JSON.stringify(ordre, null, 2));
+  res.json({ ordre });
+});
 app.get('/api/accueil', async (req, res) => {
   try {
     res.json(await accueil());
