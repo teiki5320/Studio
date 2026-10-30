@@ -27,7 +27,7 @@ import { AdPage } from './AdPage.jsx';
 import { AccueilPage } from './AccueilPage.jsx';
 import { MesApplisPage, LexiquePage, useApplis } from './MesApplisPage.jsx';
 import { RoutinesTab } from './RoutinesTab.jsx';
-import { ChainesPage, ChaineDetail, NouvelleChaine, AppliPubPage } from './ChainesPage.jsx';
+import { ChainesPage, ChaineDetail, NouvelleChaine, AppliRedirect } from './ChainesPage.jsx';
 import './clay.css';
 import './ressort.css';
 import './reglages.css';
@@ -370,7 +370,7 @@ function ilYa(iso) {
 }
 
 // Une tuile d'appli : bandeau avec le logo flouté en fond et net au centre.
-function TuilePub({ nom, logo, icone, n, derniere, href, onOuvrir, onCreer }) {
+function TuilePub({ nom, logo, icone, n, derniere, href, onOuvrir }) {
   const corps = (
     <>
       <span className="pb-bandeau">
@@ -395,9 +395,6 @@ function TuilePub({ nom, logo, icone, n, derniere, href, onOuvrir, onCreer }) {
           {corps}
         </button>
       )}
-      <button type="button" className="clay-btn small pb-creer" onClick={onCreer}>
-        <Picto id="plus" /> Créer une pub
-      </button>
     </div>
   );
 }
@@ -482,8 +479,7 @@ function PubPage({ projects, onOpenRepo }) {
               icone={look.icon}
               n={count(p)}
               derniere={p ? ilYa(p.updatedAt) : ''}
-              href={`#/appli/${r.name}`}
-              onCreer={() => creer(r)}
+              onOuvrir={() => creer(r)}
             />
           );
         })}
@@ -496,7 +492,6 @@ function PubPage({ projects, onOpenRepo }) {
             n={count(p)}
             derniere={ilYa(p.updatedAt)}
             href={`#/projet/${p.id}`}
-            onCreer={() => go(`projet/${p.id}`)}
           />
         ))}
       </div>
@@ -1061,7 +1056,7 @@ export function Shell() {
   } else {
     const back =
       route.page === 'recettes' || route.page === 'keurcook'
-        ? () => go(route.page === 'recettes' ? 'keurcook' : 'appli/keurcook')
+        ? () => go(route.page === 'recettes' ? 'keurcook' : 'pub')
         : route.page === 'applis' && route.arg
           ? () => go('applis')
           : route.page === 'appli'
@@ -1095,15 +1090,9 @@ export function Shell() {
             <ChaineDetail key={route.arg} id={route.arg} />
           )
         ) : route.page === 'appli' ? (
-          <AppliPubPage
-            key={route.arg}
-            repo={route.arg}
-            projects={projects}
-            // Keur Cook : « Créer une pub » ouvre le choix Recettes / Publicité.
-            onCreerPub={() =>
-              `teiki5320/${route.arg}`.toLowerCase() === KEURCOOK_REPO ? go('keurcook') : openRepo(`teiki5320/${route.arg}`)
-            }
-          />
+          // Ancienne page « Publicité → appli » (supprimée le 30/10) : ses
+          // chaînes, son logo et son outro sont dans Mes applis → onglet Pub.
+          <AppliRedirect repo={route.arg} />
         ) : route.page === 'indexation' ? (
           <IndexationPage />
         ) : route.page === 'audience' ? (

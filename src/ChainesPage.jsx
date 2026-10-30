@@ -10,7 +10,6 @@ import React, { useEffect, useState } from 'react';
 import { LogoReseau } from './LogoReseau.jsx';
 import { api } from './api.js';
 import { useApplis, Logo } from './MesApplisPage.jsx';
-import { PlanningPage } from './PlanningPage.jsx';
 import { BrandCard } from './App.jsx';
 import { logoAppli } from './apps.js';
 import './chaines.css';
@@ -335,13 +334,24 @@ function MarqueAppli({ cle }) {
   return <BrandCard studio={studio} onChange={charger} appli={cle} />;
 }
 
-export function AppliPubPage({ repo, onCreerPub }) {
+// Anciennes adresses #/appli/<dépôt> : vers l'onglet Pub de la fiche de l'appli.
+export function AppliRedirect({ repo }) {
+  const { data } = useApplis();
+  useEffect(() => {
+    if (!data) return;
+    const a = data.apps.find((x) => cleAppli(x) === String(repo || '').toLowerCase());
+    window.location.replace(a ? `#/applis/${a.id}/pub` : '#/pub');
+  }, [data, repo]);
+  return <div className="clay-content clay-muted">Chargement…</div>;
+}
+
+// Chaînes reliées à une appli + son logo et son outro. Vivait dans la page
+// « Publicité → appli », supprimée le 30/10 (Jean) : c'est maintenant
+// l'onglet « Pub » de la fiche de l'appli, dans Mes applis.
+export function ChainesEtMarque({ app, applis }) {
   const { data, charger } = useChaines();
-  const { data: applis } = useApplis();
   const [relier, setRelier] = useState(false);
-  if (!data || !applis) return <div className="clay-content clay-muted">Chargement…</div>;
-  const app = applis.apps.find((a) => String(a.repo || '').toLowerCase().endsWith(`/${repo.toLowerCase()}`));
-  if (!app) return <div className="clay-content clay-muted">Appli inconnue.</div>;
+  if (!data) return <div className="clay-muted">Chargement…</div>;
   const cle = cleAppli(app);
   const siennes = data.comptes.filter((c) => c.applis.includes(cle));
   const autres = data.comptes.filter((c) => !c.applis.includes(cle));
@@ -351,23 +361,7 @@ export function AppliPubPage({ repo, onCreerPub }) {
       .then(charger)
       .catch((e) => alert(e.message));
   return (
-    <div className="clay-content ch">
-      <div className="ch-tete ch-tete-appli">
-        {logoAppli(app.repo) ? <img className="ch-tete-fond" src={`/${logoAppli(app.repo)}`} alt="" aria-hidden="true" /> : null}
-        <Logo app={app} cls="ch-logo grand" />
-        <div className="t">
-          <h2>{app.name}</h2>
-          {app.tagline ? <span>{app.tagline}</span> : null}
-        </div>
-        <div className="ch-actions">
-          <button type="button" className="clay-btn" onClick={onCreerPub}>
-            <svg className="rf-ic petite" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            Créer une pub
-          </button>
-        </div>
-      </div>
+    <div className="ch ch-dans-fiche">
       <h3 className="ch-sous">Ses chaînes</h3>
       <div className="ch-grille">
         {siennes.map((c) => (
@@ -375,7 +369,7 @@ export function AppliPubPage({ repo, onCreerPub }) {
             key={c.id}
             c={c}
             data={data}
-            applis={applis.apps}
+            applis={applis}
             sous={c.applis.length > 1 ? 'partagée' : 'à son nom'}
             menu={
               <>
@@ -423,8 +417,6 @@ export function AppliPubPage({ repo, onCreerPub }) {
           </div>
         </div>
       ) : null}
-      <h3 className="ch-sous">Son planning</h3>
-      <PlanningPage key={`${cle}:${siennes.map((c) => c.id).join(',')}`} appli={cle} />
       <h3 className="ch-sous">Son logo et son outro</h3>
       <MarqueAppli cle={cle} />
     </div>

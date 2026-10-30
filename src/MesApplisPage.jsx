@@ -7,6 +7,7 @@
 // Le HTML des fiches vient des Markdown des dépôts de Jean (tool/markdown.cjs
 // échappe le texte) : on l'insère tel quel.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ChainesEtMarque } from './ChainesPage.jsx';
 import { api, followJob } from './api.js';
 import './applis.css';
 import { Encart, LegendeTemoins, aVoir, etatApp, temoins, accroche, SYMBOLE } from './Temoins.jsx';
@@ -666,6 +667,8 @@ function FicheApp({ app, data, ext, volet, famTint, ouvrir, recharger }) {
     ['marketing', 'porte', 'Marketing'],
   ];
   if (app.publicationHtml) volets.push(['publication', 'fusee', 'Publication']);
+  // Ses chaînes, son logo et son outro (ex-page Publicité → appli, Jean 30/10).
+  if (app.repo) volets.push(['pub', 'porte', 'Pub']);
   const v = volets.find((x) => x[0] === volet) || volets[0];
   // Un titre de la fiche technique rattaché à un service ouvre sa fiche.
   const clicMd = (e) => {
@@ -689,7 +692,9 @@ function FicheApp({ app, data, ext, volet, famTint, ouvrir, recharger }) {
   const etat = etatApp(app, site);
 
   let corps;
-  if (v[0] === 'publication') {
+  if (v[0] === 'pub') {
+    corps = <ChainesEtMarque app={app} applis={data.apps} />;
+  } else if (v[0] === 'publication') {
     const b = app.boutiques || {};
     const ess = app.publicationEssentiel || { facts: [] };
     corps = (

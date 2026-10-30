@@ -141,7 +141,7 @@ html[data-theme='clair'] .clay-shell .pb-fond {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 14px 16px 0;
+  padding: 14px 16px 16px;
 }
 .clay-shell .pb-txt b {
   font-family: var(--titre);
