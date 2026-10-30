@@ -1,6 +1,6 @@
 # INFRA — fiche technique
 
-Mis à jour le 29 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
+Mis à jour le 30 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
 ## En bref
@@ -9,7 +9,7 @@ uniquement des noms de variables et de consoles.
 - **Stack** : Next.js 16 en export statique, React 19, Tailwind CSS 4
 - **Backend** : aucun — site statique, sans base ni compte
 - **Distribution** : Worker Cloudflare (fichiers statiques et petit script de redirections), publié par GitHub Actions
-- **Site** : keurkado.com (62 adresses dans le sitemap)
+- **Site** : keurkado.com (63 adresses dans le sitemap)
 - **IA et outils** : 98 illustrations créées par IA (OpenArt), épingles Pinterest générées au build
 
 ## Parcours
@@ -17,7 +17,7 @@ uniquement des noms de variables et de consoles.
 - 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build, contrôle du HTML, vérification en ligne [ok] → ☁️ Hébergement web — Worker Cloudflare « keurkado » [ok] → 🌍 keurkado.com — en ligne, réponse 200 [ok]
 - 🛒 **Affiliation** : 🎁 Fiche cadeau — bouton « Voir sur Amazon » [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurkadofr-21 [ok] → 🔗 Liens directs — 58 ASIN sur 98 cadeaux [à faire]
 - 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en ligne [ok] → 🧱 Blocs d'annonces — pas encore créés [à faire] → 💶 Revenus — aucun constaté [pas encore]
-- 📝 **Contenu** : ✍️ Articles Conseils — 5 publiés, 19 programmés au 29 octobre [ok] → ⚙️ GitHub Actions — republie lun., mer., ven. [ok] → 🔍 Google — 61 pages indexées sur 62 au 27 octobre [ok]
+- 📝 **Contenu** : ✍️ Articles Conseils — 6 publiés, 18 programmés au 30 octobre [ok] → ⚙️ GitHub Actions — republie lun., mer., ven. [ok] → 🔍 Google — 61 pages indexées sur 62 au 30 octobre [ok]
 
 ## Vue d'ensemble
 
@@ -48,14 +48,14 @@ uniquement des noms de variables et de consoles.
     (`npm run test:sortie`), puis publication par `npx wrangler deploy` ; depuis le 28 octobre 2026, elle échoue
     s'il manque un secret Cloudflare et vérifie pendant 3 minutes au plus que https://keurkado.com/version.txt
     sert la nouvelle version ; historique git complet (date des pages fixes du sitemap). Se lance à chaque push sur `main`, chaque lundi, mercredi et vendredi (0 h 15 heure de Paris, pour les
-    articles programmés) et à la main ; dernière exécution réussie le 28 octobre 2026 (republication programmée du mercredi, 2 h 20 UTC) ;
+    articles programmés) et à la main ; dernière exécution réussie le 30 octobre 2026 (4 h 27 UTC, après un envoi sur `main`) ;
   - `indexnow.yml` (« IndexNow ») : depuis le 28 octobre 2026, signale les pages du sitemap à Bing et aux
     autres moteurs après chaque publication réussie sur `main`, chaque lundi à 2 h UTC et à la main ;
   - `pages.yml` : publie sur l'ancienne adresse GitHub Pages une page qui renvoie vers keurkado.com ;
   - `pinterest.yml` (« Publier les épingles Pinterest ») : chaque jour à 4 h 17 UTC, au plus 5 épingles
     du manifeste (`config/pinterest.json`), jamais deux du même Top le même jour, dans le tableau de sa
     rubrique, puis enregistre `data/pinterest-etat.json` sur `main` (les 21 épingles programmées à la
-    main y sont notées). Clé du compte en place : les exécutions du 24 au 28 octobre 2026 se sont connectées à
+    main y sont notées). Clé du compte en place : les exécutions du 24 au 30 octobre 2026 se sont connectées à
     Pinterest et n'ont rien publié, les 21 épingles actuelles étant déjà programmées à la main.
 - **Console** : https://github.com/teiki5320/keurkado (branche `main` uniquement).
 - **Secrets** : `CLOUDFLARE_API_TOKEN` et `CLOUDFLARE_ACCOUNT_ID`, réglés dans les secrets
@@ -108,7 +108,7 @@ uniquement des noms de variables et de consoles.
   indisponible (eau de parfum au oud, remplacée le jour même). La routine « Vérifier les liens
   Amazon » du Studio avait contrôlé 40 liens le 21 octobre 2026, tous valides.
 - **Site déclaré** : keurkado.com déclaré dans le compte Amazon Partenaires de Jean, vérifié par Jean le
-  28/10/2026 ; les liens du site portent le code de suivi `keurkadofr-21` (98 liens sur l'accueil, vérifié le 29 octobre 2026).
+  28/10/2026 ; les liens du site portent le code de suivi `keurkadofr-21` (98 liens sur l'accueil, vérifié le 30 octobre 2026).
 - **Console** : https://partenaires.amazon.fr (compte Amazon Partenaires créé le 18 octobre 2026).
 
 ## AdSense (publicité web)
@@ -123,5 +123,5 @@ uniquement des noms de variables et de consoles.
   s'affiche tant que les blocs ne sont pas créés.
 - **Consentement** : bandeau « Confidentialité et messages » d'AdSense, lien « Gérer mes cookies »
   en pied de page.
-- **Validation du site** : examen demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 28 octobre 2026).
+- **Validation du site** : examen demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 30 octobre 2026).
 - **Console** : https://adsense.google.com (compte AdSense de Jean).

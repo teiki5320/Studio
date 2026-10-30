@@ -3,8 +3,9 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-29T17:44:01Z",
-    "url": "https://github.com/teiki5320/Keurdeco/actions/runs/40922981670"
+    "updatedAt": "2026-10-30T04:13:26Z",
+    "url": "https://github.com/teiki5320/Keurdeco/actions/runs/41001643497",
+    "enCours": true
   },
-  "fetchedAt": "2026-10-29T18:59:38.059Z"
+  "fetchedAt": "2026-10-30T05:49:05.979Z"
 }

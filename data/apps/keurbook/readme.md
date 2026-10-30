@@ -102,7 +102,7 @@ Même fonctionnement que Keur Cook : le workflow `.github/workflows/deploy.yml` 
 ### Publicité (Google AdSense)
 
 - Compte AdSense `pub-2680784147246798` (comptes de gestion sur `admin@toakeur.com`). Le script est chargé sur les pages (`src/app/layout.tsx`, identifiant dans `src/lib/config.ts`) et `public/ads.txt` est publié.
-- **Le site n'est pas encore validé par Google** : première demande le 12 octobre 2026, refusée le 21 octobre (contenu jugé trop mince) ; fiches rallongées, nouvel examen demandé le 22 octobre 2026, « En préparation » dans la console (vérifié le 29 octobre 2026). Aucune annonce ne s'affiche tant que Google n'a pas validé le site. Détail : [`docs/PUBLICITE.md`](docs/PUBLICITE.md).
+- **Le site n'est pas encore validé par Google** : première demande le 12 octobre 2026, refusée le 21 octobre (contenu jugé trop mince) ; fiches rallongées, nouvel examen demandé le 22 octobre 2026, « En préparation » dans la console (vérifié le 30 octobre 2026). Aucune annonce ne s'affiche tant que Google n'a pas validé le site. Détail : [`docs/PUBLICITE.md`](docs/PUBLICITE.md).
 
 ### État de la mise en route
 
