@@ -2067,6 +2067,11 @@ export const EREA_FORMATS = {
   avantapres: '🤔 Avant ou après ?',
   interro: '📝 Interro surprise',
   petitehistoire: '📜 Petite histoire',
+  // Trois formats à 0 crédit (Jean, 30/10) : les cartes et la frise du jeu,
+  // la voix de Troy, aucune image générée.
+  ordre: "🧩 Remets-les dans l'ordre",
+  cejour: '📅 Ce jour-là',
+  savais: '🤓 Le savais-tu ?',
 };
 export function ereaAdPlan(project) {
   const deja = (project.ereaTour && project.ereaTour.deja) || [];
@@ -2408,6 +2413,23 @@ function verifieFormatErea(fmt, raw, cartes = []) {
   if (fmt === 'avantapres') {
     return verifieAvantApres(raw);
   }
+  if (fmt === 'cejour') {
+    const an = Math.round(Number(raw.annee));
+    if (!Number.isFinite(an) || an < -3000 || an > new Date().getFullYear() - 1) {
+      return 'année manquante ou hors de la frise';
+    }
+    const mots = (t) => String(t || '').split(/\s+/).filter(Boolean).length;
+    if (!raw.accroche || !raw.recit || !raw.legende) {
+      return 'textes manquants';
+    }
+    if (mots(raw.accroche) > 16 || mots(raw.recit) > 40 || mots(raw.legende) > 7) {
+      return 'textes trop longs (accroche 14 mots, récit 35 mots, légende 6 mots au plus)';
+    }
+    if (/brevet|disponible sur/i.test(JSON.stringify(raw))) {
+      return 'mot interdit (« brevet » ou « disponible sur »)';
+    }
+    return '';
+  }
   if (fmt === 'petitehistoire') {
     if (!cartes.some((c) => c.id === Number(raw.id))) {
       return "l'événement choisi n'est pas une des cartes proposées (donne son « id » exact)";
@@ -2460,6 +2482,12 @@ function resumeErea(fmt, raw) {
   }
   if (fmt === 'petitehistoire') {
     return String(raw.title || raw.id);
+  }
+  if (fmt === 'cejour') {
+    return `${raw.jour} : ${raw.legende} (${raw.annee})`;
+  }
+  if (fmt === 'ordre' || fmt === 'savais') {
+    return String(raw.title || '');
   }
   return `${raw.theme || ''} (${raw.questions.map((d) => d.affichage || d.annee).join(', ')})`;
 }
@@ -2517,6 +2545,42 @@ async function preparerErea(project, dir, update) {
 // Interro surprise : le temps laissé au public pour chercher (sans voix).
 const RECHERCHE_SEC = 3;
 
+// Formats à 0 crédit : des cartes du jeu connues, au ton léger (une pub
+// ne parle ni de guerre ni de drame), jamais deux fois la même.
+const CARTE_SOMBRE = /génocide|massacre|attentat|guerre|bataille|bombe|shoah|esclav|exécut|assassin|\bmort\b|meurt|famine|peste|épidémie|incendie|catastrophe|naufrage|séisme|tsunami|éruption|volcan|atomique|hiroshima|crash|tué|terreur|déport|génocid|camp\b/i;
+function cartesLegeres(niveauMax, deja) {
+  return cartesDuJeu().filter((c) => (c.niveau || 3) <= niveauMax && !deja.includes(c.id) && !CARTE_SOMBRE.test(`${c.titre} ${c.desc || ''} ${c.fun || ''}`));
+}
+const melanger = (l) => l.map((x) => [Math.random(), x]).sort((a, b) => a[0] - b[0]).map(([, x]) => x);
+const affichageAnnee = (a) => (a < 0 ? `${-a} av. J.-C.` : String(a));
+const jourDuJour = () => new Date().toLocaleDateString('fr-FR', { timeZone: 'Europe/Paris', day: 'numeric', month: 'long' });
+const motsDe = (t) => String(t || '').split(/\s+/).filter(Boolean).length;
+
+// « Remets-les dans l'ordre » : 4 cartes très connues, dans 4 époques différentes.
+function choisirOrdre(deja) {
+  // Les cartes les plus connues d'abord, puis les moins connues quand une époque est épuisée.
+  const parEpoque = new Map();
+  for (const c of [...melanger(cartesLegeres(1, deja)), ...melanger(cartesLegeres(2, deja).filter((x) => (x.niveau || 3) === 2))]) {
+    const e = EPOQUES_FRISE.findIndex(([, fin]) => Number(c.annee) <= fin);
+    if (!parEpoque.has(e) && String(c.titre).length <= 34) {
+      parEpoque.set(e, c);
+    }
+  }
+  const quatre = melanger([...parEpoque.values()]).slice(0, 4);
+  if (quatre.length < 4) {
+    throw new Error('Plus assez de cartes nouvelles pour « Remets-les dans l’ordre ».');
+  }
+  return quatre;
+}
+// « Le savais-tu ? » : une carte connue et son anecdote (assez courte pour 15 s).
+function choisirSavais(deja) {
+  const c = melanger(cartesLegeres(2, deja)).find((x) => x.fun && motsDe(x.fun) <= 32 && String(x.titre).length <= 40);
+  if (!c) {
+    throw new Error('Plus de carte nouvelle pour « Le savais-tu ? ».');
+  }
+  return c;
+}
+
 export async function createEreaFormatAd(project, fmt, update) {
   applyVoicePreset(project);
   const state = project.ereaTour || (project.ereaTour = { deja: [] });
@@ -2530,7 +2594,7 @@ export async function createEreaFormatAd(project, fmt, update) {
   // La première pub du format reprend le texte validé par Jean ; les
   // suivantes sont écrites par Claude (vérifiées, une relance au besoin).
   // (Petite histoire : pas de version imposée, Claude écrit dès la 1re.)
-  const premiere = fmt !== 'petitehistoire' && !(project.episodes || []).some((e) => e.ereaFormat === fmt);
+  const premiere = EREA_PREMIERES[fmt] && fmt !== 'petitehistoire' && !(project.episodes || []).some((e) => e.ereaFormat === fmt);
   // Petite histoire : 40 vraies cartes du jeu, jamais racontées, au choix de Claude.
   const histoires = state.histoires || (state.histoires = []);
   const cartes =
@@ -2541,7 +2605,32 @@ export async function createEreaFormatAd(project, fmt, update) {
           .slice(0, 40)
       : [];
   let raw;
-  if (premiere) {
+  const cartesFaites = state.cartesPub || (state.cartesPub = []);
+  if (fmt === 'ordre') {
+    const quatre = choisirOrdre(cartesFaites);
+    raw = { title: `Dans l'ordre : ${quatre.map((c) => c.titre).join(', ')}`, cartes: quatre };
+  } else if (fmt === 'savais') {
+    const c = choisirSavais(cartesFaites);
+    raw = { title: `Le savais-tu ? ${c.titre}`, carte: c };
+  } else if (fmt === 'cejour') {
+    update('Claude cherche un événement du jour…');
+    const jour = jourDuJour();
+    let motif = '';
+    for (let essai = 0; essai < 3; essai++) {
+      raw = await askClaudeForJson(
+        buildEreaFormatPrompt({ format: 'cejour', jour, deja: faits.slice(-60) }) + (motif ? `\n\nATTENTION, ta proposition précédente était fausse : ${motif}. Recommence.` : ''),
+      );
+      ensureUsage(project).claudeCalls += 1;
+      motif = verifieFormatErea(fmt, raw);
+      if (!motif) {
+        break;
+      }
+    }
+    if (motif) {
+      throw new Error(`Claude n'a pas proposé de version juste (${motif}). Relance la pub.`);
+    }
+    raw.jour = jour;
+  } else if (premiere) {
     raw = JSON.parse(JSON.stringify(EREA_PREMIERES[fmt]));
   } else {
     update('Claude écrit une nouvelle version…');
@@ -2688,6 +2777,72 @@ export async function createEreaFormatAd(project, fmt, update) {
     ];
     histoires.push(carte.id);
     state.histoires = histoires.slice(-400);
+  } else if (fmt === 'ordre') {
+    const dates = raw.cartes.map((c) => ({ annee: Math.round(Number(c.annee)), affichage: affichageAnnee(Math.round(Number(c.annee))), legende: `${c.emoji || ''} ${c.titre}`.trim().slice(0, 60), titre: c.titre }));
+    const ranges = [...dates].sort((a, b) => a.annee - b.annee);
+    const lettres = ['A', 'B', 'C', 'D'];
+    sujet = raw.cartes.map((c) => c.titre).join(', ');
+    scenes = [
+      logo,
+      // Les 4 cartes mélangées ; Troy lance le défi, 3 s pour chercher.
+      base(1, ecran({
+        melange: { cartes: raw.cartes.map((c, i) => ({ lettre: lettres[i], emoji: c.emoji || '', titre: c.titre })), ...friseAssets },
+        durationSec: 6,
+        lines: [
+          ...role('dynamique', 'Remets-les dans l’ordre, du plus ancien au plus récent ! Trois secondes !'),
+          ...role('dynamique', 'Stop ! On vérifie…').map((l) => ({ ...l, pauseAvant: RECHERCHE_SEC })),
+        ],
+      })),
+      // La frise du jeu les range une à une, au rythme de la voix.
+      base(2, ecran({
+        reperes: { depart: Math.max(-3000, ranges[0].annee - 300), dates: ranges, suitLaVoix: true, compteur: true, mouvement: 0.9, ...friseAssets },
+        durationSec: 8,
+        sfx: sonBonne ? [{ file: sonBonne, at: 0.1, volume: 0.5 }] : [],
+        lines: ranges.flatMap((d, k) => role('dynamique', `${k === 0 ? 'D’abord' : k === ranges.length - 1 ? 'Et enfin' : 'Puis'}… ${d.titre} : ${d.affichage} !`)),
+      })),
+      fin(3, 'Tu avais le bon ordre ? Joue à Erea, et range toute l’histoire !'),
+    ];
+    cartesFaites.push(...raw.cartes.map((c) => c.id));
+  } else if (fmt === 'savais') {
+    const c = raw.carte;
+    const annee = Math.round(Number(c.annee));
+    sujet = c.titre;
+    scenes = [
+      // On entre direct : la carte et la question.
+      base(0, ecran({
+        carton: { etiquette: '🤓 LE SAVAIS-TU ?', texte: `${c.emoji || ''}\n${c.titre}`.trim(), taille: c.titre.length > 24 ? 92 : 116, fonts },
+        durationSec: 2.5,
+        lines: role('dynamique', `${c.titre}… Le savais-tu ?`),
+      })),
+      // La carte se pose sur la frise pendant que Troy raconte l'anecdote.
+      base(1, ecran({
+        reperes: { depart: Math.max(-3000, annee - 250), dates: [{ annee, affichage: affichageAnnee(annee), legende: `${c.emoji || ''} ${c.titre}`.trim().slice(0, 60) }], mouvement: 1.6, ...friseAssets },
+        durationSec: 6,
+        sfx: sonBonne ? [{ file: sonBonne, at: 1.7, volume: 0.5 }] : [],
+        lines: role('recit', c.fun),
+      })),
+      fin(2, 'Des centaines d’anecdotes t’attendent dans Erea !'),
+    ];
+    cartesFaites.push(c.id);
+  } else if (fmt === 'cejour') {
+    const annee = Math.round(Number(raw.annee));
+    sujet = `${raw.jour} ${annee} : ${raw.legende}`;
+    raw.title = `Ce jour-là, le ${raw.jour} ${annee} : ${raw.legende}`;
+    scenes = [
+      logo,
+      base(1, ecran({
+        carton: { etiquette: '📅 CE JOUR-LÀ', texte: raw.jour.replace(' ', '\n'), fonts },
+        durationSec: 2.5,
+        lines: role('mystere', raw.accroche),
+      })),
+      base(2, ecran({
+        reperes: { depart: Math.max(-3000, annee - 300), dates: [{ annee, affichage: affichageAnnee(annee), legende: `${raw.emoji || ''} ${raw.legende}`.trim().slice(0, 60) }], mouvement: 1.6, ...friseAssets },
+        durationSec: 6,
+        sfx: sonBonne ? [{ file: sonBonne, at: 1.7, volume: 0.5 }] : [],
+        lines: role('recit', raw.recit),
+      })),
+      fin(3, 'Chaque jour a son histoire. Retrouve-les dans Erea !'),
+    ];
   } else {
     const questions = raw.questions.map((d) => ({
       annee: Math.round(Number(d.annee)),
@@ -2754,6 +2909,7 @@ export async function createEreaFormatAd(project, fmt, update) {
   project.episodeCount = project.episodes.length;
   faits.push(resumeErea(fmt, raw));
   state.formats[fmt] = faits.slice(-60);
+  state.cartesPub = cartesFaites.slice(-600);
   saveProject(project);
   return { number };
 }

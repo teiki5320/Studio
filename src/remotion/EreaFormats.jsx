@@ -492,3 +492,76 @@ export const EreaRecherche = ({ depart, date, numero, total, debut, fin, assets 
     </AbsoluteFill>
   );
 };
+
+// ---- Remets-les dans l'ordre : 4 cartes mélangées, 3 secondes pour chercher ----
+// Les cartes arrivent une à une pendant que Troy lance le défi ; de `debut`
+// à `fin` (sans voix), un compte à rebours au tic du ruban ; à `fin`, « Stop ! ».
+export const EreaMelange = ({ cartes = [], debut, fin, assets = {} }) => {
+  usePolicesErea(assets.fonts);
+  const frame = useCurrentFrame();
+  const { fps } = useVideoConfig();
+  const cherche = frame >= debut && frame < fin;
+  const reste = Math.max(1, Math.ceil((fin - frame) / fps));
+  const u = cherche ? ((frame - debut) / fps) % 1 : 0;
+  const pop = interpolate(u, [0, 0.18, 0.35], [0.4, 1.15, 1], { extrapolateRight: 'clamp', easing: Easing.out(Easing.cubic) });
+  const stop = frame >= fin ? interpolate(frame, [fin, fin + 6], [0.4, 1], { extrapolateRight: 'clamp', easing: Easing.out(Easing.back(2)) }) : 0;
+  const tics = [];
+  for (let f = debut; f < fin; f += fps) {
+    tics.push(Math.round(f));
+  }
+  return (
+    <AbsoluteFill style={{ background: PARCHEMIN, alignItems: 'center' }}>
+      {assets.sons && assets.sons.tic
+        ? tics.map((f) => (
+            <Sequence key={`tic-${f}`} from={f} durationInFrames={Math.round(0.3 * fps)} layout="none">
+              <Audio src={assets.sons.tic} volume={0.9} />
+            </Sequence>
+          ))
+        : null}
+      <div style={{ marginTop: 210, padding: '14px 36px', borderRadius: 999, background: CORAL, color: '#fff', fontFamily: 'Nunito', fontWeight: 900, fontSize: 44, letterSpacing: 3, transform: 'rotate(-2deg)' }}>
+        🧩 REMETS-LES DANS L’ORDRE
+      </div>
+      <div style={{ marginTop: 26, fontFamily: 'Baloo2', fontWeight: 800, fontSize: 54, color: INK_SOFT }}>du plus ancien au plus récent</div>
+      <div style={{ marginTop: 50, width: 960, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 34 }}>
+        {cartes.map((c, i) => {
+          const a = interpolate(frame, [6 + i * 8, 16 + i * 8], [0, 1], { extrapolateLeft: 'clamp', extrapolateRight: 'clamp', easing: Easing.out(Easing.back(1.6)) });
+          return (
+            <div
+              key={c.lettre}
+              style={{
+                position: 'relative',
+                height: 420,
+                borderRadius: 44,
+                background: '#fff',
+                boxShadow: '0 18px 40px rgba(53,64,107,0.16)',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '30px 26px',
+                boxSizing: 'border-box',
+                opacity: a,
+                transform: `scale(${0.6 + 0.4 * a}) rotate(${(i % 2 ? 2 : -2) * a}deg)`,
+              }}
+            >
+              <div style={{ position: 'absolute', top: -22, left: 30, width: 74, height: 74, borderRadius: '50%', background: OCRE, color: '#fff', fontFamily: 'Baloo2', fontWeight: 800, fontSize: 46, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {c.lettre}
+              </div>
+              <div style={{ fontSize: 130, lineHeight: 1 }}>{c.emoji}</div>
+              <div style={{ marginTop: 22, fontFamily: 'Baloo2', fontWeight: 800, fontSize: c.titre.length > 22 ? 44 : 52, lineHeight: 1.08, color: INK, textAlign: 'center' }}>{c.titre}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ position: 'absolute', bottom: 250, left: 0, right: 0, display: 'flex', justifyContent: 'center' }}>
+        {cherche ? (
+          <div style={{ width: 200, height: 200, borderRadius: '50%', background: '#fff', boxShadow: `0 0 0 14px ${CORAL}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'Baloo2', fontWeight: 800, fontSize: 130, color: INK, transform: `scale(${pop})` }}>
+            {reste}
+          </div>
+        ) : frame >= fin ? (
+          <div style={{ padding: '18px 60px', borderRadius: 999, background: CORAL, color: '#fff', fontFamily: 'Baloo2', fontWeight: 800, fontSize: 100, transform: `scale(${stop})` }}>STOP !</div>
+        ) : null}
+      </div>
+    </AbsoluteFill>
+  );
+};

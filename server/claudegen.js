@@ -1430,7 +1430,23 @@ Erea fait placer des ÉVÉNEMENTS sur une frise (inventions, batailles, découve
 // petite histoire (la vraie histoire derrière une carte du jeu). Les
 // premières versions validées par Jean servent d'exemple (EREA_PREMIERES
 // dans pipeline.js) ; ici, Claude en invente une nouvelle sur le même modèle.
-export function buildEreaFormatPrompt({ format, exemple, deja = [], idees = [], cartes = [] }) {
+export function buildEreaFormatPrompt({ format, exemple, deja = [], idees = [], cartes = [], jour = '' }) {
+  if (format === 'cejour') {
+    return `Tu écris une pub TikTok d'environ 15 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise de -3000 à aujourd'hui. Format « CE JOUR-LÀ » : un événement célèbre qui s'est passé un ${jour}, une autre année.
+RÈGLES ABSOLUES :
+- L'événement s'est passé EXACTEMENT le ${jour} (jour et mois) : un fait très connu, classique, vérifiable, dont la date complète est sûre. Au moindre doute sur le jour, choisis-en un autre.
+- Un sujet qui donne envie : invention, découverte, exploit, record, première fois, naissance d'une œuvre ou d'un monument… PAS de guerre, de massacre, d'attentat, de catastrophe ni de mort.
+- Ton TikTok, phrases très courtes et orales, au présent, on raconte (pas de vente, jamais « disponible sur… »). N'emploie jamais les mots « brevet » ni « héros ».
+${deja.length ? `- DÉJÀ FAIT (à ne pas reprendre) : ${deja.join(' ; ')}` : ''}
+Réponds UNIQUEMENT avec un objet JSON valide (aucun texte autour) :
+{
+  "annee": l'année (entier, négatif avant J.-C.),
+  "emoji": "un emoji qui illustre l'événement",
+  "legende": "l'événement, 6 mots maximum (ex. « Premier pas sur la Lune »)",
+  "accroche": "phrase choc qui commence par « Le ${jour} » suivi de l'année, et crée la curiosité sans tout dire, 14 mots maximum",
+  "recit": "ce qui se passe ce jour-là et le détail le plus étonnant, VRAI, 2 ou 3 phrases courtes, 35 mots maximum en tout"
+}`;
+  }
   const regles = `RÈGLES ABSOLUES :
 - Uniquement des faits d'histoire VRAIS, classiques et vérifiables (dates des manuels scolaires) : au moindre doute sur une date, choisis-en une autre.
 - Ton TikTok, phrases très courtes et orales, on tutoie. Aucune phrase de vente, jamais « disponible sur… » : on invite à jouer (l'appli est gratuite).
