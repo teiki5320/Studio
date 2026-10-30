@@ -370,6 +370,7 @@ export function PlanningPage({ appli } = {}) {
   const [caseSite, setCaseSite] = useState(null); // « cle|jour » ouverte dans le détail
   const [ouvertes, setOuvertes] = useState({}); // cases dépliées (« + N autres »)
   const [jourSel, setJourSel] = useState(null); // jour ouvert dans la vue Jour (iso)
+  const [copie, setCopie] = useState(null); // légende copiée (clé de la vidéo)
   const drag = useRef(null);
   const glisse = useRef(false); // vrai juste après un glisser (le clic qui suit est ignoré)
 
@@ -618,143 +619,141 @@ export function PlanningPage({ appli } = {}) {
   // ---------- Fiche de la vidéo ouverte ----------
   const fv = fiche && videos.get(fiche);
   const fps = fv ? pubsDe(fiche) : [];
-  const ficheJsx = fv && (
-    <aside className="pl-fiche" key={fiche}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={pastille(teinte(fv)[0], teinte(fv)[1])}>
-          <LogoAppli de={fv.depot === 'recettes' ? 'keurcook' : fv.depot} taille={16} />
-          {fv.appli}
-        </span>
-        <div style={{ flex: 1 }} />
-        <button className="clay-pill" style={{ width: 34, height: 34, fontSize: 14 }} title="Fermer" onClick={() => (setFiche(null), setSel(null))}>
-          ✕
-        </button>
-      </div>
-      <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-        <Apercu v={fv} w={90} h={160} />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
-          <b style={{ fontSize: 18, lineHeight: 1.25 }}>{fv.titre}</b>
-          <span className="clay-muted small">
-            {!fps.length
-              ? 'Pas encore placée'
-              : `${pluriel(fps.length, 'compte')} · ${fps.some((p) => !p.publie) ? `${fps.filter((p) => !p.publie).length} à publier` : 'tout est publié'}`}
-          </span>
-          <a className="clay-btn ghost small" style={{ alignSelf: 'flex-start' }} href={lienTelechargement(fv)} target={surLeMac() ? '_blank' : undefined} rel="noreferrer">
-            {surLeMac() ? '▶︎ Voir' : '⬇️ Vidéo'}
-          </a>
-        </div>
-      </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <b style={{ flex: 1, fontSize: 14 }}>Légende</b>
-          <button className="clay-btn small" onClick={() => copyText(fv.legende)}>
-            📋 Copier
-          </button>
-        </div>
-        <div style={{ background: 'var(--carte)', borderRadius: 14, padding: '10px 12px', fontSize: 13, lineHeight: 1.45, whiteSpace: 'pre-wrap' }}>{fv.legende}</div>
-      </div>
-      {fps.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <b style={{ fontSize: 14 }}>Publications</b>
-          {fps.map((p) => {
-            const c = compteDe[p.compte];
-            const retard = enRetard(p);
-            return (
-              <div key={p.id} style={{ display: 'flex', flexDirection: 'column', gap: 6, background: 'var(--carte)', borderRadius: 14, padding: '8px 8px 8px 12px', boxShadow: 'var(--clay-sm)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
-                    <span className="clay-muted" style={{ fontSize: 11, fontWeight: 800, display: 'flex', alignItems: 'center' }}>
-                      <LogoReseau id={c.reseau} taille={14} />
-                      {NOM_RESEAU[c.reseau]}
-                    </span>
-                    <span style={{ fontSize: 14, fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={c.nom}>{c.nom}</span>
-                  </div>
-                  <span className={`clay-state ${p.publie ? 'ok' : etat(p)[1] === 'ko' ? 'ko' : 'run'}`}>{etat(p)[0]}</span>
-                  <button title="Retirer ce compte" onClick={() => act(api.retirerPlanning(p.id))} style={{ ...petitBouton, background: 'transparent', color: 'var(--c-muted)' }}>
-                    ✕
+  // Fiche épurée (Jean, 30/10) : la vidéo, deux boutons (vidéo, légende),
+  // le jour de programmation une seule fois, une ligne par compte avec une
+  // seule action, puis les comptes à ajouter. La légende complète se déplie.
+  const ficheJsx =
+    fv &&
+    (() => {
+      const jourFiche = fps[0]?.date || jourChoisi;
+      const aFaire = fps.filter((p) => !p.publie).length;
+      const libres = comptes
+        .filter((c) => !dejaSur(fiche, c.id))
+        .sort((a, b) => Number(fv.proposes?.includes(b.id)) - Number(fv.proposes?.includes(a.id)));
+      const decalerTout = (n) => fps.forEach((p) => deplacer(p.id, p.compte, decaler(p.date, n)));
+      return (
+        <aside className="pl-fiche pf" key={fiche} aria-label="Fiche de la vidéo">
+          <div className="pf-tete">
+            <Apercu v={fv} w={64} h={114} />
+            <div className="pf-t">
+              <span className="pf-appli">
+                <LogoAppli de={fv.depot === 'recettes' ? 'keurcook' : fv.depot} taille={16} seul />
+                {fv.appli}
+              </span>
+              <b>{fv.titre}</b>
+              <span className={`pf-resume${aFaire ? ' afaire' : fps.length ? ' ok' : ''}`}>
+                {!fps.length ? 'Pas encore programmée' : aFaire ? `${aFaire} à publier` : 'Tout est publié'}
+              </span>
+            </div>
+            <button className="pf-fermer" title="Fermer" aria-label="Fermer la fiche" onClick={() => (setFiche(null), setSel(null))}>
+              <Ic n="croix" taille={16} />
+            </button>
+          </div>
+
+          <div className="pf-boutons">
+            <a className="clay-btn ghost small" href={lienTelechargement(fv)} target={surLeMac() ? '_blank' : undefined} rel="noreferrer">
+              {surLeMac() ? 'Voir la vidéo' : 'Enregistrer la vidéo'}
+            </a>
+            <button className="clay-btn ghost small" onClick={() => (copyText(fv.legende), setCopie(fiche))}>
+              {copie === fiche ? 'Légende copiée ✓' : 'Copier la légende'}
+            </button>
+          </div>
+          <details className="pf-legende">
+            <summary>Voir la légende</summary>
+            <p>{fv.legende}</p>
+          </details>
+
+          {fps.length > 0 && (
+            <section className="pf-bloc">
+              <div className="pf-bloc-t">
+                <b>Programmée</b>
+                <div className="pf-jour" role="group" aria-label="Changer de jour">
+                  <button title="Jour d’avant" aria-label="Jour d’avant" onClick={() => decalerTout(-1)}>
+                    <Ic n="gauche" taille={16} />
+                  </button>
+                  <span>{jourCourt(depuisIso(jourFiche))}</span>
+                  <button title="Jour d’après" aria-label="Jour d’après" onClick={() => decalerTout(1)}>
+                    <Ic n="droite" taille={16} />
                   </button>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', background: 'var(--carte-2)', borderRadius: 10 }}>
-                    <button style={{ ...petitBouton, background: 'transparent' }} onClick={() => deplacer(p.id, p.compte, decaler(p.date, -1))}>
-                      ‹
-                    </button>
-                    <span style={{ fontSize: 12, fontWeight: 800, minWidth: 48, textAlign: 'center' }}>{jourCourt(depuisIso(p.date))}</span>
-                    <button style={{ ...petitBouton, background: 'transparent' }} onClick={() => deplacer(p.id, p.compte, decaler(p.date, 1))}>
-                      ›
-                    </button>
-                  </div>
-                  <div style={{ flex: 1 }} />
-                  {p.url && (
-                    <a className="clay-btn ghost small" href={p.url} target="_blank" rel="noreferrer">
-                      Voir{p.prive ? ' (privée)' : ''}
-                    </a>
-                  )}
-                  {!p.publie && p.envoi ? (
-                    <span className="clay-muted small">Envoi en cours…</span>
-                  ) : !p.publie && p.enFile ? (
-                    <button className="clay-btn ghost small" onClick={() => act(api.retirerFilePlanning(p.id))}>
-                      Retirer de la file
-                    </button>
-                  ) : !p.publie && direct(p) ? (
-                    <button className="clay-btn small" disabled={envoi === `${fiche}|${c.id}`} onClick={() => publierMaintenant(fiche, c)}>
-                      {p.erreur ? '🔁 Relancer' : '🚀 Publier maintenant'}
-                    </button>
-                  ) : (
-                    <button className={`clay-btn small${p.publie ? ' ghost' : ''}`} onClick={() => basculer(p)}>
-                      {p.publie ? 'Annuler' : '✓ Fait'}
-                    </button>
-                  )}
-                </div>
-                {!p.publie && p.erreur && !p.enFile ? <span className="error small">L’envoi a échoué : {p.erreur}</span> : null}
-                {p.publie && p.prive ? <span className="clay-muted small">Publiée en privé (TikTok n’a pas encore validé l’appli).</span> : null}
               </div>
-            );
-          })}
-        </div>
-      )}
-      {comptes.some((c) => directCompte(c) && !dejaSur(fiche, c.id)) && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span className="clay-muted small" style={{ fontWeight: 800 }}>
-            Publier tout de suite sur…
-          </span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {comptes
-              .filter((c) => directCompte(c) && !dejaSur(fiche, c.id))
-              .map((c) => (
-                <button key={c.id} className="clay-btn small" disabled={envoi === `${fiche}|${c.id}`} onClick={() => publierMaintenant(fiche, c)}>
-                  🚀 <LogoReseau id={c.reseau} taille={14} /> {c.nom}
-                </button>
-              ))}
-          </div>
-        </div>
-      )}
-      {comptes.some((c) => !dejaSur(fiche, c.id)) && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span className="clay-muted small" style={{ fontWeight: 800 }}>
-            {fps.length ? `Ajouter un compte (${jourCourt(depuisIso(fps[0].date)).toLowerCase()})` : 'Placer aujourd’hui sur…'}
-          </span>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {comptes
-              .filter((c) => !dejaSur(fiche, c.id))
-              .sort((a, b) => Number(fv.proposes?.includes(b.id)) - Number(fv.proposes?.includes(a.id)))
-              .map((c) => (
-                <button key={c.id} style={petitBouton} onClick={() => placer(fiche, c.id, fps[0]?.date || aujourdhui)}>
-                  ＋ <LogoReseau id={c.reseau} taille={14} />
-                  {c.nom}
-                  {fv.proposes?.includes(c.id) ? ' ★' : ''}
-                </button>
-              ))}
-          </div>
-        </div>
-      )}
-      {fps.length > 0 && (
-        <button className="clay-btn ghost small" style={{ alignSelf: 'flex-start' }} onClick={() => act(api.retirerVideoPlanning(fv.projectId, fv.number))}>
-          ✕ Retirer du planning
-        </button>
-      )}
-    </aside>
-  );
+              {fps.map((p) => {
+                const c = compteDe[p.compte] || { id: p.compte, nom: p.compte, reseau: '' };
+                const [texte, classe] = etat(p);
+                const libre = !p.publie && !p.envoi && !p.enFile;
+                return (
+                  <div key={p.id} className="pf-ligne">
+                    <div className="pf-l1">
+                      <LogoReseau id={c.reseau} taille={18} seul />
+                      <span className="nom" title={c.nom}>
+                        {c.nom}
+                        {p.date !== jourFiche ? <small> · {jourCourt(depuisIso(p.date))}</small> : null}
+                      </span>
+                      {p.publie ? (
+                        <>
+                          {p.url ? (
+                            <a className="clay-btn ghost small" href={p.url} target="_blank" rel="noreferrer">
+                              Voir
+                            </a>
+                          ) : null}
+                          <button className="pl-etat ok" title="Remettre à publier" onClick={() => basculer(p)}>
+                            {p.prive ? 'Publiée (privée)' : 'Publiée'}
+                          </button>
+                        </>
+                      ) : p.envoi ? (
+                        <span className="pl-etat file">Envoi…</span>
+                      ) : p.enFile ? (
+                        <button className="clay-btn ghost small" onClick={() => act(api.retirerFilePlanning(p.id))}>
+                          {texte} · retirer
+                        </button>
+                      ) : direct(p) ? (
+                        <button className="clay-btn small" disabled={envoi === `${fiche}|${c.id}`} onClick={() => publierMaintenant(fiche, c)}>
+                          {p.erreur ? 'Relancer' : 'Publier'}
+                        </button>
+                      ) : (
+                        <button className="clay-btn small" onClick={() => basculer(p)}>
+                          ✓ Fait
+                        </button>
+                      )}
+                      {libre && (
+                        <button className="pf-x" title="Retirer ce compte" aria-label={`Retirer ${c.nom}`} onClick={() => act(api.retirerPlanning(p.id))}>
+                          <Ic n="croix" taille={14} />
+                        </button>
+                      )}
+                    </div>
+                    {libre && classe === 'ko' ? <span className="pf-erreur">{p.erreur ? `L’envoi a échoué : ${p.erreur}` : 'En retard'}</span> : null}
+                  </div>
+                );
+              })}
+            </section>
+          )}
+
+          {libres.length > 0 && (
+            <section className="pf-bloc">
+              <b className="pf-bloc-t">{fps.length ? 'Ajouter un compte' : `Programmer ${jourChoisi === aujourdhui ? 'aujourd’hui' : jourCourt(depuisIso(jourChoisi)).toLowerCase()} sur`}</b>
+              <div className="pf-puces">
+                {libres.map((c) => (
+                  <button key={c.id} className="pl-fpuce" onClick={() => placer(fiche, c.id, jourFiche)}>
+                    <LogoReseau id={c.reseau} taille={16} seul />
+                    {c.nom}
+                    <span className="plus" aria-hidden="true">
+                      +
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {fps.length > 0 && (
+            <button className="pf-retirer" onClick={() => act(api.retirerVideoPlanning(fv.projectId, fv.number))}>
+              Retirer du planning
+            </button>
+          )}
+        </aside>
+      );
+    })();
+
 
   // Ce qui sort sur les sites cette semaine (pour le sous-titre).
   const listeSites = (sites?.sites || []).filter((s) => !appliActive || s.cle === appliActive);
