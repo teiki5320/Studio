@@ -243,7 +243,15 @@ export function IndexationPage() {
   const chezClaude = data.sites.flatMap((x) => x.problemes).filter((p) => p.envoi?.statut === 'envoye').length;
   const choisi = data.sites.find((x) => x.propriete === site) || null;
   // Un clic sur un site le filtre ; un second clic revient à tous les sites.
-  const choisir = (x) => setSite(x.propriete === site ? '' : x.propriete);
+  // Toucher un site ouvre son détail plus bas : on y descend (Jean, 30/10 :
+  // « quand je touche ça ne fait rien »).
+  const choisir = (x) => {
+    const autre = x.propriete !== site;
+    setSite(autre ? x.propriete : '');
+    if (autre) {
+      setTimeout(() => document.querySelector('.ix-detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    }
+  };
   const aCorriger = data.sites.filter((x) => ouverts(x).length);
   const pct = (n, t) => (t ? Math.round((100 * n) / t) : 0);
 
@@ -344,7 +352,15 @@ export function IndexationPage() {
                     {nb(x.indexees)} <i>/ {nb(x.total)}</i>
                   </span>
                   <span className={`ix-etat ${x.erreur ? 'ko' : n ? 'run' : 'ok'}`}>
-                    {x.erreur ? 'vérification ratée' : n ? `${n} à régler` : x.problemes.length ? 'corrigé, Google repassera' : 'rien à régler'}
+                    {x.erreur
+                      ? 'vérification ratée'
+                      : n && ouvertsIci.every((p) => p.envoi?.statut === 'envoye')
+                        ? '⏳ chez Claude'
+                        : n
+                          ? `${n} à régler`
+                          : x.problemes.length
+                            ? 'corrigé, Google repassera'
+                            : 'rien à régler'}
                   </span>
                 </span>
               </button>
@@ -384,6 +400,9 @@ export function IndexationPage() {
             </small>
           </h3>
           {choisi.erreur ? <p className="error small">⚠️ {choisi.erreur}</p> : null}
+          {choisi.problemes.map((p) => (
+            <Probleme key={p.id} p={p} />
+          ))}
           {perf?.sites[choisi.propriete]?.requetes?.length ? (
             <div className="ix-probleme ix-requetes">
               <div className="ix-probleme-h">
@@ -403,9 +422,6 @@ export function IndexationPage() {
             </div>
           ) : null}
           <PresquePremierePage domaine={choisi.domaine} />
-          {choisi.problemes.map((p) => (
-            <Probleme key={p.id} p={p} />
-          ))}
         </div>
       )}
       <Courbe />
