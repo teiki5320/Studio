@@ -2397,7 +2397,7 @@ export function pourLaVoixErea(t) {
 }
 
 // Avant ou après : la bonne réponse est CALCULÉE, jamais crue sur parole.
-export function verifieAvantApres(raw) {
+export function verifieAvantApres(raw, cible = null) {
   const an = (v) => (Number.isFinite(Number(v)) ? Math.round(Number(v)) : NaN);
   const s = an(raw.anneeSujet);
   const a = an(raw.a && raw.a.annee);
@@ -2414,18 +2414,22 @@ export function verifieAvantApres(raw) {
   if (raw.bonne !== bonne) {
     return `la bonne réponse est « ${raw[bonne].court || raw[bonne].nom} » (écarts : ${da} et ${db} ans)`;
   }
+  // Jean (30/10) : la réponse ne doit pas être toujours la plus moderne.
+  if (cible && (raw.bonne !== cible.lettre || ((raw.bonne === 'a' ? a > b : b > a) !== cible.recente))) {
+    return `la bonne réponse doit être le choix « ${cible.lettre} » et être le ${cible.recente ? 'plus récent' : 'plus ancien'} des deux`;
+  }
   if (!raw.question || !raw.reponse || !raw.fin) {
     return 'textes manquants';
   }
   return '';
 }
 
-function verifieFormatErea(fmt, raw, cartes = []) {
+function verifieFormatErea(fmt, raw, cartes = [], cible = null) {
   if (sujetEvite(JSON.stringify(raw))) {
     return 'sujet à éviter (abbé Pierre, Emmaüs) : choisis un autre événement';
   }
   if (fmt === 'avantapres') {
-    return verifieAvantApres(raw);
+    return verifieAvantApres(raw, cible);
   }
   if (fmt === 'cejour') {
     const an = Math.round(Number(raw.annee));
@@ -2648,14 +2652,18 @@ export async function createEreaFormatAd(project, fmt, update) {
     raw = JSON.parse(JSON.stringify(EREA_PREMIERES[fmt]));
   } else {
     update('Claude écrit une nouvelle version…');
+    // Avant ou après : la bonne réponse est tour à tour la plus ancienne et la
+    // plus récente (la 1re, Cléopâtre → l'iPhone, était la plus récente), et
+    // tombe au hasard à gauche ou à droite.
+    const cible = fmt === 'avantapres' ? { recente: faits.length % 2 === 0, lettre: Math.random() < 0.5 ? 'a' : 'b' } : null;
     let motif = '';
     for (let essai = 0; essai < 3; essai++) {
       raw = await askClaudeForJson(
-        buildEreaFormatPrompt({ format: fmt, exemple: EREA_PREMIERES[fmt], deja: faits.slice(-30), idees: fmt === 'petitehistoire' ? [] : evenementsCelebres(30), cartes }) +
+        buildEreaFormatPrompt({ format: fmt, exemple: EREA_PREMIERES[fmt], deja: faits.slice(-30), idees: fmt === 'petitehistoire' ? [] : evenementsCelebres(30), cartes, cible }) +
           (motif ? `\n\nATTENTION, ta proposition précédente était fausse : ${motif}. Recommence.` : ''),
       );
       ensureUsage(project).claudeCalls += 1;
-      motif = verifieFormatErea(fmt, raw, cartes);
+      motif = verifieFormatErea(fmt, raw, cartes, cible);
       if (!motif) {
         break;
       }

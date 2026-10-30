@@ -1473,7 +1473,7 @@ Erea fait placer des ÉVÉNEMENTS sur une frise (inventions, batailles, découve
 // petite histoire (la vraie histoire derrière une carte du jeu). Les
 // premières versions validées par Jean servent d'exemple (EREA_PREMIERES
 // dans pipeline.js) ; ici, Claude en invente une nouvelle sur le même modèle.
-export function buildEreaFormatPrompt({ format, exemple, deja = [], idees = [], cartes = [], jour = '' }) {
+export function buildEreaFormatPrompt({ format, exemple, deja = [], idees = [], cartes = [], jour = '', cible = null }) {
   if (format === 'cejour') {
     return `Tu écris une pub TikTok d'environ 15 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise de -3000 à aujourd'hui. Format « CE JOUR-LÀ » : un événement célèbre qui s'est passé un ${jour}, une autre année.
 RÈGLES ABSOLUES :
@@ -1503,6 +1503,7 @@ ${JSON.stringify(exemple, null, 2)}`;
     return `Tu écris une pub TikTok d'environ 15 secondes pour Erea, le jeu d'histoire où l'on place des événements sur une frise de -3000 à aujourd'hui. Format « AVANT OU APRÈS ? » : une question piège sur le temps, un compte à rebours de 3 secondes, la réponse surprenante.
 Le principe : un personnage ou un événement célèbre (« sujet ») a-t-il vécu plus près de A ou de B ? La bonne réponse doit SURPRENDRE (l'intuition se trompe) et être mathématiquement juste : compare les écarts en années entre anneeSujet et chaque année (« bonne » = "a" ou "b", celle dont l'écart est le plus PETIT ; les deux écarts doivent différer d'au moins 100 ans).
 Les années sont des entiers (négatifs avant J.-C.), entre -3000 et 2026. « reponse » énonce la bonne réponse et le chiffre qui la prouve, sans erreur de calcul.
+${cible ? `CETTE FOIS, IMPOSÉ : la bonne réponse est le choix « ${cible.lettre} » (« bonne » = "${cible.lettre}"), et c'est ${cible.recente ? 'le PLUS RÉCENT des deux (a.annee et b.annee)' : "le PLUS ANCIEN des deux : le piège est l'inverse de l'exemple, le sujet est bien plus vieux qu'on ne croit (ex. les pyramides ont été bâties plus près… des derniers mammouths que de Cléopâtre)"}. L'autre choix est donc ${cible.recente ? 'le plus ancien' : 'le plus récent'}.` : ''}
 ${json}
 ${regles}`;
   }
