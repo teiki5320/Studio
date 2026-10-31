@@ -12,14 +12,14 @@ Une app Flutter de jardinage francophone, au style pastel kawaii japonais. Pens�
 - 🌽 **Catalogue de 169 légumes, aromates, tubercules et accessoires** — fiches détaillées (semis, exposition, arrosage, rendement, conseils)
 - 📓 **Mes jardins** : potager carré multi-jardins, placement des plants par glisser-déposer, suivi par plant (arrosage, phase de croissance auto, photos), conseils contextuels selon la météo
 - 📖 **Poussidex** : ta collection chronologique des plants en photos, avec notes, historique d'arrosage et compteur de récoltes
-- 🐣 **Tamassi** : créature virtuelle qui évolue avec ton activité au jardin (XP, niveaux, émotions, visiteurs)
+- 📔 **Cahier de culture** : potager carré multi-jardins, placement par glisser-déposer, suivi par plant (arrosage, phase de croissance, photos)
 - 🌦️ **Météo + alertes d'arrosage** géolocalisées (via Open-Meteo, sans clé d'API)
 - 🏅 **Défis photo** : 50 défis, 50 badges et médailles bronze / argent / or (les photos restent privées)
 - 👨‍👩‍👧 **Pensé parent-enfant** : tutoriels, défis et compagnon kawaii adaptés à un usage en famille
 - 🎓 **33 tutoriels HTML embarqués**, lexique technique, guide des maladies et compagnonnage
-- ☁️ **Synchronisation Supabase facultative** (auth Google/Apple, sync plantations, badges, photos)
+- 📴 **Aucun compte, aucun serveur** : tout reste sur l'appareil (comptes et synchronisation Supabase retirés le 30 octobre 2026)
 
-L'app est **local-first** : tout fonctionne sans connexion. La synchro cloud est en arrière-plan, jamais bloquante.
+L'app est **local-first** : tout fonctionne sans connexion.
 
 ## 🌍 Régions supportées
 
@@ -30,12 +30,13 @@ Le choix se fait au premier lancement et peut être modifié à tout moment dans
 
 ## 🛠️ Stack technique
 
-- **Flutter ≥ 3.38** / **Dart ^3.5** (canal stable)
-- **Supabase** (auth + Postgres + Storage) pour la sync cloud optionnelle
+- **Flutter ≥ 3.47** / **Dart ^3.5** (canal stable) — borne relevée le
+  30 octobre 2026 ; sous 3.41.6 le service PDF ne compile plus
+- **Aucun backend** depuis le 30 octobre 2026 (Supabase n'est plus utilisé)
 - **Open-Meteo** pour la météo (gratuit, sans clé)
 - Material3 + thèmes clair/sombre, `google_fonts` (Nunito), `flutter_local_notifications`, `geolocator`, `image_picker`, `audioplayers`, `pdf` + `printing`, `webview_flutter`
-- **Auth** : email/password, Google Sign-In, Apple Sign-In
-- **iOS** : Xcode Cloud (`ios/ci_scripts/ci_post_clone.sh`), Apple Sign-In, URL scheme Google
+- **Auth** : aucune (comptes retirés le 30 octobre 2026)
+- **iOS** : Xcode Cloud (`ios/ci_scripts/ci_post_clone.sh`)
 - **Android** : Gradle 8.14, signing release via `key.properties`, core library desugaring activé
 
 ## 🚀 Démarrage rapide
@@ -91,7 +92,7 @@ Voir **`CLAUDE.md`** à la racine pour le détail :
 - migrations Supabase
 - pièges à éviter (versions pinées, assets à déclarer dans `pubspec.yaml`…)
 
-Le **catalogue d'espèces** est synchronisé vers Supabase pour partage avec le projet sœur **Kultivaprix** (comparateur de prix). Source de vérité : `lib/data/vegetables_base.dart`. Détails : **`docs/catalog-sync.md`**.
+Le **catalogue d'espèces** vit entièrement dans l'app. Source de vérité : `lib/data/vegetables_base.dart` (169 entrées : 130 cultures + 39 accessoires).
 
 ## 🤝 Contribuer
 
@@ -102,7 +103,6 @@ Les strings UI sont **en français** uniquement (l'app est `fr-FR` à 100%). Les
 ## 🌐 Sites compagnons
 
 - **Landing marketing** — `landing/index.html` (site HTML statique)
-- **[Kultivaprix](https://github.com/teiki5320/kultivaprix)** — comparateur de prix kawaii, consomme le catalogue d'espèces de Kultiva via Supabase
 
 ## 📜 Licence
 

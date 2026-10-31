@@ -1,6 +1,6 @@
 # INFRA — fiche technique
 
-Mis à jour le 30 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
+Mis à jour le 31 octobre 2026, d'après le code du dépôt et le site en ligne. Aucun secret ici :
 uniquement des noms de variables et de consoles.
 
 ## En bref
@@ -9,16 +9,16 @@ uniquement des noms de variables et de consoles.
 - **Stack** : Next.js 16 en export statique, React 19, Tailwind CSS 4
 - **Backend** : aucun — site statique, sans base ni compte ; actus lues en direct depuis la veille (GitHub Pages)
 - **Distribution** : Worker de fichiers statiques Cloudflare, publié par GitHub Actions
-- **Site** : keurfoot.com (150 adresses dans le sitemap au 30 octobre)
+- **Site** : keurfoot.com (154 adresses dans le sitemap au 31 octobre)
 - **IA et outils** : illustrations faites avec OpenArt, épingles générées au build
 
 ## Parcours
 
-- 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build [ok] → ☁️ Cloudflare Workers — Worker keurfoot [ok] → 🌍 keurfoot.com — en ligne, réponse 200 le 30 octobre [ok]
+- 🌐 **Web** : 🐙 GitHub — main · publication au vert [ok] → ⚙️ GitHub Actions — lint, types, tests, build [ok] → ☁️ Cloudflare Workers — Worker keurfoot [ok] → 🌍 keurfoot.com — en ligne, réponse 200 le 31 octobre [ok]
 - 📝 **Contenu** : ✍️ Conseils — 10 publiés, 23 programmés jusqu'au 23 décembre [ok] → ⚙️ GitHub Actions — publie lundi, mercredi, vendredi [ok] → 🔍 Google — 101 pages dans l'index (rapport du 23 octobre) [ok]
 - 🛒 **Affiliation** : 🛍️ Boutique et fiches — boutons Amazon [ok] → 🛒 Amazon Partenaires (affiliation) — tag keurfootfr-21 [ok] → 🌐 Site déclaré chez Amazon — vérifié par Jean le 28 octobre 2026 [ok] → 🔗 Liens directs — 3 maillots vérifiés le 28 octobre (Maroc, Nigeria, Tunisie), recherches ailleurs [ok]
 - 🗞️ **Actus** : 🤖 Tâche Claude — 12 h et 19 h [ok] → 🐙 Dépôt teiki5320/veille — actus/keurfoot.json et articles [ok] → 📄 GitHub Pages — fichiers et images [ok] → ⚙️ GitHub Actions — reconstruit le site à 12 h 50 et 19 h 50 [ok] → 🌍 keurfoot.com — accueil, /actus, fiches sélection, pages d'articles [ok]
-- 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en place [ok] → ✅ Examen du site — demandé le 20 octobre, « En préparation » au 30 octobre [à faire] → 🧱 Blocs d'annonces — aucun identifiant renseigné [pas encore]
+- 📰 **Publicité** : 📰 AdSense (publicité web) — script et ads.txt en place [ok] → ✅ Examen du site — demandé le 20 octobre, « En préparation » au 31 octobre [à faire] → 🧱 Blocs d'annonces — aucun identifiant renseigné [pas encore]
 
 ## Vue d'ensemble
 
@@ -32,9 +32,9 @@ uniquement des noms de variables et de consoles.
 - **Backend** : aucun. Site entièrement statique (dossier `out/`), sans base de données ni compte.
   Seuls cookies possibles : ceux de Google AdSense, après accord dans le bandeau de consentement de
   Google (lien « Cookies » en pied de page).
-- **Taille** : 150 adresses dans le sitemap au 30 octobre 2026 : 101 adresses fixes (54 sélections,
+- **Taille** : 154 adresses dans le sitemap au 31 octobre 2026 : 101 adresses fixes (54 sélections,
   15 joueurs, 10 Top 10, 2 pages CAN, 10 articles Conseils publiés, boutique, page Actus, pages de
-  liste et pages légales) et 49 articles d'actus (une adresse par article depuis le 28 octobre 2026,
+  liste et pages légales) et 53 articles d'actus (une adresse par article depuis le 28 octobre 2026,
   le nombre suit la veille).
 - **Images** : illustrations originales créées avec OpenArt puis découpées par
   `scripts/decouper-planche.mjs` (voir docs/ILLUSTRATIONS.md) ; depuis le 27 octobre 2026, les conseils
@@ -163,5 +163,5 @@ uniquement des noms de variables et de consoles.
 - **Consentement** : bandeau « Confidentialité et messages » d'AdSense, lien « Cookies » en pied
   de page ; la politique de sécurité de `public/_headers` n'ouvre que les domaines Google
   nécessaires.
-- **Examen du site** : demandé le 20 octobre 2026 ; « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 30 octobre 2026).
+- **Examen du site** : demandé le 20 octobre 2026 ; « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 31 octobre 2026).
 - **Console** : https://adsense.google.com (compte AdSense de Jean).

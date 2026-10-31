@@ -11,9 +11,8 @@
   "tagline": "Le potager kawaii dans ta poche.",
   "services": [
     "github",
-    "supabase",
-    "auth",
     "api-tierce",
+    "affiliation",
     "apple-developer",
     "app-store-connect",
     "xcode-cloud",

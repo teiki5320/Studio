@@ -1,6 +1,6 @@
 # MARKETING — plan marketing & rémunération
 
-Mis à jour le 30 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
+Mis à jour le 31 octobre 2026. Un canal n'est coché que s'il est prouvé (compte branché et
 publications réelles, ou routine qui publie).
 
 ## Positionnement
@@ -16,7 +16,7 @@ publications réelles, ou routine qui publie).
 ## Rémunération par phases
 
 - [fait] **Aujourd'hui** : affiliation Amazon Partenaires (tag `keurkadofr-21`) ; le site ne vend rien.
-- [en cours] **Publicité AdSense** : script et ads.txt en ligne, examen du site demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 30 octobre 2026), blocs d'annonces à créer.
+- [en cours] **Publicité AdSense** : script et ads.txt en ligne, examen du site demandé le 20 octobre 2026, « En préparation » dans la console AdSense, ni validé ni refusé (vérifié le 31 octobre 2026), blocs d'annonces à créer.
 - **Liens Amazon directs** : 58 cadeaux sur 98 mènent à leur fiche au 28 octobre 2026 (3 bijoux, des figurines et un recueil de proverbes ajoutés ce jour-là) ; les 40 autres gardent une recherche faute d’article fidèle et bien noté.
 - [fait] **Mise en avant (28 octobre 2026)** : Top 10 de la prochaine fête sous le compte à rebours de l'accueil (depuis le 28 octobre au soir : 8 cadeaux illustrés, chacun mène à sa place dans le Top 10, sans lien Amazon sur l'accueil), Top 10 et trois idées sous chaque fête du calendrier, un encadré de 1 ou 2 cadeaux dans chaque conseil, bouton Amazon juste après la description des cartes, plus aucun renvoi vers Keurbook ni Keur Cook.
 - **Saison des fêtes** : Noël et colis de fin d'année, période où l'affiliation rapporte le plus.
@@ -32,8 +32,8 @@ publications réelles, ou routine qui publie).
 
 - ✅ Site en ligne sur `keurkado.com` depuis le 20 octobre 2026.
 - ✅ Référencement naturel : propriété `keurkado.com` dans Google Search Console, sitemap envoyé le
-  20 octobre 2026 ; 24 articles Conseils au 30 octobre 2026, dont 6 publiés et 18 programmés jusqu'au 14 décembre
-  (12 ajoutés le 29 octobre, du 30 octobre au 9 décembre), republiés chaque lundi, mercredi et vendredi. Depuis le 25 octobre 2026, pages signalées aussi à
+  20 octobre 2026 ; 32 articles Conseils au 31 octobre 2026, dont 6 publiés et 26 programmés jusqu'au 30 décembre
+  (12 ajoutés le 29 octobre, du 30 octobre au 9 décembre ; 8 ajoutés le 31 octobre, du 11 au 30 décembre), republiés chaque lundi, mercredi et vendredi. Depuis le 25 octobre 2026, pages signalées aussi à
   Bing et aux autres moteurs par IndexNow (`scripts/indexnow.mjs`, lancé par GitHub après chaque
   publication et chaque lundi depuis le 28 octobre 2026) ; site ajouté à Bing Webmaster Tools
   le 28 octobre 2026 (balise `msvalidate.01`), sitemap envoyé le même jour.
@@ -47,19 +47,19 @@ publications réelles, ou routine qui publie).
 
 ## Mesures
 
-- **Pages indexées par Google** : 61 sur les 62 du sitemap envoyé (Search Console, vérifié le 30 octobre 2026 ; 9 sur 61 au 21 octobre)
-- **Pages pas encore indexées** : 1, inconnue de Google, aucune refusée (vérifié le 30 octobre 2026) ; le 27 octobre, c'était l'article « cadeau belle-mère africaine »
+- **Pages indexées par Google** : 61 sur les 63 du sitemap envoyé (Search Console, vérifié le 31 octobre 2026 ; 61 sur 62 le 30 octobre, 9 sur 61 au 21 octobre)
+- **Pages pas encore indexées** : 2, inconnues de Google, aucune refusée (vérifié le 31 octobre 2026) ; le 27 octobre, c'était l'article « cadeau belle-mère africaine »
 - **Liens Amazon directs** : 58 cadeaux sur 98
-- **Articles Conseils** : 6 publiés, 18 programmés (au 30 octobre 2026)
+- **Articles Conseils** : 6 publiés, 26 programmés jusqu'au 30 décembre (au 31 octobre 2026 ; 18 programmés au 30 octobre)
 - **Visites** : à instrumenter
 - **Clics et revenus Amazon** : à vérifier dans la console
 - **Revenus AdSense** : aucun tant que les blocs d'annonces ne sont pas créés
 
 ## Les 3 priorités
 
-- AdSense : examen de keurkado.com demandé le 20 octobre 2026, « En préparation » au 30 octobre ; créer les trois blocs « Keur Kado - top / rubrique / article »
+- AdSense : examen de keurkado.com demandé le 20 octobre 2026, « En préparation » au 31 octobre ; créer les trois blocs « Keur Kado - top / rubrique / article »
   et renseigner leurs identifiants, pour que les annonces s'affichent.
-- Faire indexer la dernière page manquante et suivre les positions dans Google (61 pages sur 62
-  indexées au 30 octobre 2026).
+- Faire indexer les deux dernières pages manquantes et suivre les positions dans Google (61 pages sur 63
+  indexées au 31 octobre 2026).
 - Liens Amazon directs : relever les ASIN vérifiés des 40 cadeaux qui ouvrent encore une recherche
   Amazon (58 sur 98 mènent à leur fiche ; relevé du 28 octobre 2026 sur la page Noël, le wax et la déco : rien de fidèle pour le reste, voir docs/AMAZON-ASIN.md).

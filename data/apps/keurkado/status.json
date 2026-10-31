@@ -3,8 +3,9 @@
   "ci": {
     "status": "completed",
     "conclusion": "success",
-    "updatedAt": "2026-10-30T05:46:37Z",
-    "url": "https://github.com/teiki5320/keurkado/actions/runs/41010282187"
+    "updatedAt": "2026-10-31T04:32:26Z",
+    "url": "https://github.com/teiki5320/keurkado/actions/runs/41168969884",
+    "enCours": true
   },
-  "fetchedAt": "2026-10-30T05:49:10.992Z"
+  "fetchedAt": "2026-10-31T05:45:28.082Z"
 }

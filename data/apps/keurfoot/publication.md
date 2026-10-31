@@ -1,6 +1,6 @@
 # PUBLICATION — état de la mise en ligne
 
-> Mis à jour le 30 octobre 2026, d'après le site en ligne et les exécutions GitHub Actions.
+> Mis à jour le 31 octobre 2026, d'après le site en ligne et les exécutions GitHub Actions.
 >
 > Aucun secret ici — uniquement des références.
 
@@ -8,19 +8,19 @@
 
 - **Production** : en ligne sur keurfoot.com depuis le 20 octobre 2026
 - **Domaine & SSL** : Cloudflare, certificat valide jusqu'au 18 janvier 2027, renouvelé seul
-- **Visibilité** : sitemap de 150 adresses au 30 octobre (101 fixes et 49 articles d'actus) ; 101 pages dans l'index de Google (rapport du 23 octobre)
+- **Visibilité** : sitemap de 154 adresses au 31 octobre (101 fixes et 53 articles d'actus) ; 101 pages dans l'index de Google (rapport du 23 octobre)
 - **Contact** : keurfoot@toakeur.com
 
 ## Boutiques
 
 | | 🌐 Site |
 |---|---|
-| État | [ok] En ligne, réponse 200 (30 octobre) |
+| État | [ok] En ligne, réponse 200 (31 octobre) |
 | Hébergement | [ok] Worker de fichiers statiques Cloudflare « keurfoot » |
 | Domaine | [ok] keurfoot.com ; www renvoie vers keurfoot.com (301) depuis le 28 octobre |
 | SSL | [ok] Certificat Cloudflare, HSTS actif, http renvoie vers https (28 octobre) |
-| Indexation | [ok] Search Console : 101 pages dans l'index (rapport du 23 octobre), sitemap relu le 28 octobre ; Bing Webmaster Tools : site validé et sitemap envoyé (28 octobre) |
-| Mesure d'audience | [pas encore] Aucune balise constatée (30 octobre) |
+| Indexation | [ok] Search Console : 101 pages dans l'index (rapport du 23 octobre), sitemap relu le 30 octobre (150 pages découvertes) ; Bing Webmaster Tools : site validé et sitemap envoyé (28 octobre) |
+| Mesure d'audience | [pas encore] Aucune balise constatée (31 octobre) |
 
 ## Ce qui reste, dans l'ordre
 
@@ -30,18 +30,18 @@
 4. ✅ **Search Console** : propriété keurfoot.com vérifiée et sitemap envoyé à Google le 20 octobre 2026 ;
    même chose dans Bing Webmaster Tools le 28 octobre 2026 (balise `msvalidate.01` dans `src/app/layout.tsx`).
 5. **Mesure d'audience** : activer Cloudflare Web Analytics, déjà permis par `public/_headers`.
-6. **Validation AdSense** : suivre l'examen demandé le 20 octobre (« En préparation » au 30 octobre 2026), puis créer les blocs d'annonces.
+6. **Validation AdSense** : suivre l'examen demandé le 20 octobre (« En préparation » au 31 octobre 2026), puis créer les blocs d'annonces.
 
 ## Web · Production
 
 | | |
 |---|---|
-| Adresse | **En ligne** sur https://keurfoot.com (vérifié le 30 octobre 2026 : réponse 200) |
+| Adresse | **En ligne** sur https://keurfoot.com (vérifié le 31 octobre 2026 : réponse 200) |
 | Hébergeur | Cloudflare, Worker de fichiers statiques `keurfoot` (`wrangler.jsonc`), workflow `deploy.yml` |
-| Dernière publication | 30 octobre 2026 vers 3 h 40 (publication programmée des conseils, GitHub Actions au vert) ; le site se republie aussi chaque jour à 12 h 50 et 19 h 50 pour les articles d'actus (pages d'articles mises en ligne le 28 octobre à 1 h 47) |
+| Dernière publication | 31 octobre 2026 vers 5 h 20 (envoi sur main, GitHub Actions au vert) ; le site se republie aussi chaque jour à 12 h 50 et 19 h 50 pour les articles d'actus (pages d'articles mises en ligne le 28 octobre à 1 h 47) |
 | Mise en ligne | 20 octobre 2026 (version provisoire sur GitHub Pages du 17 au 20 octobre, remplacée par Cloudflare) |
 | Dépôt | https://github.com/teiki5320/keurfoot |
-| Taille publiée | 150 adresses dans le sitemap (30 octobre 2026 : 101 fixes, 49 articles d'actus) |
+| Taille publiée | 154 adresses dans le sitemap (31 octobre 2026 : 101 fixes, 53 articles d'actus) |
 | Contact affiché | `keurfoot@toakeur.com` |
 | Maintenance | désactivée (`content/maintenance.json`) |
 
@@ -64,17 +64,17 @@
 
 ## Visibilité
 
-- **Sitemap** : https://keurfoot.com/sitemap.xml répond (150 adresses le 30 octobre 2026, dont 10 articles Conseils, la page Actus et 49 articles d'actus, une adresse par article depuis le 28 octobre 2026 ; la page de secours `/actus/article` n'y est jamais) ; `robots.txt` autorise tout
+- **Sitemap** : https://keurfoot.com/sitemap.xml répond (154 adresses le 31 octobre 2026, dont 10 articles Conseils, la page Actus et 53 articles d'actus, une adresse par article depuis le 28 octobre 2026 ; la page de secours `/actus/article` n'y est jamais) ; `robots.txt` autorise tout
   et cite le sitemap.
 - **Google Search Console** : propriété `keurfoot.com` vérifiée ; sitemap envoyé le 20 octobre 2026,
-  sans erreur, relu par Google le 28 octobre (139 pages découvertes) ; 101 pages dans l'index de
-  Google (rapport Indexation daté du 23 octobre, lu le 30 octobre 2026).
+  sans erreur, relu par Google le 30 octobre (150 pages découvertes) ; 101 pages dans l'index de
+  Google (rapport Indexation daté du 23 octobre, lu le 31 octobre 2026).
 - **IndexNow** : clé publique servie à la racine du site et script `scripts/indexnow.mjs` (24 octobre 2026),
   lancé automatiquement depuis le 28 octobre 2026 par `.github/workflows/indexnow.yml` après chaque publication
   réussie et chaque lundi (il lit le sitemap, donc signale aussi les articles d'actus) ; journal du référencement dans `docs/referencement.md`.
 - **Mesure d'audience** : aucune balise Cloudflare Web Analytics constatée sur le site le
-  30 octobre 2026, bien que la politique de sécurité l'autorise.
+  31 octobre 2026, bien que la politique de sécurité l'autorise.
 - **Publicité** : Google AdSense en place (script chargé sur les pages,
   `https://keurfoot.com/ads.txt` répond) ; examen du site demandé le 20 octobre 2026, « En préparation » dans la
-  console au 30 octobre 2026 ; la console y affiche encore `ads.txt` « Introuvable » alors que le
+  console au 31 octobre 2026 ; la console y affiche encore `ads.txt` « Introuvable » alors que le
   fichier répond (200) : elle ne l'a pas revérifié. Aucun bloc d'annonces renseigné.
