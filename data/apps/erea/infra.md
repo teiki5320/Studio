@@ -14,7 +14,7 @@
 
 ## Parcours
 
-- 🍎 **iOS** : 🐙 GitHub — main, 1.0.7 dans le code, tests lancés à la main avant chaque commit (aucune CI) [ok] → ☁️ Xcode Cloud — build à chaque poussée sur main [ok] → 🛍️ App Store Connect — 1.0.5 (build 195) approuvée le 21 octobre, 1.0.7 (build 210) soumise le 30 octobre, en examen [ok] → 📱 App Store — 1.0.5 en ligne depuis le 21 octobre [ok]
+- 🍎 **iOS** : 🐙 GitHub — main, 1.0.7 dans le code, tests lancés à la main avant chaque commit (aucune CI) [ok] → ☁️ Xcode Cloud — build à chaque poussée sur main [ok] → 🛍️ App Store Connect — 1.0.5 (build 195) approuvée le 21 octobre, 1.0.7 (build 210) soumise le 30 octobre, approuvée le 31 octobre (publication automatique) [ok] → 📱 App Store — 1.0.5 en ligne depuis le 21 octobre [ok]
 - 🤖 **Android** : 🐙 GitHub — main, 1.0.7 dans le code, tests lancés à la main avant chaque commit (aucune CI) [ok] → 🔑 Keystore Android — App Bundle signé sur le Mac [ok] → 🎮 Google Play Console — production accordée le 17 octobre, 1.0.7 envoyée le 30 octobre [ok] → 🛒 Google Play — 1.0.7 en ligne (vérifié le 31 octobre) [ok]
 - 🌐 **Web** : 🐙 GitHub — racine de main, sans CNAME [ok] → 📄 Hébergement web (GitHub Pages / Cloudflare Pages) — GitHub Pages [ok] → 🏷️ Nom de domaine — erea.toakeur.com via Cloudflare [ok] → 🌐 Site — vitrine, jeu, support, confidentialité [ok]
 - 🎬 **Contenu** : 🎬 Studio — 27 pubs vidéo validées, aucune à valider [ok] → 🗓️ Planning — 25 vidéos programmées jusqu'au 6 nov. [ok] → 📣 Réseaux sociaux & influenceurs — TikTok erea.jeu, 2 publiées le 29 oct. [ok]
@@ -127,7 +127,7 @@ sauvegarder, rien à recopier sur une machine neuve.
 
 **Identifiants publics :**
 - App « Erea », bundle `com.teiki.erea` ; nom « Erea : Quiz d'histoire & frise » à partir de la 1.0.4.
-- Version `1.0.7+8` dans `erea_flutter/pubspec.yaml` depuis le 30 octobre 2026 (avant elle, `1.0.6+7` à partir du 21 octobre, quand la 1.0.5 approuvée a fermé son numéro au build 196). La 1.0.7 (build 210) a été soumise à Apple le 30 octobre 2026 (toujours en examen au 31 octobre) et est en ligne sur Google Play (vérifié le 31 octobre 2026) ; dès son approbation par Apple, monter à 1.0.8 avant toute poussée.
+- Version `1.0.7+8` dans `erea_flutter/pubspec.yaml` depuis le 30 octobre 2026 (avant elle, `1.0.6+7` à partir du 21 octobre, quand la 1.0.5 approuvée a fermé son numéro au build 196). La 1.0.7 (build 210) a été soumise à Apple le 30 octobre 2026 (approuvée le 31 octobre 2026, publication automatique) et est en ligne sur Google Play (vérifié le 31 octobre 2026) ; dès son approbation par Apple, monter à 1.0.8 avant toute poussée.
 - iOS minimum : 15.0 (`IPHONEOS_DEPLOYMENT_TARGET`, `Podfile`).
 - Chiffrement : `ITSAppUsesNonExemptEncryption = false` dans `ios/Runner/Info.plist` — pas de formulaire d'export à chaque build.
 
