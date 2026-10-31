@@ -31,8 +31,9 @@ const ecrire = (d) => {
 };
 const cle = (e) => crypto.createHash('sha1').update(`${e.texte}|${e.detail}|${e.etat}|${e.compteRendu || ''}`).digest('hex').slice(0, 16);
 
-// Une carte qui a déjà ses propres boutons (planning, plan du site, comptes) n'en a pas besoin.
-const concernee = (e) => !e.action;
+// Une carte qui a déjà ses propres boutons (planning, plan du site) n'en a pas besoin.
+// Les cartes « Comptes & adresses » ont leurs choix comme les autres (Jean, 31/10).
+const concernee = (e) => !e.action || e.action === 'comptes';
 // Ce qu'une source accepte : un problème Google ne se « règle » ni ne se refuse à la main.
 const permises = (e) => (e.source === 'indexation' ? ['routine', 'ensemble', 'attendre'] : ACTIONS);
 

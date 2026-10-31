@@ -241,7 +241,7 @@ export function TriCartes({ elements, onAgir, chargement }) {
     const reponse = o.action === 'routine' && o.consigne ? `${o.texte} — ${o.consigne}` : o.texte;
     onAgir(() => api.envoyerAfaire(id, CODE_ACTION[o.action] || 'oui', reponse)).finally(() => {
       setOccupe(false);
-      setDernier({ id, texte: e.texte });
+      setDernier(e.action === 'comptes' && o.action === 'fait' ? null : { id, texte: e.texte });
     });
   };
 

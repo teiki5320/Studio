@@ -28,7 +28,7 @@ import { STUDIO_DIR } from './studio.js';
 import { etatIndexation, envoyerAClaude, retirerDeClaude, fileClaude, retourClaude, consigneClaude, depotDe } from './indexation.js';
 import { routines, passageManque } from './routines.js';
 import { pointDuMatin, repondre, annulerReponse, fileActions, retourAction } from './point.js';
-import { comptes } from './comptes.js';
+import { comptes, changerEtat } from './comptes.js';
 import { applis } from './applis.js';
 import { planning } from './planning.js';
 import { optionsDe, preparerOptions } from './afaireOptions.js';
@@ -789,7 +789,8 @@ export function envoyer(id, choix = 'oui', reponse = '') {
   if (choix === 'fait') {
     if (e.source === 'indexation') throw new Error('Un problème Google disparaît tout seul quand Google revoit la page réparée');
     const p = idPoint(id);
-    if (p) retourAction(p.id, true, 'Réglé par Jean.');
+    if (e.action === 'comptes') changerEtat(e.compte, 'fait');
+    else if (p) retourAction(p.id, true, 'Réglé par Jean.');
     else {
       const d = lire();
       d.suivi[id] = { statut: 'fait', le: maintenant(), retour: maintenant(), compteRendu: 'Réglé par Jean.', copie: copie(e) };
